@@ -283,6 +283,7 @@ worker_work(worker_type* worker)
     ods_log_assert(worker->type == WORKER_WORKER);
     engine = (engine_type*) worker->engine;
     while (!worker->need_to_exit) {
+
         /* report for duty */
         time_t now = time_now();
         ods_log_deeebug("[%s[%i]] report for duty", worker2str(worker->type),
@@ -308,6 +309,7 @@ worker_work(worker_type* worker)
             worker->task = (task_type*) schedule_next(engine->taskq);
         }
         lock_basic_unlock(&engine->taskq->s_lock);
+
         /* do some work */
         if (worker->task) {
             zone = (zone_type*) worker->task->zone;
@@ -316,10 +318,11 @@ worker_work(worker_type* worker)
                 worker2str(worker->type), worker->thread_num, zone->name);
             worker->clock_in = now;
             worker_perform_task(worker);
-            /* schedule new task */
-            lock_basic_lock(&engine->taskq->s_lock);
             ods_log_debug("[%s[%i]] finished working on zone %s",
                 worker2str(worker->type), worker->thread_num, zone->name);
+
+            /* schedule new task */
+            lock_basic_lock(&engine->taskq->s_lock);
             worker->task->when += 60;
             status = schedule_task(engine->taskq, worker->task, 1);
             if (status != ODS_STATUS_OK) {
@@ -331,15 +334,17 @@ worker_work(worker_type* worker)
             lock_basic_unlock(&engine->taskq->s_lock);
             lock_basic_unlock(&zone->zone_lock);
             timeout = 1;
+
             /** Do we need to tell the engine that we require a reload? */
             lock_basic_lock(&engine->signal_lock);
             if (engine->need_to_reload) {
                 lock_basic_alarm(&engine->signal_cond);
             }
             lock_basic_unlock(&engine->signal_lock);
+
+            ods_log_info("[%s[%i]] did some work",
+                worker2str(worker->type), worker->thread_num);
         }
-        ods_log_info("[%s[%i]] did some work",
-            worker2str(worker->type), worker->thread_num);
     }
     return;
 }
@@ -358,6 +363,7 @@ worker_drudge(worker_type* worker)
     ods_log_assert(worker->type == WORKER_DRUDGER);
     engine = (engine_type*) worker->engine;
     while (!worker->need_to_exit) {
+
         /* report for duty */
         ods_log_deeebug("[%s[%i]] report for duty", worker2str(worker->type),
             worker->thread_num);
@@ -375,6 +381,7 @@ worker_drudge(worker_type* worker)
             &engine->signq->q_lock, 0);
 
         lock_basic_unlock(&engine->signq->q_lock);
+
         /* do some work */
         ods_log_info("[%s[%i]] did some drudging",
             worker2str(worker->type), worker->thread_num);
