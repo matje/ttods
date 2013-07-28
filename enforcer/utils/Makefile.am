@@ -27,7 +27,7 @@ dist_opendnssecdata_DATA = database_create.sqlite3
 endif
 
 bin_PROGRAMS =	ttods-ksmutil ttods-kaspcheck
-man1_MANS =	ods-ksmutil.1 ods-kaspcheck.1
+man1_MANS =	ttods-ksmutil.1 ttods-kaspcheck.1
 
 ttods_ksmutil_SOURCES = ksmutil.c
 ttods_ksmutil_LDADD = $(LIBKSM) $(LIBHSM) $(LIBCOMPAT)

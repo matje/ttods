@@ -255,7 +255,7 @@ AC_CONFIG_FILES([
 	enforcer/Makefile
 	enforcer/common/Makefile
 	enforcer/enforcerd/Makefile
-	enforcer/enforcerd/ods-enforcerd.8
+	enforcer/enforcerd/ttods-enforcerd.8
 	enforcer/ksm/Makefile
 	enforcer/ksm/include/Makefile
 	enforcer/ksm/include/ksm/Makefile
@@ -268,13 +268,13 @@ AC_CONFIG_FILES([
 	enforcer/test/cunit/database_setup_mysql.sh
 	enforcer/test/cunit/database_setup_sqlite3.sh
 	enforcer/utils/Makefile
-	enforcer/utils/ods-kaspcheck.1
-	enforcer/utils/ods-ksmutil.1
+	enforcer/utils/ttods-kaspcheck.1
+	enforcer/utils/ttods-ksmutil.1
 	libhsm/Makefile
 	libhsm/src/Makefile
 	libhsm/src/bin/Makefile
-	libhsm/src/bin/ods-hsmspeed.1
-	libhsm/src/bin/ods-hsmutil.1
+	libhsm/src/bin/ttods-hsmspeed.1
+	libhsm/src/bin/ttods-hsmutil.1
 	libhsm/src/lib/Makefile
 	libhsm/checks/Makefile
 	libhsm/checks/conf-softhsm.xml
@@ -286,18 +286,18 @@ AC_CONFIG_FILES([
 	libhsm/checks/conf-aepkeyper.xml
 	signer/Makefile
 	signer/man/Makefile
-	signer/man/ods-signer.8
-	signer/man/ods-signerd.8
+	signer/man/ttods-signer.8
+	signer/man/ttods-signerd.8
 	signer/src/Makefile
 	tools/Makefile
 	tools/ods-control
 	tools/solaris/Makefile
 	tools/solaris/ods-enforcerd.init
 	tools/solaris/ods-signerd.init
-	tools/ods-timing.5
-	tools/opendnssec.7
-	tools/ods-control.8
-	tools/ods-kasp2html
+	tools/ttods-timing.5
+	tools/ttods.7
+	tools/ttods-control.8
+	tools/ttods-kasp2html
 ])
 
 AC_OUTPUT
