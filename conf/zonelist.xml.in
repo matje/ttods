@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- $Id: zonelist.xml.in 5937 2011-11-30 08:53:15Z matthijs $ -->
+
+<ZoneList>
+<!--
+	<Zone name="example.com">
+		<Policy>default</Policy>
+		<SignerConfiguration>@OPENDNSSEC_STATE_DIR@/signconf/example.com.xml</SignerConfiguration>
+		<Adapters>
+			<Input>
+				<Adapter type="File">@OPENDNSSEC_STATE_DIR@/unsigned/example.com</Adapter>
+			</Input>
+			<Output>
+				<Adapter type="File">@OPENDNSSEC_STATE_DIR@/signed/example.com</Adapter>
+			</Output>
+		</Adapters>
+	</Zone>
+-->
+<!--
+	<Zone name="example.net">
+		<Policy>default</Policy>
+		<SignerConfiguration>@OPENDNSSEC_STATE_DIR@/signconf/example.net.xml</SignerConfiguration>
+		<Adapters>
+			<Input>
+				<Adapter type="DNS">@OPENDNSSEC_CONFIG_DIR@/addns.xml</Adapter>
+			</Input>
+			<Output>
+				<Adapter type="DNS">@OPENDNSSEC_CONFIG_DIR@/addns.xml</Adapter>
+			</Output>
+		</Adapters>
+	</Zone>
+-->
+</ZoneList>

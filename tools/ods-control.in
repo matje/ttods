@@ -1,0 +1,183 @@
+#!/bin/sh
+#
+# $Id: ods-control.in 6300 2012-05-03 11:35:59Z jerry $
+#
+# Copyright (c) 2009 .SE (The Internet Infrastructure Foundation)
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
+# 1. Redistributions of source code must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+# 2. Redistributions in binary form must reproduce the above copyright
+#    notice, this list of conditions and the following disclaimer in the
+#    documentation and/or other materials provided with the distribution.
+#
+# THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
+# IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+# WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+# DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+# GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
+# IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+# OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
+# IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
+
+progname="ods-control"
+bindir="@OPENDNSSEC_BIN_DIR@"
+sbindir="@OPENDNSSEC_SBIN_DIR@"
+enforcer_pid_file="@OPENDNSSEC_ENFORCER_PIDFILE@"
+signer_pid_file="@OPENDNSSEC_SIGNER_PIDFILE@"
+signer_socket_file="@OPENDNSSEC_SIGNER_SOCKET@"
+
+
+case "$1" in
+
+'ksm')
+	shift
+	"$bindir/ods-ksmutil" $@
+	;;
+
+'hsm')
+	shift
+	"$bindir/ods-hsmutil" $@
+	;;
+
+'signer')
+	case "$2" in
+
+	'start')
+		echo "Starting signer engine..."
+		"$sbindir/ods-signer" start
+		
+		RETVAL=$?
+		if [ $RETVAL = 0 ]; then
+			i=0
+			while [ ! -r "$signer_pid_file" ]; do
+				sleep 1
+				i=`expr $i + 1`
+				if [ $i -ge 5 ]; then
+					RETVAL=1
+					echo "Could not start signer"
+					exit $RETVAL
+				fi
+			done
+			i=0
+			while [ ! -r "$signer_socket_file" ]; do
+				sleep 1
+				i=`expr $i + 1`
+				if [ $i -ge 5 ]; then
+					RETVAL=1
+					echo "Could not start signer"
+					exit $RETVAL
+				fi
+			done
+			sleep 1
+
+			"$sbindir/ods-signer" running
+			RETVAL=$?
+		fi
+		
+		exit $RETVAL
+		;;
+	*)
+		shift
+		"$sbindir/ods-signer" "$@"
+		;;
+
+	esac
+	;;
+
+'enforcer')
+	case "$2" in
+
+	'start')
+		echo "Starting enforcer..."
+		"$sbindir/ods-enforcerd"
+		RETVAL=$?
+		if [ $RETVAL = 0 ]; then
+			i=0
+			while [ ! -r "$enforcer_pid_file" ]; do
+				sleep 1
+				i=`expr $i + 1`
+				if [ $i -ge 5 ]; then
+					RETVAL=1
+					echo "Could not start enforcer"
+					break
+				fi
+			done
+		fi
+		exit $RETVAL
+		;;
+
+	'stop')
+		echo "Stopping enforcer..."
+		if [ -r "$enforcer_pid_file" ]; then
+			kill -TERM `cat "$enforcer_pid_file"`
+			RETVAL=$?
+			if [ $RETVAL = 0 ]; then
+				i=0
+				while [ -r "$enforcer_pid_file" ]; do
+					sleep 1
+					i=`expr $i + 1`
+					if [ $i -ge 5 ]; then
+						RETVAL=1
+						echo "Could not stop enforcer"
+						break
+					fi
+				done
+			fi
+		else
+			echo "Cannot find PID file"
+			RETVAL=1
+		fi
+		exit $RETVAL
+		;;
+
+	'notify')
+		echo "Notifying enforcer of new database..."
+		if [ -r "$enforcer_pid_file" ]; then
+			kill -HUP `cat "$enforcer_pid_file"`
+			RETVAL=$?
+		else
+			echo "Cannot find PID file"
+			RETVAL=1
+		fi
+		exit $RETVAL
+		;;
+
+	*)
+		echo "usage: $progname enforcer start|stop|notify"
+		;;
+
+	esac
+	;;
+
+'start')
+	"$0" enforcer start
+	RETVAL=$?
+	if [ $RETVAL != 0 ]
+	then
+		exit $RETVAL
+	fi
+	"$0" signer start
+	RETVAL=$?
+	exit $RETVAL
+	;;
+
+'stop')
+	"$0" enforcer stop
+	echo "Stopping signer engine..."
+	"$sbindir/ods-signer" stop
+	;;
+
+*)
+	echo "usage: $progname ksm|hsm|signer|enforcer|start|stop ..."
+	;;
+
+esac
+

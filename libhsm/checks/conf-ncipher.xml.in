@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- $Id: conf-ncipher.xml.in 1904 2009-09-29 13:32:23Z jakob $ -->
+
+<Configuration>
+	<RepositoryList>
+		<Repository name="default">
+			<Module>@pkcs11_ncipher_module@</Module>
+			<TokenLabel>OpenDNSSEC</TokenLabel>
+			<PIN>1234567890</PIN>
+		</Repository>
+	</RepositoryList>
+</Configuration>

@@ -1,0 +1,79 @@
+.TH "ods-hsmutil" "1" "February 2010" "OpenDNSSEC" "OpenDNSSEC ods-hsmutil"
+.\" $Id: ods-hsmutil.1.in 6704 2012-09-20 10:43:19Z rb $
+.SH "NAME"
+.LP
+.B ods\-hsmutil
+\- OpenDNSSEC HSM utility
+.SH "SYNOPSIS"
+.LP
+.B ods\-hsmutil
+.RB [ \-c
+.IR config ]
+.RB [ \-v ]
+.B command 
+.RB [ options ]
+.SH "DESCRIPTION"
+.LP
+The ods\-hsmutil utility is mainly used for debugging or testing. It is 
+designed to interact directly with your HSM and can be used to manually 
+list, create or delete keys. It can also be used to perform a set of 
+basics HSM tests. Be careful before creating or deleting keys using 
+ods\-hsmutil, as the changes are not synchronized with the KASP Enforcer.
+
+The repositories are configured by the user in the OpenDNSSEC configuration
+file. The configuration contains the name of the repository, the token label,
+the user PIN, and the path to its shared library.
+.SH "COMMANDS"
+.LP
+.TP
+\fBlogin\fR
+If there is no PIN in conf.xml, then this command will ask for it and login.
+The PINs are stored in a shared memory and are accessible to the other daemons.
+.TP
+\fBlogout\fR
+Will erase the semaphore and the shared memory containing any credentials.
+Authenticated processes will still be able to interact with the HSM.
+.TP
+\fBlist\fR [\fIrepository\fR]
+List the keys that are available in all or one \fIrepository\fR
+.TP
+\fBgenerate\fR \fIrepository\fR \fBrsa\fR \fIkeysize\fR
+Generate a new RSA key with the given \fIkeysize\fR in the \fIrepository\fR
+.TP
+\fBremove\fR \fIid\fR
+Delete the key with the given \fIid\fR
+.TP
+\fBpurge\fR \fIrepository\fR
+Delete all keys in one \fIrepository\fR
+.TP
+\fBdnskey\fR \fIid\fR \fIname\fR 
+Create a DNSKEY RR for the given owner \fIname\fR based on the key with this \fIid\fR
+.TP
+\fBtest\fR \fIrepository\fR
+Perform a number of tests on a \fIrepository\fR
+.TP
+\fBinfo\fR
+Show detailed information about all repositories
+.SH "OPTIONS"
+.LP
+.TP
+\fB\-c\fR \fIconfig\fR
+Path to an OpenDNSSEC configuration file
+
+(defaults to @OPENDNSSEC_CONFIG_FILE@)
+.TP
+\fB\-h\fR
+Show the help screen
+.TP
+\fB\-v\fR
+Output more information by increasing the verbosity level
+.SH "SEE ALSO"
+.LP
+ods\-auditor(1), ods\-control(8), ods\-enforcerd(8), ods\-hsmspeed(1),
+ods\-kaspcheck(1), ods\-ksmutil(1), ods\-signer(8),
+ods\-signerd(8), ods\-timing(5), opendnssec(7),
+.B http://www.opendnssec.org/
+.SH "AUTHORS"
+.LP
+.B ods\-hsmutil
+was written by Jakob Schlyter as part of the OpenDNSSEC project.
