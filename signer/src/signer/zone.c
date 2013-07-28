@@ -52,10 +52,8 @@ zone_init(zone_type* zone)
     zone->policy_name = NULL;
     zone->signconf_filename = NULL;
     zone->task = NULL;
-/*
     zone->adapter_in = NULL;
     zone->adapter_out = NULL;
-*/
     lock_basic_init(&zone->zone_lock);
     return;
 }
@@ -265,9 +263,9 @@ zone_cleanup(zone_type* zone)
     zone_lock = zone->zone_lock;
     free((void*) zone->policy_name);
     free((void*) zone->signconf_filename);
-/*
     adapter_cleanup(zone->adapter_in);
     adapter_cleanup(zone->adapter_out);
+/*
     dname_cleanup(zone->apex);
 */
     namedb_cleanup(zone->namedb);

@@ -34,6 +34,7 @@
 #ifndef SIGNER_ZONE_H
 #define SIGNER_ZONE_H
 
+#include "adapter/adapter.h"
 #include "schedule/schedule.h"
 #include "schedule/task.h"
 #include "signer/namedb.h"
@@ -73,6 +74,8 @@ struct zone_struct {
     const char* policy_name;       /* kasp name */
     const char* signconf_filename; /* signconf filename */
     /* adapters */
+    adapter_type* adapter_in;
+    adapter_type* adapter_out;
     /* zone transfers */
     /* worker variables */
     /* statistics */
