@@ -15,10 +15,11 @@ AM_CPPFLAGS = \
 
 signerdir =     @libdir@/opendnssec/signer
 
-sbin_PROGRAMS = ods-signerd ods-signer
-# man8_MANS =     man/ods-signer.8 man/ods-signerd.8
+sbin_PROGRAMS = ttods-signerd ttods-signer
+# man8_MANS =     man/ttods-signer.8 man/ttods-signerd.8
 
-ods_signerd_SOURCES=		ods-signerd.c \
+ttods_signerd_SOURCES=		ods-signerd.c \
+				adapter/adapter.c adapter\adapter.h \
 				daemon/cfg.c daemon/cfg.h \
 				daemon/cmdhandler.c daemon/cmdhandler.h \
 				daemon/engine.c daemon/engine.h \
@@ -47,11 +48,11 @@ ods_signerd_SOURCES=		ods-signerd.c \
 				util/util.c util/util.h \
 				wire/buffer.c wire/buffer.h
 
-ods_signerd_LDADD=		$(LIBHSM)
-ods_signerd_LDADD+=		$(LIBCOMPAT)
-ods_signerd_LDADD+=		@LDNS_LIBS@ @XML2_LIBS@ @PTHREAD_LIBS@ @RT_LIBS@ @SSL_LIBS@ @C_LIBS@
+ttods_signerd_LDADD=		$(LIBHSM)
+ttods_signerd_LDADD+=		$(LIBCOMPAT)
+ttods_signerd_LDADD+=		@LDNS_LIBS@ @XML2_LIBS@ @PTHREAD_LIBS@ @RT_LIBS@ @SSL_LIBS@ @C_LIBS@
 
-ods_signer_SOURCES=		ods-signer.c \
+ttods_signer_SOURCES=		ods-signer.c \
 				util/duration.c util/duration.h \
 				util/file.c util/file.h \
 				util/log.c util/log.h \
@@ -59,5 +60,5 @@ ods_signer_SOURCES=		ods-signer.c \
 				util/str.c util/str.h \
 				util/util.c util/util.h
 
-ods_signer_LDADD=		$(LIBHSM)
-ods_signer_LDADD+=		@LDNS_LIBS@ @XML2_LIBS@
+ttods_signer_LDADD=		$(LIBHSM)
+ttods_signer_LDADD+=		@LDNS_LIBS@ @XML2_LIBS@

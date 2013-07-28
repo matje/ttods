@@ -19,9 +19,9 @@ AM_CPPFLAGS = \
 	@DB_INCLUDES@ \
 	@LDNS_INCLUDES@
 
-sbin_PROGRAMS = ods-enforcerd
+sbin_PROGRAMS = ttods-enforcerd
 man8_MANS = ods-enforcerd.8
 
-ods_enforcerd_SOURCES = enforcer.c enforcer.h
-ods_enforcerd_LDADD = $(LIBENFORCER) $(LIBKSM) $(LIBHSM) $(LIBCOMPAT)
-ods_enforcerd_LDADD += @XML2_LIBS@ @DB_LIBS@ @LDNS_LIBS@
+ttods_enforcerd_SOURCES = enforcer.c enforcer.h
+ttods_enforcerd_LDADD = $(LIBENFORCER) $(LIBKSM) $(LIBHSM) $(LIBCOMPAT)
+ttods_enforcerd_LDADD += @XML2_LIBS@ @DB_LIBS@ @LDNS_LIBS@

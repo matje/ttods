@@ -12,12 +12,12 @@ AM_CPPFLAGS = \
 
 AM_CFLAGS =	-std=c99
 
-bin_PROGRAMS = ods-hsmutil ods-hsmspeed
+bin_PROGRAMS = ttods-hsmutil ttods-hsmspeed
 
 man1_MANS = ods-hsmutil.1 ods-hsmspeed.1
 
-ods_hsmutil_SOURCES = hsmutil.c hsmtest.c hsmtest.h
-ods_hsmutil_LDADD = ../lib/libhsm.a @LDNS_LIBS@ @XML2_LIBS@ $(LIBCOMPAT)
+ttods_hsmutil_SOURCES = hsmutil.c hsmtest.c hsmtest.h
+ttods_hsmutil_LDADD = ../lib/libhsm.a @LDNS_LIBS@ @XML2_LIBS@ $(LIBCOMPAT)
 
-ods_hsmspeed_SOURCES = hsmspeed.c
-ods_hsmspeed_LDADD = ../lib/libhsm.a -lpthread @LDNS_LIBS@ @XML2_LIBS@ $(LIBCOMPAT)
+ttods_hsmspeed_SOURCES = hsmspeed.c
+ttods_hsmspeed_LDADD = ../lib/libhsm.a -lpthread @LDNS_LIBS@ @XML2_LIBS@ $(LIBCOMPAT)
