@@ -641,7 +641,8 @@ engine_start(const char* cfgfile, int cmdline_verbosity, int daemonize,
             ods_log_info("[%s] reload signer", logstr);
             engine->need_to_reload = 0;
         } else {
-            ods_log_info("[%s] start signer", logstr);
+            ods_log_info("[%s] start signer (version %s), pid %u",
+                logstr, PACKAGE_VERSION, engine->pid);
         }
         if (zl_changed == ODS_STATUS_OK ||
             zl_changed == ODS_STATUS_UNCHANGED) {
