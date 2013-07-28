@@ -24,9 +24,6 @@ ods_signerd_SOURCES=		ods-signerd.c \
 				daemon/engine.c daemon/engine.h \
 				daemon/signal.c daemon/signal.h \
 				daemon/worker.c daemon/worker.h \
-				dns/dname.c dns/dname.h \
-				dns/rr.c dns/rr.h \
-				dns/rrset.c dns/rrset.h \
 				parser/confparser.c parser/confparser.h \
 				parser/signconfparser.c parser/signconfparser.h \
 				parser/zlistparser.c parser/zlistparser.h \

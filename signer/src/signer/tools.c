@@ -32,7 +32,6 @@
  */
 
 #include "config.h"
-#include "adapter/adapter.h"
 #include "signer/tools.h"
 #include "util/duration.h"
 
@@ -70,23 +69,26 @@ tools_conf(zone_type* zone)
 ods_status
 tools_read(zone_type* zone)
 {
-    ods_status status;
+    ods_status status = ODS_STATUS_OK;
     ods_log_assert(zone);
     ods_log_assert(zone->name);
     ods_log_assert(zone->signconf);
     ods_log_assert(zone->namedb);
-    ods_log_assert(zone->adapter_in);
     /* Key Rollover? */
 
     /* Denial of Existence Rollover? */
 
     /* Go to Input Adapter */
+/*
     status = adapter_read((void*)zone);
     if (status != ODS_STATUS_OK) {
         ods_log_error("[%s] read zone %s failed: %s", logstr, zone->name,
             ods_status2str(status));
+*/
         /* rollback */
+/*
     }
+*/
     return status;
 }
 

@@ -34,8 +34,6 @@
 #ifndef SIGNER_ZONE_H
 #define SIGNER_ZONE_H
 
-#include "adapter/adapter.h"
-#include "dns/dname.h"
 #include "schedule/schedule.h"
 #include "schedule/task.h"
 #include "signer/namedb.h"
@@ -61,7 +59,7 @@ typedef enum zone_zl_status_enum zone_zl_status;
 typedef struct zone_struct zone_type;
 struct zone_struct {
     region_type* region;           /* zone memory region */
-    dname_type* apex;              /* zone owner domain name */
+/*    dname_type* apex;  */            /* zone owner domain name */
     ldns_rr_class klass;           /* class */
     uint32_t default_ttl;          /* default ttl */
     zone_zl_status zl_status;      /* zonelist status */
@@ -75,8 +73,6 @@ struct zone_struct {
     const char* policy_name;       /* kasp name */
     const char* signconf_filename; /* signconf filename */
     /* adapters */
-    adapter_type* adapter_in;      /* inbound adapter */
-    adapter_type* adapter_out;     /* outbound adapter */
     /* zone transfers */
     /* worker variables */
     /* statistics */

@@ -44,6 +44,8 @@
 # include <unistd.h>
 #endif
 
+#define AD_FILE_MAXLINE 1024
+
 /**
  * Open a file.
  * @param file: filename.

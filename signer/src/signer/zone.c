@@ -52,8 +52,10 @@ zone_init(zone_type* zone)
     zone->policy_name = NULL;
     zone->signconf_filename = NULL;
     zone->task = NULL;
+/*
     zone->adapter_in = NULL;
     zone->adapter_out = NULL;
+*/
     lock_basic_init(&zone->zone_lock);
     return;
 }
@@ -93,12 +95,14 @@ zone_create(char* name, ldns_rr_class klass)
         zone_cleanup(zone);
         return NULL;
     }
+/*
     zone->apex = dname_create(region, name);
     if (!zone->apex) {
         ods_log_crit("[%s] apex %s create failed", logstr, name);
         zone_cleanup(zone);
         return NULL;
     }
+*/
     zone->signconf = signconf_create(region);
     if (!zone->signconf) {
         ods_fatal_exit("[%s] create signconf failed", logstr);
@@ -261,9 +265,11 @@ zone_cleanup(zone_type* zone)
     zone_lock = zone->zone_lock;
     free((void*) zone->policy_name);
     free((void*) zone->signconf_filename);
+/*
     adapter_cleanup(zone->adapter_in);
     adapter_cleanup(zone->adapter_out);
     dname_cleanup(zone->apex);
+*/
     namedb_cleanup(zone->namedb);
     signconf_cleanup(zone->signconf);
     region_cleanup(zone->region);
