@@ -13,7 +13,7 @@ AM_CPPFLAGS = \
 	@XML2_INCLUDES@ \
 	@LDNS_INCLUDES@
 
-signerdir =     @libdir@/opendnssec/signerv3
+signerdir =     @libdir@/opendnssec/signer
 
 sbin_PROGRAMS = ods-signerd ods-signer
 # man8_MANS =     man/ods-signer.8 man/ods-signerd.8
