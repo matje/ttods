@@ -34,39 +34,35 @@
 #ifndef SIGNER_NAMEDB_H
 #define SIGNER_NAMEDB_H
 
-#include <stdint.h>
+#include "config.h"
+
+#include <ldns/ldns.h>
 
 struct zone_struct;
 
 /**
- * Name database structure.
+ * Domain name database.
  *
  */
 typedef struct namedb_struct namedb_type;
 struct namedb_struct {
-    void* zone;
-    uint32_t serial_in;
-    uint32_t serial_mem;
-    uint32_t serial_out;
-    unsigned is_initialized : 1;
-    unsigned is_processed : 1;
-    unsigned serial_updated : 1;
+    struct zone_struct* zone;
+    ldns_rbtree_t* domains;
 };
 
 /**
- * Create a new name database.
- * @param zone: zone.
- * @return:     (namedb_type*) name database.
+ * Create a new namedb.
+ * @param zone: zone ref.
+ * @return: namedb_type* namedb.
  *
  */
 namedb_type* namedb_create(struct zone_struct* zone);
 
 /**
  * Clean up namedb.
- * @param db: name database.
+ * @param namedb: namedb.
  *
  */
 void namedb_cleanup(namedb_type* db);
 
 #endif /* SIGNER_NAMEDB_H */
-

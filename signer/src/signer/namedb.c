@@ -27,19 +27,49 @@
  */
 
 /**
- * Name database.
+ * Domain name database.
  *
  */
 
 #include "config.h"
+#include "dns/dname.h"
+#include "util/log.h"
+#include "util/util.h"
 #include "signer/namedb.h"
 #include "signer/zone.h"
 
-static const char* logstr = "namedb";
+const char* logstr = "namedb";
 
 
 /**
- * Create a new name databse.
+ * Compare domains.
+ *
+ */
+static int
+domain_compare(const void* a, const void* b)
+{
+    dname_type* x = (dname_type*)a;
+    dname_type* y = (dname_type*)b;
+    return dname_compare(x, y);
+}
+
+
+/**
+ * Initialize domains.
+ *
+ */
+static void
+namedb_init_domains(namedb_type* db)
+{
+    if (db) {
+        db->domains = ldns_rbtree_create(domain_compare);
+    }
+    return;
+}
+
+
+/**
+ * Create a new namedb.
  *
  */
 namedb_type*
@@ -50,18 +80,31 @@ namedb_create(struct zone_struct* zone)
     ods_log_assert(zone->name);
     ods_log_assert(zone->region);
     db = (namedb_type*) region_alloc(zone->region, sizeof(namedb_type));
-    if (!db) {
-        ods_log_crit("[%s] region alloc failed", logstr);
+    db->zone = zone;
+
+    namedb_init_domains(db);
+    if (!db->domains) {
+        ods_log_error("[%s] unable to create namedb for zone %s: "
+            "init domains failed", logstr, zone->name);
+        namedb_cleanup(db);
         return NULL;
     }
-    db->zone = zone;
-    db->serial_in = 0;
-    db->serial_mem = 0;
-    db->serial_out = 0;
-    db->is_initialized = 0;
-    db->is_processed = 0;
-    db->serial_updated = 0;
     return db;
+}
+
+
+/**
+ * Clean up domains.
+ *
+ */
+static void
+namedb_cleanup_domains(namedb_type* db)
+{
+    if (db && db->domains) {
+        ldns_rbtree_free(db->domains);
+        db->domains = NULL;
+    }
+    return;
 }
 
 
@@ -70,7 +113,16 @@ namedb_create(struct zone_struct* zone)
  *
  */
 void
-namedb_cleanup(namedb_type* ATTR_UNUSED(db))
+namedb_cleanup(namedb_type* db)
 {
+    zone_type* zone = NULL;
+    if (!db) {
+        return;
+    }
+    zone = (zone_type*) db->zone;
+    if (!zone || !zone->region) {
+        return;
+    }
+    namedb_cleanup_domains(db);
     return;
 }
