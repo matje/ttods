@@ -1,0 +1,5 @@
+run
+
+$ ragel -G2 -C rzonec.rl
+
+in this directory, before making ttods
