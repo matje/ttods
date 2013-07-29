@@ -88,4 +88,13 @@ int util_check_pidfile(const char* pidfile);
  */
 int util_write_pidfile(const char* pidfile, pid_t pid);
 
+/**
+ * Convert a single (hexidecimal) digit to its integer value.
+ * @param hx:   single hexidecimal digit.
+ * @return:     (int) integer value.
+ *
+ */
+int util_hexdigit2int(char hx);
+
 #endif /* UTIL_UTIL_H */
+
