@@ -25,9 +25,15 @@ ttods_signerd_SOURCES=		ods-signerd.c \
 				daemon/engine.c daemon/engine.h \
 				daemon/signal.c daemon/signal.h \
 				daemon/worker.c daemon/worker.h \
+				dns/dname.c dns/dname.h \
+				dns/dns.c dns/dns.h \
+				dns/rdata.c dns/rdata.h \
+				dns/rr.c dns/rr.h \
 				parser/confparser.c parser/confparser.h \
 				parser/signconfparser.c parser/signconfparser.h \
 				parser/zlistparser.c parser/zlistparser.h \
+				rzonec/rzonec.c rzonec/rzonec.h \
+				rzonec/zonec.c rzonec/zonec.h \
 				schedule/fifoq.c schedule/fifoq.h \
 				schedule/schedule.c schedule/schedule.h \
 				schedule/task.c schedule/task.h \

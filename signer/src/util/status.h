@@ -65,7 +65,8 @@ enum ods_enum_status {
     ODS_STATUS_RBTREERR,
     ODS_STATUS_FOPENERR,
     ODS_STATUS_STRFORMERR,
-    ODS_STATUS_SYNTAXERR
+    ODS_STATUS_SYNTAXERR,
+    ODS_STATUS_ZPARSERERR
 };
 typedef enum ods_enum_status ods_status;
 
