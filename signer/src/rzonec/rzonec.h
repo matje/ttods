@@ -58,10 +58,13 @@ struct zparser {
 
 /**
  * Create parser.
+ * @param origin: initial $ORIGIN.
+ * @param ttl:    initial $TTL.
+ * @param klass:  zone CLASS.
  * @return: (zparser_type*) parser.
  *
  */
-zparser_type* zparser_create();
+zparser_type* zparser_create(dname_type* origin, uint32_t ttl, uint16_t klass);
 
 /**
  * Cleanup parser.
