@@ -32,6 +32,7 @@
  */
 
 #include "config.h"
+#include "adapter/adapter.h"
 #include "parser/zlistparser.h"
 #include "util/file.h"
 #include "util/log.h"
@@ -75,7 +76,6 @@ parser_zlist_element(xmlXPathContextPtr xpathCtx, xmlChar* expr)
  * Create adapter from configuration.
  *
  */
-/*
 static adapter_type*
 pzl_adapter(xmlNode* curNode, region_type* r, adapter_mode type, unsigned in)
 {
@@ -93,13 +93,12 @@ pzl_adapter(xmlNode* curNode, region_type* r, adapter_mode type, unsigned in)
     free((void*)file);
     return adapter;
 }
-*/
+
 
 /**
  * Parse adapter.
  *
  */
-/*
 adapter_type*
 parser_zlist_adapter(xmlXPathContextPtr xpathCtx, xmlChar* expr,
     region_type* r, int in)
@@ -150,13 +149,12 @@ parser_zlist_adapter(xmlXPathContextPtr xpathCtx, xmlChar* expr,
     xmlXPathFreeObject(xpathObj);
     return adapter;
 }
-*/
+
 
 /**
  * Parse the adapters.
  *
  */
-/*
 static void
 parser_zlist_adapters(xmlXPathContextPtr xpathCtx, zone_type* z)
 {
@@ -169,7 +167,7 @@ parser_zlist_adapters(xmlXPathContextPtr xpathCtx, zone_type* z)
     z->adapter_out = parser_zlist_adapter(xpathCtx, o_expr, z->region, 0);
     return;
 }
-*/
+
 
 /**
  * Parse the zonelist file.
@@ -237,9 +235,9 @@ parser_zlist_zones(struct zlist_struct* zlist, const char* zlfile)
                     policy_expr);
                 new_zone->signconf_filename = parser_zlist_element(xpathCtx,
                     signconf_expr);
-/*                parser_zlist_adapters(xpathCtx, new_zone); */
+                parser_zlist_adapters(xpathCtx, new_zone);
                 if (!new_zone->policy_name || !new_zone->signconf_filename
-/*                  || !new_zone->adapter_in || !new_zone->adapter_out */) {
+                  || !new_zone->adapter_in || !new_zone->adapter_out) {
                     zone_cleanup(new_zone);
                     new_zone = NULL;
                     ods_log_crit("[%s] unable to create zone %s", logstr,
