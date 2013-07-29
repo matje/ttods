@@ -7,6 +7,7 @@
  *
  */
 
+#include "dns/dname.h"
 #include "rzonec/rzonec.h"
 #include "util/log.h"
 #include "util/status.h"

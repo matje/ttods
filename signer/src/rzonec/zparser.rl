@@ -62,7 +62,7 @@
     }
     action zparser_dollar_ttl {
         parser->ttl = parser->number;
-        fprintf(stderr, "[zparser] line %d: ttl %u\n", parser->line,
+        ods_log_debug("[zparser] line %d: $TTL set to %u", parser->line,
             (unsigned int) parser->ttl);
     }
 
@@ -76,7 +76,7 @@
             parser->dname_wire[parser->dname_size] = fc;
             parser->dname_size++;
         } else {
-            fprintf(stderr, "[zparser] error: line %d: domain name overflow\n",
+            ods_log_error("[zparser] error: line %d: domain name overflow",
                 parser->line);
             parser->totalerrors++;
             fhold; fgoto line;
@@ -87,7 +87,7 @@
             parser->dname_wire[parser->dname_size] = 0;
             parser->dname_size++;
         } else {
-            fprintf(stderr, "[zparser] error: line %d: domain name overflow\n",
+            ods_log_error("[zparser] error: line %d: domain name overflow",
                 parser->line);
             parser->totalerrors++;
             fhold; fgoto line;
@@ -120,14 +120,14 @@
         if (parser->dname_size < DNAME_MAXLEN) {
             parser->dname_wire[parser->dname_size] = 0;
         } else {
-            fprintf(stderr, "[zparser] line %d: domain name overflow\n",
+            ods_log_error("[zparser] line %d: domain name overflow",
                 parser->line);
             parser->totalerrors++;
             fhold; fgoto line;
         }
         while (1) {
             if (label_is_pointer(parser->label)) {
-                fprintf(stderr, "[zparser] line %d: domain has pointer label\n",
+                ods_log_error("[zparser] line %d: domain has pointer label",
                     parser->line);
                 parser->totalerrors++;
                 fhold; fgoto line;
@@ -152,7 +152,7 @@
             (sizeof(dname_type) +
             (parser->label_count + parser->dname_size) * sizeof(uint8_t)));
         if (!parser->dname) {
-            fprintf(stderr, "[zparser] line %d: domain create failed\n",
+            ods_log_error("[zparser] line %d: domain create failed",
                 parser->line);
             parser->totalerrors++;
             fhold; fgoto line;
@@ -165,10 +165,11 @@
             parser->dname_size * sizeof(uint8_t));
     }
     action zparser_dollar_origin {
+        char str[DNAME_MAXLEN*5]; /* all \DDD */
         parser->origin = parser->dname;
-        fprintf(stderr, "[zparser] line %d: origin ", parser->line);
-        dname_print(stderr, parser->origin);
-        fprintf(stderr, "\n");
+        dname_str(parser->origin, &str[0]);
+        ods_log_debug("[zparser] line %d: $ORIGIN set to %s", parser->line,
+            str);
     }
     # Actions: resource records.
     action zparser_rr_start {
@@ -216,8 +217,8 @@
         parser->rdbuf[parser->rdsize] = '\0';
         if (!zonec_rdata_add(parser->rr_region, &parser->current_rr,
             DNS_RDATA_IPV4, parser->rdbuf, parser->rdsize)) {
-            fprintf(stderr, "[zparser] error: line %d: bad IPv4 address "
-                "'%s'\n", parser->line, parser->rdbuf);
+            ods_log_error("[zparser] error: line %d: bad IPv4 address "
+                "'%s'", parser->line, parser->rdbuf);
             parser->totalerrors++;
             fhold; fgoto line;
         }
@@ -226,66 +227,66 @@
 
     # Errors.
     action zerror_digit {
-        fprintf(stderr, "[zparser] error: line %d: not a digit: %c\n",
+        ods_log_error("[zparser] error: line %d: not a digit: %c",
             parser->line, fc);
         parser->number = 0;
         fhold; fgoto line;
     }
     action zerror_entry {
-        fprintf(stderr, "[zparser] error: line %d: bad entry\n", parser->line);
+        ods_log_error("[zparser] error: line %d: bad entry", parser->line);
         parser->totalerrors++;
         fhold; fgoto line;
     }
     action zerror_dollar_origin {
-        fprintf(stderr, "[zparser] error: line %d: bad origin directive\n",
+        ods_log_error("[zparser] error: line %d: bad origin directive",
             parser->line);
         parser->totalerrors++;
         fhold; fgoto line;
     }
     action zerror_dollar_ttl {
-        fprintf(stderr, "[zparser] error: line %d: bad ttl directive\n",
+        ods_log_error("[zparser] error: line %d: bad ttl directive",
             parser->line);
         parser->totalerrors++;
         fhold; fgoto line;
     }
     action zerror_label_ddd {
-        fprintf(stderr, "[zparser] error: line %d: bad octet in label\n",
+        ods_log_error("[zparser] error: line %d: bad octet in label",
             parser->line);
         parser->totalerrors++;
         fhold; fgoto line;
     }
     action zerror_label_x {
-        fprintf(stderr, "[zparser] error: line %d: bad escape in label\n",
+        ods_log_error("[zparser] error: line %d: bad escape in label",
             parser->line);
         parser->totalerrors++;
         fhold; fgoto line;
     }
     action zerror_label_overflow {
-        fprintf(stderr, "[zparser] error: line %d: label overflow\n",
+        ods_log_error("[zparser] error: line %d: label overflow",
             parser->line);
         parser->totalerrors++;
         fhold; fgoto line;
     }
     action zerror_timeformat {
-        fprintf(stderr, "[zparser] error: line %d: ttl time format error\n",
+        ods_log_error("[zparser] error: line %d: ttl time format error",
             parser->line);
         parser->totalerrors++;
         fhold; fgoto line;
     }
     action zerror_rr {
-        fprintf(stderr, "[zparser] error: line %d: bad rr format\n",
+        ods_log_error("[zparser] error: line %d: bad rr format",
             parser->line);
         parser->totalerrors++;
         fhold; fgoto line;
     }
     action zerror_rr_typedata {
-        fprintf(stderr, "[zparser] error: line %d: bad rr typedata\n",
+        ods_log_error("[zparser] error: line %d: bad rr typedata",
             parser->line);
         parser->totalerrors++;
         fhold; fgoto line;
     }
     action zerror_rdata_ipv4 {
-        fprintf(stderr, "[zparser] error: line %d: bad IPv4 address format\n",
+        ods_log_error("[zparser] error: line %d: bad IPv4 address format",
             parser->line);
         parser->totalerrors++;
         fhold; fgoto line;
