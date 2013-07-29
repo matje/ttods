@@ -110,8 +110,8 @@ zparser_read_zone(zparser_type* parser, const char* file)
         return ODS_STATUS_FOPENERR;
     }
     r = read(fd, buf, MAX_BUFSIZE);
-    ods_log_debug("[%s] read %lu bytes.\n", logstr, r);
-    if (r > 0) {
+    while (r > 0) {
+        ods_log_debug("[%s] read %lu bytes.\n", logstr, r);
         int cs = 0;
         char* p = &buf[0];
         char* pe = p + r + 1;
@@ -119,6 +119,8 @@ zparser_read_zone(zparser_type* parser, const char* file)
 
         %% write init;
         %% write exec;
+
+        r = read(fd, buf, MAX_BUFSIZE);
     }
     close(fd);
     fflush(stdout);
