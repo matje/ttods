@@ -69,7 +69,7 @@ struct syslog_data sdata = SYSLOG_DATA_INIT;
    - check if xml-specific logging functions are still needed (enforcer)
 */
 
-#define MY_PACKAGE_TARNAME "ods-signerd"
+#define MY_PACKAGE_TARNAME "ttods-signerd"
 
 static const char* logstr = "log";
 
