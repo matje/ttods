@@ -423,3 +423,51 @@ void dname_print(FILE* fd, dname_type* dname)
     fprintf(fd, "%s", buf);
     return;
 }
+
+
+/**
+ * Print domain name.
+ *
+ */
+void dname_str(dname_type* dname, char* buf)
+{
+    size_t i;
+    size_t labels_to_convert;
+    char* dst;
+    const uint8_t* src;
+
+    if (!dname) {
+        return;
+    }
+    assert(dname->label_count > 0);
+    dst = buf;
+    if (dname->label_count == 1) {
+        *dst++ = '.';
+        *dst = '\0';
+        return;
+    }
+    labels_to_convert = dname->label_count - 1;
+    dst = buf;
+    src = dname_name(dname);
+    for (i = 0; i < labels_to_convert; ++i) {
+        size_t len = label_length(src);
+        size_t j;
+        ++src;
+        for (j = 0; j < len; ++j) {
+            uint8_t ch = *src++;
+            if (isalnum(ch) || ch == '-' || ch == '_') {
+                *dst++ = ch;
+            } else if (ch == '.' || ch == '\\' || ch == '(' || ch == ')'
+                || ch == ';') {
+                *dst++ = '\\';
+                *dst++ = ch;
+            } else {
+                snprintf(dst, 5, "\\%03u", (unsigned int)ch);
+                dst += 4;
+            }
+        }
+        *dst++ = '.';
+    }
+    *dst = '\0';
+    return;
+}

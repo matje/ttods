@@ -168,6 +168,14 @@ int dname_str2wire(uint8_t* wire, const char* name);
 void dname_print(FILE* fd, dname_type* dname);
 
 /**
+ * Convert domain name to human readable format.
+ * @param dname:       domain name.
+ * @param buf:         human readable format of dname.
+ *
+ */
+void dname_str(dname_type* dname, char* buf);
+
+/**
  * The total size (in bytes) allocated to store dname.
  * @param dname:       dname.
  * @return:            (size_t) total size in bytes of dname.
