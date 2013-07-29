@@ -116,6 +116,8 @@ zparser_read_zone(zparser_type* parser, const char* file)
         char* p = &buf[0];
         char* pe = p + r + 1;
         char* eof = NULL;
+
+        %% write init;
         %% write exec;
     }
     close(fd);
