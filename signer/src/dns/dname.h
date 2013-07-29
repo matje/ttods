@@ -58,6 +58,63 @@ struct dname_struct {
 };
 
 /**
+ * Is label normal (not a pointer or reserved)?
+ * @param label:       label.
+ * @return:            (int) 1 if label is normal, 0 if a pointer or reserved.
+ *
+ */
+int label_is_normal(const uint8_t* label);
+
+/**
+ * Is label a pointer?
+ * @param label:       label.
+ * @return:            (int) 1 if label is a pointer, 0 otherwise.
+ *
+ */
+int label_is_pointer(const uint8_t* label);
+
+/**
+ * Is label the root label?
+ * @param label:       label.
+ * @return:            (int) 1 if label is a root label, 0 otherwise.
+ *
+ */
+int label_is_root(const uint8_t* label);
+
+/**
+ * Length of label.
+ * @param label:       label.
+ * @return:            (uint8_t) label length.
+ *
+ */
+uint8_t label_length(const uint8_t* label);
+
+/**
+ * Data of label.
+ * @param label:       label.
+ * @return:            (const uint8_t*) label data.
+ *
+ */
+const uint8_t* label_data(const uint8_t* label);
+
+/**
+ * Get the next label.
+ * @param label:       label.
+ * @return:            (const uint8_t*) next label.
+ *
+ */
+const uint8_t* label_next(const uint8_t* label);
+
+/**
+ * Compare labels.
+ * @param label1:      one label.
+ * @param label2:      another label.
+ * @return:            0 if equal, <0 if label1 is smaller, >0 otherwise.
+ *
+ */
+int label_compare(const uint8_t* label1, const uint8_t* label2);
+
+/**
  * Create new domain name.
  * @param r:           memory region.
  * @param str:         presentation format.
@@ -76,60 +133,52 @@ dname_type* dname_create(region_type* r, const char* str);
 dname_type* dname_clone(region_type* r, const dname_type* dname);
 
 /**
+ * Compare domain names.
+ * @param dname1:      one domain name.
+ * @param dname2:      another domain name.
+ * @return:            0 if equal, <0 if dname1 is smaller, >0 otherwise.
+ *
+ */
+int dname_compare(dname_type* dname1, dname_type* dname2);
+
+/**
+ * Return label of domain name.
+ * @param dname:       domain name.
+ * @param i:           label index.
+ * @return:            (const uint8_t*) label.
+ *
+ */
+const uint8_t* dname_label(const dname_type* dname, uint8_t index);
+
+/**
  * Parse ascii string to wireformat domain name (without compression ptrs).
- * @param wire: wireformat domain name.
- * @param str:  ascii string.
- * @return:     0 on error, length of wireformat domain name otherwise.
+ * @param wire:        wireformat domain name.
+ * @param str:         ascii string.
+ * @return:            0 on error, length of wireformat domain name otherwise.
  *
  */
 int dname_str2wire(uint8_t* wire, const char* name);
 
 /**
  * Print domain name.
- * @param fd:    file descriptor.
- * @param dname: domain name.
+ * @param fd:          file descriptor.
+ * @param dname:       domain name.
  *
  */
 void dname_print(FILE* fd, dname_type* dname);
 
 /**
- * Is label normal (not a pointer or reserved)?
- *
- */
-int label_is_normal(const uint8_t* label);
-
-/**
- * Is label a pointer?
- *
- */
-int label_is_pointer(const uint8_t* label);
-
-/**
- * Is label the root label?
- *
- */
-int label_is_root(const uint8_t* label);
-
-/**
- * Length of label.
- *
- */
-uint8_t label_length(const uint8_t* label);
-
-/**
- * Get the next label.
- *
- */
-const uint8_t* label_next(const uint8_t* label);
-
-/**
  * The total size (in bytes) allocated to store dname.
+ * @param dname:       dname.
+ * @return:            (size_t) total size in bytes of dname.
  *
  */
 size_t dname_total_size(const dname_type* dname);
 
 /**
  * Offsets into dname for each label starting with the most significant label.
+ * @param dname:       dname.
+ * @return:            (const uint8_t*) offsets.
  *
  */
 const uint8_t* dname_label_offsets(const dname_type* dname);
@@ -137,6 +186,8 @@ const uint8_t* dname_label_offsets(const dname_type* dname);
 /**
  * The actual name in wire format (a sequence of label, each prefixed by a
  * length byte, terminated by a zero length label).
+ * @param dname:       dname.
+ * @return:            (const uint8_t*) actual name in wire format.
  *
  */
 const uint8_t* dname_name(const dname_type *dname);
