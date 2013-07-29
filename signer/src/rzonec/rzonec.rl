@@ -50,15 +50,13 @@ zparser_create()
 {
     zparser_type* parser;
     region_type* r = region_create();
-    region_type* rrr = region_create();
-    if (!r || !rrr) {
+    if (!r) {
         return NULL;
     }
     parser = (zparser_type*) region_alloc(r, sizeof(zparser_type));
     parser->tmp_rdata = (rdata_type*) region_alloc(r, DNS_RDATA_MAX *
         sizeof(rdata_type));
     parser->region = r;
-    parser->rr_region = rrr;
     parser->origin = NULL;
     parser->ttl = DEFAULT_TTL;
     parser->klass = DNS_CLASS_IN;
@@ -91,7 +89,6 @@ zparser_create()
 void
 zparser_cleanup(zparser_type* parser)
 {
-    region_cleanup(parser->rr_region);
     region_cleanup(parser->region);
     return;
 }
@@ -254,7 +251,6 @@ rzonec(int argc, char **argv)
 */
 
     region_log(parser->region, "global region");
-    region_log(parser->rr_region, "rr region");
 
     /* Cleanup the parser */
     zparser_cleanup(parser);

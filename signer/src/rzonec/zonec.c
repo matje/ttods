@@ -80,4 +80,3 @@ zonec_rdata_add(region_type* region, rr_type* rr, dns_rdata_format rdformat,
     rr->rdlen++;
     return 1;
 }
-

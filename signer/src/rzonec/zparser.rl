@@ -215,7 +215,7 @@
     }
     action zparser_rdata_ipv4 {
         parser->rdbuf[parser->rdsize] = '\0';
-        if (!zonec_rdata_add(parser->rr_region, &parser->current_rr,
+        if (!zonec_rdata_add(parser->region, &parser->current_rr,
             DNS_RDATA_IPV4, parser->rdbuf, parser->rdsize)) {
             ods_log_error("[zparser] error: line %d: bad IPv4 address "
                 "'%s'", parser->line, parser->rdbuf);
