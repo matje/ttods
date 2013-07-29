@@ -7,6 +7,7 @@
  *
  */
 
+#include "adapter/adfile.h"
 #include "dns/dname.h"
 #include "rzonec/rzonec.h"
 #include "util/log.h"

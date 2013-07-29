@@ -28,6 +28,7 @@ struct zparser {
     uint32_t klass;           /* zone class */
 
     unsigned int line;        /* number of lines */
+    unsigned int line_update; /* for debug printing */
     unsigned int comments;    /* number of comments */
     unsigned int numrrs;      /* number of rrs */
     unsigned int totalerrors; /* number of errors */

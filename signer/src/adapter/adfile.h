@@ -38,6 +38,7 @@
 #include "util/status.h"
 
 #define AD_FILE_MAXLINE 65535
+#define AD_LINE_INTERVAL 100000
 
 struct zone_struct;
 

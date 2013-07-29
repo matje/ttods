@@ -15,6 +15,10 @@
 
     # Actions: line parsing.
     action zparser_newline {
+        if (parser->line > parser->line_update) {
+            ods_log_debug("[zparser] ...at line %i", parser->line);
+            parser->line_update += AD_LINE_INTERVAL;
+        }
         parser->line++;
     }
     action zparser_comment {
