@@ -93,14 +93,12 @@ zone_create(char* name, ldns_rr_class klass)
         zone_cleanup(zone);
         return NULL;
     }
-/*
     zone->apex = dname_create(region, name);
     if (!zone->apex) {
         ods_log_crit("[%s] apex %s create failed", logstr, name);
         zone_cleanup(zone);
         return NULL;
     }
-*/
     zone->signconf = signconf_create(region);
     if (!zone->signconf) {
         ods_fatal_exit("[%s] create signconf failed", logstr);
