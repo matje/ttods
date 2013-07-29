@@ -58,31 +58,34 @@ struct zparser {
 
 /**
  * Create parser.
- * @return: (int) 1 on success, 0 on error.
+ * @return: (zparser_type*) parser.
  *
  */
-int zparser_create();
+zparser_type* zparser_create();
 
 /**
  * Cleanup parser.
+ * @param parser: parser.
  *
  */
-void zparser_cleanup(void);
+void zparser_cleanup(zparser_type* parser);
 
 /**
  * Process resource record.
+ * @param parser: parser.
  * @return: (int) status.
  *
  */
-int zparser_process_rr(void);
+int zparser_process_rr(zparser_type* parser);
 
 /**
  * Reads the specified zone into the memory.
+ * @param parser: parser.
  * @param file: file name.
  * @param:      (int) number of errors.
  *
  */
-int zparser_read_zone(const char* file);
+int zparser_read_zone(zparser_type* parser, const char* file);
 
 #endif /* RZONEC_RZONEC_H */
 

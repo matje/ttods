@@ -26,8 +26,6 @@
 #define MAX_BUFSIZE 1024
 #define DEFAULT_TTL 3600
 
-static zparser_type* parser;
-
 static const char* logstr = "rzonec";
 
 
@@ -36,7 +34,7 @@ static const char* logstr = "rzonec";
  *
  */
 
-#line 40 "rzonec.c"
+#line 38 "rzonec.c"
 static const int zparser_start = 810;
 static const int zparser_first_final = 810;
 static const int zparser_error = 0;
@@ -45,7 +43,7 @@ static const int zparser_en_line = 809;
 static const int zparser_en_main = 810;
 
 
-#line 42 "rzonec.rl"
+#line 40 "rzonec.rl"
 
 
 
@@ -53,13 +51,14 @@ static const int zparser_en_main = 810;
  * Create parser.
  *
  */
-int
+zparser_type*
 zparser_create()
 {
+    zparser_type* parser;
     region_type* r = region_create();
     region_type* rrr = region_create();
     if (!r || !rrr) {
-        return 0;
+        return NULL;
     }
     parser = (zparser_type*) region_alloc(r, sizeof(zparser_type));
     parser->tmp_rdata = (rdata_type*) region_alloc(r, DNS_RDATA_MAX *
@@ -87,7 +86,7 @@ zparser_create()
     parser->current_rr.klass = DNS_CLASS_IN;
     parser->current_rr.rdlen = 0;
     parser->current_rr.rdata = parser->tmp_rdata;
-    return 1;
+    return parser;
 }
 
 
@@ -96,11 +95,10 @@ zparser_create()
  *
  */
 void
-zparser_cleanup(void)
+zparser_cleanup(zparser_type* parser)
 {
     region_cleanup(parser->rr_region);
     region_cleanup(parser->region);
-    parser = NULL;
     return;
 }
 
@@ -110,7 +108,7 @@ zparser_cleanup(void)
  *
  */
 int
-zparser_read_zone(const char* file)
+zparser_read_zone(zparser_type* parser, const char* file)
 {
     char buf[MAX_BUFSIZE];
     ssize_t r;
@@ -122,19 +120,11 @@ zparser_read_zone(const char* file)
     ods_log_debug("[%s] read %lu bytes.\n", logstr, r);
     if (r > 0) {
         int cs = 0;
-/*        int res = 0; */
         char* p = &buf[0];
         char* pe = p + r + 1;
         char* eof = NULL;
         
-#line 131 "rzonec.c"
-	{
-	cs = zparser_start;
-	}
-
-#line 123 "rzonec.rl"
-        
-#line 138 "rzonec.c"
+#line 128 "rzonec.c"
 	{
 	if ( p == pe )
 		goto _test_eof;
@@ -155,7 +145,7 @@ tr154:
 #line 191 "zparser.rl"
 	{
         int i;
-        zparser_process_rr();
+        zparser_process_rr(parser);
         dname_print(stderr, parser->current_rr.owner);
         fprintf(stderr, "\t%u", parser->current_rr.ttl);
         fprintf(stderr, "\t");
@@ -275,7 +265,7 @@ st810:
 	if ( ++p == pe )
 		goto _test_eof810;
 case 810:
-#line 279 "rzonec.c"
+#line 269 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto st76;
 		case 10: goto tr159;
@@ -352,7 +342,7 @@ st1:
 	if ( ++p == pe )
 		goto _test_eof1;
 case 1:
-#line 356 "rzonec.c"
+#line 346 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -387,7 +377,7 @@ st2:
 	if ( ++p == pe )
 		goto _test_eof2;
 case 2:
-#line 391 "rzonec.c"
+#line 381 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -422,7 +412,7 @@ st3:
 	if ( ++p == pe )
 		goto _test_eof3;
 case 3:
-#line 426 "rzonec.c"
+#line 416 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -457,7 +447,7 @@ st4:
 	if ( ++p == pe )
 		goto _test_eof4;
 case 4:
-#line 461 "rzonec.c"
+#line 451 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -492,7 +482,7 @@ st5:
 	if ( ++p == pe )
 		goto _test_eof5;
 case 5:
-#line 496 "rzonec.c"
+#line 486 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -527,7 +517,7 @@ st6:
 	if ( ++p == pe )
 		goto _test_eof6;
 case 6:
-#line 531 "rzonec.c"
+#line 521 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -562,7 +552,7 @@ st7:
 	if ( ++p == pe )
 		goto _test_eof7;
 case 7:
-#line 566 "rzonec.c"
+#line 556 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -597,7 +587,7 @@ st8:
 	if ( ++p == pe )
 		goto _test_eof8;
 case 8:
-#line 601 "rzonec.c"
+#line 591 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -632,7 +622,7 @@ st9:
 	if ( ++p == pe )
 		goto _test_eof9;
 case 9:
-#line 636 "rzonec.c"
+#line 626 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -667,7 +657,7 @@ st10:
 	if ( ++p == pe )
 		goto _test_eof10;
 case 10:
-#line 671 "rzonec.c"
+#line 661 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -702,7 +692,7 @@ st11:
 	if ( ++p == pe )
 		goto _test_eof11;
 case 11:
-#line 706 "rzonec.c"
+#line 696 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -737,7 +727,7 @@ st12:
 	if ( ++p == pe )
 		goto _test_eof12;
 case 12:
-#line 741 "rzonec.c"
+#line 731 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -772,7 +762,7 @@ st13:
 	if ( ++p == pe )
 		goto _test_eof13;
 case 13:
-#line 776 "rzonec.c"
+#line 766 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -807,7 +797,7 @@ st14:
 	if ( ++p == pe )
 		goto _test_eof14;
 case 14:
-#line 811 "rzonec.c"
+#line 801 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -842,7 +832,7 @@ st15:
 	if ( ++p == pe )
 		goto _test_eof15;
 case 15:
-#line 846 "rzonec.c"
+#line 836 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -877,7 +867,7 @@ st16:
 	if ( ++p == pe )
 		goto _test_eof16;
 case 16:
-#line 881 "rzonec.c"
+#line 871 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -912,7 +902,7 @@ st17:
 	if ( ++p == pe )
 		goto _test_eof17;
 case 17:
-#line 916 "rzonec.c"
+#line 906 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -947,7 +937,7 @@ st18:
 	if ( ++p == pe )
 		goto _test_eof18;
 case 18:
-#line 951 "rzonec.c"
+#line 941 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -982,7 +972,7 @@ st19:
 	if ( ++p == pe )
 		goto _test_eof19;
 case 19:
-#line 986 "rzonec.c"
+#line 976 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -1017,7 +1007,7 @@ st20:
 	if ( ++p == pe )
 		goto _test_eof20;
 case 20:
-#line 1021 "rzonec.c"
+#line 1011 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -1052,7 +1042,7 @@ st21:
 	if ( ++p == pe )
 		goto _test_eof21;
 case 21:
-#line 1056 "rzonec.c"
+#line 1046 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -1087,7 +1077,7 @@ st22:
 	if ( ++p == pe )
 		goto _test_eof22;
 case 22:
-#line 1091 "rzonec.c"
+#line 1081 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -1122,7 +1112,7 @@ st23:
 	if ( ++p == pe )
 		goto _test_eof23;
 case 23:
-#line 1126 "rzonec.c"
+#line 1116 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -1157,7 +1147,7 @@ st24:
 	if ( ++p == pe )
 		goto _test_eof24;
 case 24:
-#line 1161 "rzonec.c"
+#line 1151 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -1192,7 +1182,7 @@ st25:
 	if ( ++p == pe )
 		goto _test_eof25;
 case 25:
-#line 1196 "rzonec.c"
+#line 1186 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -1227,7 +1217,7 @@ st26:
 	if ( ++p == pe )
 		goto _test_eof26;
 case 26:
-#line 1231 "rzonec.c"
+#line 1221 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -1262,7 +1252,7 @@ st27:
 	if ( ++p == pe )
 		goto _test_eof27;
 case 27:
-#line 1266 "rzonec.c"
+#line 1256 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -1297,7 +1287,7 @@ st28:
 	if ( ++p == pe )
 		goto _test_eof28;
 case 28:
-#line 1301 "rzonec.c"
+#line 1291 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -1332,7 +1322,7 @@ st29:
 	if ( ++p == pe )
 		goto _test_eof29;
 case 29:
-#line 1336 "rzonec.c"
+#line 1326 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -1367,7 +1357,7 @@ st30:
 	if ( ++p == pe )
 		goto _test_eof30;
 case 30:
-#line 1371 "rzonec.c"
+#line 1361 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -1402,7 +1392,7 @@ st31:
 	if ( ++p == pe )
 		goto _test_eof31;
 case 31:
-#line 1406 "rzonec.c"
+#line 1396 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -1437,7 +1427,7 @@ st32:
 	if ( ++p == pe )
 		goto _test_eof32;
 case 32:
-#line 1441 "rzonec.c"
+#line 1431 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -1472,7 +1462,7 @@ st33:
 	if ( ++p == pe )
 		goto _test_eof33;
 case 33:
-#line 1476 "rzonec.c"
+#line 1466 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -1507,7 +1497,7 @@ st34:
 	if ( ++p == pe )
 		goto _test_eof34;
 case 34:
-#line 1511 "rzonec.c"
+#line 1501 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -1542,7 +1532,7 @@ st35:
 	if ( ++p == pe )
 		goto _test_eof35;
 case 35:
-#line 1546 "rzonec.c"
+#line 1536 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -1577,7 +1567,7 @@ st36:
 	if ( ++p == pe )
 		goto _test_eof36;
 case 36:
-#line 1581 "rzonec.c"
+#line 1571 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -1612,7 +1602,7 @@ st37:
 	if ( ++p == pe )
 		goto _test_eof37;
 case 37:
-#line 1616 "rzonec.c"
+#line 1606 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -1647,7 +1637,7 @@ st38:
 	if ( ++p == pe )
 		goto _test_eof38;
 case 38:
-#line 1651 "rzonec.c"
+#line 1641 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -1682,7 +1672,7 @@ st39:
 	if ( ++p == pe )
 		goto _test_eof39;
 case 39:
-#line 1686 "rzonec.c"
+#line 1676 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -1717,7 +1707,7 @@ st40:
 	if ( ++p == pe )
 		goto _test_eof40;
 case 40:
-#line 1721 "rzonec.c"
+#line 1711 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -1752,7 +1742,7 @@ st41:
 	if ( ++p == pe )
 		goto _test_eof41;
 case 41:
-#line 1756 "rzonec.c"
+#line 1746 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -1787,7 +1777,7 @@ st42:
 	if ( ++p == pe )
 		goto _test_eof42;
 case 42:
-#line 1791 "rzonec.c"
+#line 1781 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -1822,7 +1812,7 @@ st43:
 	if ( ++p == pe )
 		goto _test_eof43;
 case 43:
-#line 1826 "rzonec.c"
+#line 1816 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -1857,7 +1847,7 @@ st44:
 	if ( ++p == pe )
 		goto _test_eof44;
 case 44:
-#line 1861 "rzonec.c"
+#line 1851 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -1892,7 +1882,7 @@ st45:
 	if ( ++p == pe )
 		goto _test_eof45;
 case 45:
-#line 1896 "rzonec.c"
+#line 1886 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -1927,7 +1917,7 @@ st46:
 	if ( ++p == pe )
 		goto _test_eof46;
 case 46:
-#line 1931 "rzonec.c"
+#line 1921 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -1962,7 +1952,7 @@ st47:
 	if ( ++p == pe )
 		goto _test_eof47;
 case 47:
-#line 1966 "rzonec.c"
+#line 1956 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -1997,7 +1987,7 @@ st48:
 	if ( ++p == pe )
 		goto _test_eof48;
 case 48:
-#line 2001 "rzonec.c"
+#line 1991 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -2032,7 +2022,7 @@ st49:
 	if ( ++p == pe )
 		goto _test_eof49;
 case 49:
-#line 2036 "rzonec.c"
+#line 2026 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -2067,7 +2057,7 @@ st50:
 	if ( ++p == pe )
 		goto _test_eof50;
 case 50:
-#line 2071 "rzonec.c"
+#line 2061 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -2102,7 +2092,7 @@ st51:
 	if ( ++p == pe )
 		goto _test_eof51;
 case 51:
-#line 2106 "rzonec.c"
+#line 2096 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -2137,7 +2127,7 @@ st52:
 	if ( ++p == pe )
 		goto _test_eof52;
 case 52:
-#line 2141 "rzonec.c"
+#line 2131 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -2172,7 +2162,7 @@ st53:
 	if ( ++p == pe )
 		goto _test_eof53;
 case 53:
-#line 2176 "rzonec.c"
+#line 2166 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -2207,7 +2197,7 @@ st54:
 	if ( ++p == pe )
 		goto _test_eof54;
 case 54:
-#line 2211 "rzonec.c"
+#line 2201 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -2242,7 +2232,7 @@ st55:
 	if ( ++p == pe )
 		goto _test_eof55;
 case 55:
-#line 2246 "rzonec.c"
+#line 2236 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -2277,7 +2267,7 @@ st56:
 	if ( ++p == pe )
 		goto _test_eof56;
 case 56:
-#line 2281 "rzonec.c"
+#line 2271 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -2312,7 +2302,7 @@ st57:
 	if ( ++p == pe )
 		goto _test_eof57;
 case 57:
-#line 2316 "rzonec.c"
+#line 2306 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -2347,7 +2337,7 @@ st58:
 	if ( ++p == pe )
 		goto _test_eof58;
 case 58:
-#line 2351 "rzonec.c"
+#line 2341 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -2382,7 +2372,7 @@ st59:
 	if ( ++p == pe )
 		goto _test_eof59;
 case 59:
-#line 2386 "rzonec.c"
+#line 2376 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -2417,7 +2407,7 @@ st60:
 	if ( ++p == pe )
 		goto _test_eof60;
 case 60:
-#line 2421 "rzonec.c"
+#line 2411 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -2452,7 +2442,7 @@ st61:
 	if ( ++p == pe )
 		goto _test_eof61;
 case 61:
-#line 2456 "rzonec.c"
+#line 2446 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -2487,7 +2477,7 @@ st62:
 	if ( ++p == pe )
 		goto _test_eof62;
 case 62:
-#line 2491 "rzonec.c"
+#line 2481 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -2522,7 +2512,7 @@ st63:
 	if ( ++p == pe )
 		goto _test_eof63;
 case 63:
-#line 2526 "rzonec.c"
+#line 2516 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -2904,7 +2894,7 @@ tr852:
         p--; {goto st809;}
     }
 	goto st0;
-#line 2908 "rzonec.c"
+#line 2898 "rzonec.c"
 st0:
 cs = 0;
 	goto _out;
@@ -3037,7 +3027,7 @@ st64:
 	if ( ++p == pe )
 		goto _test_eof64;
 case 64:
-#line 3041 "rzonec.c"
+#line 3031 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto st64;
 		case 32: goto st64;
@@ -3070,7 +3060,7 @@ st65:
 	if ( ++p == pe )
 		goto _test_eof65;
 case 65:
-#line 3074 "rzonec.c"
+#line 3064 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr133;
 		case 32: goto tr133;
@@ -3099,7 +3089,7 @@ st66:
 	if ( ++p == pe )
 		goto _test_eof66;
 case 66:
-#line 3103 "rzonec.c"
+#line 3093 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto st66;
 		case 32: goto st66;
@@ -3123,7 +3113,7 @@ st67:
 	if ( ++p == pe )
 		goto _test_eof67;
 case 67:
-#line 3127 "rzonec.c"
+#line 3117 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr139;
 		case 32: goto tr139;
@@ -3137,7 +3127,7 @@ st68:
 	if ( ++p == pe )
 		goto _test_eof68;
 case 68:
-#line 3141 "rzonec.c"
+#line 3131 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto st68;
 		case 32: goto st68;
@@ -3161,7 +3151,7 @@ st69:
 	if ( ++p == pe )
 		goto _test_eof69;
 case 69:
-#line 3165 "rzonec.c"
+#line 3155 "rzonec.c"
 	if ( (*p) == 46 )
 		goto tr143;
 	if ( 48 <= (*p) && (*p) <= 57 )
@@ -3178,7 +3168,7 @@ st70:
 	if ( ++p == pe )
 		goto _test_eof70;
 case 70:
-#line 3182 "rzonec.c"
+#line 3172 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 57 )
 		goto tr145;
 	goto tr140;
@@ -3193,7 +3183,7 @@ st71:
 	if ( ++p == pe )
 		goto _test_eof71;
 case 71:
-#line 3197 "rzonec.c"
+#line 3187 "rzonec.c"
 	if ( (*p) == 46 )
 		goto tr146;
 	if ( 48 <= (*p) && (*p) <= 57 )
@@ -3210,7 +3200,7 @@ st72:
 	if ( ++p == pe )
 		goto _test_eof72;
 case 72:
-#line 3214 "rzonec.c"
+#line 3204 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 57 )
 		goto tr148;
 	goto tr140;
@@ -3225,7 +3215,7 @@ st73:
 	if ( ++p == pe )
 		goto _test_eof73;
 case 73:
-#line 3229 "rzonec.c"
+#line 3219 "rzonec.c"
 	if ( (*p) == 46 )
 		goto tr149;
 	if ( 48 <= (*p) && (*p) <= 57 )
@@ -3242,7 +3232,7 @@ st74:
 	if ( ++p == pe )
 		goto _test_eof74;
 case 74:
-#line 3246 "rzonec.c"
+#line 3236 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 57 )
 		goto tr151;
 	goto tr140;
@@ -3257,7 +3247,7 @@ st75:
 	if ( ++p == pe )
 		goto _test_eof75;
 case 75:
-#line 3261 "rzonec.c"
+#line 3251 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr153;
 		case 10: goto tr154;
@@ -3282,7 +3272,7 @@ tr153:
 #line 191 "zparser.rl"
 	{
         int i;
-        zparser_process_rr();
+        zparser_process_rr(parser);
         dname_print(stderr, parser->current_rr.owner);
         fprintf(stderr, "\t%u", parser->current_rr.ttl);
         fprintf(stderr, "\t");
@@ -3374,7 +3364,7 @@ st76:
 	if ( ++p == pe )
 		goto _test_eof76;
 case 76:
-#line 3378 "rzonec.c"
+#line 3368 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto st76;
 		case 10: goto tr159;
@@ -3397,7 +3387,7 @@ tr156:
 #line 191 "zparser.rl"
 	{
         int i;
-        zparser_process_rr();
+        zparser_process_rr(parser);
         dname_print(stderr, parser->current_rr.owner);
         fprintf(stderr, "\t%u", parser->current_rr.ttl);
         fprintf(stderr, "\t");
@@ -3489,7 +3479,7 @@ st77:
 	if ( ++p == pe )
 		goto _test_eof77;
 case 77:
-#line 3493 "rzonec.c"
+#line 3483 "rzonec.c"
 	if ( (*p) == 10 )
 		goto tr162;
 	goto tr161;
@@ -3503,7 +3493,7 @@ st78:
 	if ( ++p == pe )
 		goto _test_eof78;
 case 78:
-#line 3507 "rzonec.c"
+#line 3497 "rzonec.c"
 	if ( (*p) == 10 )
 		goto tr159;
 	goto st78;
@@ -3518,7 +3508,7 @@ st79:
 	if ( ++p == pe )
 		goto _test_eof79;
 case 79:
-#line 3522 "rzonec.c"
+#line 3512 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr153;
 		case 10: goto tr154;
@@ -3539,7 +3529,7 @@ st80:
 	if ( ++p == pe )
 		goto _test_eof80;
 case 80:
-#line 3543 "rzonec.c"
+#line 3533 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr153;
 		case 10: goto tr154;
@@ -3558,7 +3548,7 @@ st81:
 	if ( ++p == pe )
 		goto _test_eof81;
 case 81:
-#line 3562 "rzonec.c"
+#line 3552 "rzonec.c"
 	if ( (*p) == 46 )
 		goto tr149;
 	if ( 48 <= (*p) && (*p) <= 57 )
@@ -3575,7 +3565,7 @@ st82:
 	if ( ++p == pe )
 		goto _test_eof82;
 case 82:
-#line 3579 "rzonec.c"
+#line 3569 "rzonec.c"
 	if ( (*p) == 46 )
 		goto tr149;
 	goto tr140;
@@ -3590,7 +3580,7 @@ st83:
 	if ( ++p == pe )
 		goto _test_eof83;
 case 83:
-#line 3594 "rzonec.c"
+#line 3584 "rzonec.c"
 	if ( (*p) == 46 )
 		goto tr146;
 	if ( 48 <= (*p) && (*p) <= 57 )
@@ -3607,7 +3597,7 @@ st84:
 	if ( ++p == pe )
 		goto _test_eof84;
 case 84:
-#line 3611 "rzonec.c"
+#line 3601 "rzonec.c"
 	if ( (*p) == 46 )
 		goto tr146;
 	goto tr140;
@@ -3622,7 +3612,7 @@ st85:
 	if ( ++p == pe )
 		goto _test_eof85;
 case 85:
-#line 3626 "rzonec.c"
+#line 3616 "rzonec.c"
 	if ( (*p) == 46 )
 		goto tr143;
 	if ( 48 <= (*p) && (*p) <= 57 )
@@ -3639,7 +3629,7 @@ st86:
 	if ( ++p == pe )
 		goto _test_eof86;
 case 86:
-#line 3643 "rzonec.c"
+#line 3633 "rzonec.c"
 	if ( (*p) == 46 )
 		goto tr143;
 	goto tr140;
@@ -3653,7 +3643,7 @@ st87:
 	if ( ++p == pe )
 		goto _test_eof87;
 case 87:
-#line 3657 "rzonec.c"
+#line 3647 "rzonec.c"
 	if ( (*p) == 78 )
 		goto st88;
 	goto tr168;
@@ -3709,7 +3699,7 @@ st90:
 	if ( ++p == pe )
 		goto _test_eof90;
 case 90:
-#line 3713 "rzonec.c"
+#line 3703 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr133;
 		case 32: goto tr133;
@@ -3772,7 +3762,7 @@ st94:
 	if ( ++p == pe )
 		goto _test_eof94;
 case 94:
-#line 3776 "rzonec.c"
+#line 3766 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr175;
 		case 32: goto tr175;
@@ -3801,7 +3791,7 @@ st95:
 	if ( ++p == pe )
 		goto _test_eof95;
 case 95:
-#line 3805 "rzonec.c"
+#line 3795 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto st95;
 		case 32: goto st95;
@@ -3841,7 +3831,7 @@ st96:
 	if ( ++p == pe )
 		goto _test_eof96;
 case 96:
-#line 3845 "rzonec.c"
+#line 3835 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr175;
 		case 32: goto tr175;
@@ -3860,7 +3850,7 @@ st97:
 	if ( ++p == pe )
 		goto _test_eof97;
 case 97:
-#line 3864 "rzonec.c"
+#line 3854 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr180;
 		case 32: goto tr180;
@@ -3912,7 +3902,7 @@ st98:
 	if ( ++p == pe )
 		goto _test_eof98;
 case 98:
-#line 3916 "rzonec.c"
+#line 3906 "rzonec.c"
 	if ( (*p) > 55 ) {
 		if ( 56 <= (*p) && (*p) <= 57 )
 			goto tr184;
@@ -3937,7 +3927,7 @@ st99:
 	if ( ++p == pe )
 		goto _test_eof99;
 case 99:
-#line 3941 "rzonec.c"
+#line 3931 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -3982,7 +3972,7 @@ st101:
 	if ( ++p == pe )
 		goto _test_eof101;
 case 101:
-#line 3986 "rzonec.c"
+#line 3976 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -4027,7 +4017,7 @@ st103:
 	if ( ++p == pe )
 		goto _test_eof103;
 case 103:
-#line 4031 "rzonec.c"
+#line 4021 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -4072,7 +4062,7 @@ st105:
 	if ( ++p == pe )
 		goto _test_eof105;
 case 105:
-#line 4076 "rzonec.c"
+#line 4066 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -4117,7 +4107,7 @@ st107:
 	if ( ++p == pe )
 		goto _test_eof107;
 case 107:
-#line 4121 "rzonec.c"
+#line 4111 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -4162,7 +4152,7 @@ st109:
 	if ( ++p == pe )
 		goto _test_eof109;
 case 109:
-#line 4166 "rzonec.c"
+#line 4156 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -4207,7 +4197,7 @@ st111:
 	if ( ++p == pe )
 		goto _test_eof111;
 case 111:
-#line 4211 "rzonec.c"
+#line 4201 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -4252,7 +4242,7 @@ st113:
 	if ( ++p == pe )
 		goto _test_eof113;
 case 113:
-#line 4256 "rzonec.c"
+#line 4246 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -4297,7 +4287,7 @@ st115:
 	if ( ++p == pe )
 		goto _test_eof115;
 case 115:
-#line 4301 "rzonec.c"
+#line 4291 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -4342,7 +4332,7 @@ st117:
 	if ( ++p == pe )
 		goto _test_eof117;
 case 117:
-#line 4346 "rzonec.c"
+#line 4336 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -4387,7 +4377,7 @@ st119:
 	if ( ++p == pe )
 		goto _test_eof119;
 case 119:
-#line 4391 "rzonec.c"
+#line 4381 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -4432,7 +4422,7 @@ st121:
 	if ( ++p == pe )
 		goto _test_eof121;
 case 121:
-#line 4436 "rzonec.c"
+#line 4426 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -4477,7 +4467,7 @@ st123:
 	if ( ++p == pe )
 		goto _test_eof123;
 case 123:
-#line 4481 "rzonec.c"
+#line 4471 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -4522,7 +4512,7 @@ st125:
 	if ( ++p == pe )
 		goto _test_eof125;
 case 125:
-#line 4526 "rzonec.c"
+#line 4516 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -4567,7 +4557,7 @@ st127:
 	if ( ++p == pe )
 		goto _test_eof127;
 case 127:
-#line 4571 "rzonec.c"
+#line 4561 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -4612,7 +4602,7 @@ st129:
 	if ( ++p == pe )
 		goto _test_eof129;
 case 129:
-#line 4616 "rzonec.c"
+#line 4606 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -4657,7 +4647,7 @@ st131:
 	if ( ++p == pe )
 		goto _test_eof131;
 case 131:
-#line 4661 "rzonec.c"
+#line 4651 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -4702,7 +4692,7 @@ st133:
 	if ( ++p == pe )
 		goto _test_eof133;
 case 133:
-#line 4706 "rzonec.c"
+#line 4696 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -4747,7 +4737,7 @@ st135:
 	if ( ++p == pe )
 		goto _test_eof135;
 case 135:
-#line 4751 "rzonec.c"
+#line 4741 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -4792,7 +4782,7 @@ st137:
 	if ( ++p == pe )
 		goto _test_eof137;
 case 137:
-#line 4796 "rzonec.c"
+#line 4786 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -4837,7 +4827,7 @@ st139:
 	if ( ++p == pe )
 		goto _test_eof139;
 case 139:
-#line 4841 "rzonec.c"
+#line 4831 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -4882,7 +4872,7 @@ st141:
 	if ( ++p == pe )
 		goto _test_eof141;
 case 141:
-#line 4886 "rzonec.c"
+#line 4876 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -4927,7 +4917,7 @@ st143:
 	if ( ++p == pe )
 		goto _test_eof143;
 case 143:
-#line 4931 "rzonec.c"
+#line 4921 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -4972,7 +4962,7 @@ st145:
 	if ( ++p == pe )
 		goto _test_eof145;
 case 145:
-#line 4976 "rzonec.c"
+#line 4966 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -5017,7 +5007,7 @@ st147:
 	if ( ++p == pe )
 		goto _test_eof147;
 case 147:
-#line 5021 "rzonec.c"
+#line 5011 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -5062,7 +5052,7 @@ st149:
 	if ( ++p == pe )
 		goto _test_eof149;
 case 149:
-#line 5066 "rzonec.c"
+#line 5056 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -5107,7 +5097,7 @@ st151:
 	if ( ++p == pe )
 		goto _test_eof151;
 case 151:
-#line 5111 "rzonec.c"
+#line 5101 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -5152,7 +5142,7 @@ st153:
 	if ( ++p == pe )
 		goto _test_eof153;
 case 153:
-#line 5156 "rzonec.c"
+#line 5146 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -5197,7 +5187,7 @@ st155:
 	if ( ++p == pe )
 		goto _test_eof155;
 case 155:
-#line 5201 "rzonec.c"
+#line 5191 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -5242,7 +5232,7 @@ st157:
 	if ( ++p == pe )
 		goto _test_eof157;
 case 157:
-#line 5246 "rzonec.c"
+#line 5236 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -5287,7 +5277,7 @@ st159:
 	if ( ++p == pe )
 		goto _test_eof159;
 case 159:
-#line 5291 "rzonec.c"
+#line 5281 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -5332,7 +5322,7 @@ st161:
 	if ( ++p == pe )
 		goto _test_eof161;
 case 161:
-#line 5336 "rzonec.c"
+#line 5326 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -5377,7 +5367,7 @@ st163:
 	if ( ++p == pe )
 		goto _test_eof163;
 case 163:
-#line 5381 "rzonec.c"
+#line 5371 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -5422,7 +5412,7 @@ st165:
 	if ( ++p == pe )
 		goto _test_eof165;
 case 165:
-#line 5426 "rzonec.c"
+#line 5416 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -5467,7 +5457,7 @@ st167:
 	if ( ++p == pe )
 		goto _test_eof167;
 case 167:
-#line 5471 "rzonec.c"
+#line 5461 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -5512,7 +5502,7 @@ st169:
 	if ( ++p == pe )
 		goto _test_eof169;
 case 169:
-#line 5516 "rzonec.c"
+#line 5506 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -5557,7 +5547,7 @@ st171:
 	if ( ++p == pe )
 		goto _test_eof171;
 case 171:
-#line 5561 "rzonec.c"
+#line 5551 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -5602,7 +5592,7 @@ st173:
 	if ( ++p == pe )
 		goto _test_eof173;
 case 173:
-#line 5606 "rzonec.c"
+#line 5596 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -5647,7 +5637,7 @@ st175:
 	if ( ++p == pe )
 		goto _test_eof175;
 case 175:
-#line 5651 "rzonec.c"
+#line 5641 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -5692,7 +5682,7 @@ st177:
 	if ( ++p == pe )
 		goto _test_eof177;
 case 177:
-#line 5696 "rzonec.c"
+#line 5686 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -5737,7 +5727,7 @@ st179:
 	if ( ++p == pe )
 		goto _test_eof179;
 case 179:
-#line 5741 "rzonec.c"
+#line 5731 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -5782,7 +5772,7 @@ st181:
 	if ( ++p == pe )
 		goto _test_eof181;
 case 181:
-#line 5786 "rzonec.c"
+#line 5776 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -5827,7 +5817,7 @@ st183:
 	if ( ++p == pe )
 		goto _test_eof183;
 case 183:
-#line 5831 "rzonec.c"
+#line 5821 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -5872,7 +5862,7 @@ st185:
 	if ( ++p == pe )
 		goto _test_eof185;
 case 185:
-#line 5876 "rzonec.c"
+#line 5866 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -5917,7 +5907,7 @@ st187:
 	if ( ++p == pe )
 		goto _test_eof187;
 case 187:
-#line 5921 "rzonec.c"
+#line 5911 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -5962,7 +5952,7 @@ st189:
 	if ( ++p == pe )
 		goto _test_eof189;
 case 189:
-#line 5966 "rzonec.c"
+#line 5956 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -6007,7 +5997,7 @@ st191:
 	if ( ++p == pe )
 		goto _test_eof191;
 case 191:
-#line 6011 "rzonec.c"
+#line 6001 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -6052,7 +6042,7 @@ st193:
 	if ( ++p == pe )
 		goto _test_eof193;
 case 193:
-#line 6056 "rzonec.c"
+#line 6046 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -6097,7 +6087,7 @@ st195:
 	if ( ++p == pe )
 		goto _test_eof195;
 case 195:
-#line 6101 "rzonec.c"
+#line 6091 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -6142,7 +6132,7 @@ st197:
 	if ( ++p == pe )
 		goto _test_eof197;
 case 197:
-#line 6146 "rzonec.c"
+#line 6136 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -6187,7 +6177,7 @@ st199:
 	if ( ++p == pe )
 		goto _test_eof199;
 case 199:
-#line 6191 "rzonec.c"
+#line 6181 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -6232,7 +6222,7 @@ st201:
 	if ( ++p == pe )
 		goto _test_eof201;
 case 201:
-#line 6236 "rzonec.c"
+#line 6226 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -6277,7 +6267,7 @@ st203:
 	if ( ++p == pe )
 		goto _test_eof203;
 case 203:
-#line 6281 "rzonec.c"
+#line 6271 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -6322,7 +6312,7 @@ st205:
 	if ( ++p == pe )
 		goto _test_eof205;
 case 205:
-#line 6326 "rzonec.c"
+#line 6316 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -6367,7 +6357,7 @@ st207:
 	if ( ++p == pe )
 		goto _test_eof207;
 case 207:
-#line 6371 "rzonec.c"
+#line 6361 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -6412,7 +6402,7 @@ st209:
 	if ( ++p == pe )
 		goto _test_eof209;
 case 209:
-#line 6416 "rzonec.c"
+#line 6406 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -6457,7 +6447,7 @@ st211:
 	if ( ++p == pe )
 		goto _test_eof211;
 case 211:
-#line 6461 "rzonec.c"
+#line 6451 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -6502,7 +6492,7 @@ st213:
 	if ( ++p == pe )
 		goto _test_eof213;
 case 213:
-#line 6506 "rzonec.c"
+#line 6496 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -6547,7 +6537,7 @@ st215:
 	if ( ++p == pe )
 		goto _test_eof215;
 case 215:
-#line 6551 "rzonec.c"
+#line 6541 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -6592,7 +6582,7 @@ st217:
 	if ( ++p == pe )
 		goto _test_eof217;
 case 217:
-#line 6596 "rzonec.c"
+#line 6586 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -6637,7 +6627,7 @@ st219:
 	if ( ++p == pe )
 		goto _test_eof219;
 case 219:
-#line 6641 "rzonec.c"
+#line 6631 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -6682,7 +6672,7 @@ st221:
 	if ( ++p == pe )
 		goto _test_eof221;
 case 221:
-#line 6686 "rzonec.c"
+#line 6676 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -6727,7 +6717,7 @@ st223:
 	if ( ++p == pe )
 		goto _test_eof223;
 case 223:
-#line 6731 "rzonec.c"
+#line 6721 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -6757,7 +6747,7 @@ st224:
 	if ( ++p == pe )
 		goto _test_eof224;
 case 224:
-#line 6761 "rzonec.c"
+#line 6751 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr311;
 	goto tr310;
@@ -6772,7 +6762,7 @@ st225:
 	if ( ++p == pe )
 		goto _test_eof225;
 case 225:
-#line 6776 "rzonec.c"
+#line 6766 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr312;
 	goto tr310;
@@ -6787,7 +6777,7 @@ st226:
 	if ( ++p == pe )
 		goto _test_eof226;
 case 226:
-#line 6791 "rzonec.c"
+#line 6781 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -6817,7 +6807,7 @@ st227:
 	if ( ++p == pe )
 		goto _test_eof227;
 case 227:
-#line 6821 "rzonec.c"
+#line 6811 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr313;
 	goto tr310;
@@ -6832,7 +6822,7 @@ st228:
 	if ( ++p == pe )
 		goto _test_eof228;
 case 228:
-#line 6836 "rzonec.c"
+#line 6826 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr314;
 	goto tr310;
@@ -6847,7 +6837,7 @@ st229:
 	if ( ++p == pe )
 		goto _test_eof229;
 case 229:
-#line 6851 "rzonec.c"
+#line 6841 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -6887,7 +6877,7 @@ st230:
 	if ( ++p == pe )
 		goto _test_eof230;
 case 230:
-#line 6891 "rzonec.c"
+#line 6881 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr315;
 	goto tr310;
@@ -6902,7 +6892,7 @@ st231:
 	if ( ++p == pe )
 		goto _test_eof231;
 case 231:
-#line 6906 "rzonec.c"
+#line 6896 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr316;
 	goto tr310;
@@ -6917,7 +6907,7 @@ st232:
 	if ( ++p == pe )
 		goto _test_eof232;
 case 232:
-#line 6921 "rzonec.c"
+#line 6911 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -6957,7 +6947,7 @@ st233:
 	if ( ++p == pe )
 		goto _test_eof233;
 case 233:
-#line 6961 "rzonec.c"
+#line 6951 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr317;
 	goto tr310;
@@ -6972,7 +6962,7 @@ st234:
 	if ( ++p == pe )
 		goto _test_eof234;
 case 234:
-#line 6976 "rzonec.c"
+#line 6966 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr318;
 	goto tr310;
@@ -6987,7 +6977,7 @@ st235:
 	if ( ++p == pe )
 		goto _test_eof235;
 case 235:
-#line 6991 "rzonec.c"
+#line 6981 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -7027,7 +7017,7 @@ st236:
 	if ( ++p == pe )
 		goto _test_eof236;
 case 236:
-#line 7031 "rzonec.c"
+#line 7021 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr319;
 	goto tr310;
@@ -7042,7 +7032,7 @@ st237:
 	if ( ++p == pe )
 		goto _test_eof237;
 case 237:
-#line 7046 "rzonec.c"
+#line 7036 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr320;
 	goto tr310;
@@ -7057,7 +7047,7 @@ st238:
 	if ( ++p == pe )
 		goto _test_eof238;
 case 238:
-#line 7061 "rzonec.c"
+#line 7051 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -7097,7 +7087,7 @@ st239:
 	if ( ++p == pe )
 		goto _test_eof239;
 case 239:
-#line 7101 "rzonec.c"
+#line 7091 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr321;
 	goto tr310;
@@ -7112,7 +7102,7 @@ st240:
 	if ( ++p == pe )
 		goto _test_eof240;
 case 240:
-#line 7116 "rzonec.c"
+#line 7106 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr322;
 	goto tr310;
@@ -7127,7 +7117,7 @@ st241:
 	if ( ++p == pe )
 		goto _test_eof241;
 case 241:
-#line 7131 "rzonec.c"
+#line 7121 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -7167,7 +7157,7 @@ st242:
 	if ( ++p == pe )
 		goto _test_eof242;
 case 242:
-#line 7171 "rzonec.c"
+#line 7161 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr323;
 	goto tr310;
@@ -7182,7 +7172,7 @@ st243:
 	if ( ++p == pe )
 		goto _test_eof243;
 case 243:
-#line 7186 "rzonec.c"
+#line 7176 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr324;
 	goto tr310;
@@ -7197,7 +7187,7 @@ st244:
 	if ( ++p == pe )
 		goto _test_eof244;
 case 244:
-#line 7201 "rzonec.c"
+#line 7191 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -7237,7 +7227,7 @@ st245:
 	if ( ++p == pe )
 		goto _test_eof245;
 case 245:
-#line 7241 "rzonec.c"
+#line 7231 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr325;
 	goto tr310;
@@ -7252,7 +7242,7 @@ st246:
 	if ( ++p == pe )
 		goto _test_eof246;
 case 246:
-#line 7256 "rzonec.c"
+#line 7246 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr326;
 	goto tr310;
@@ -7267,7 +7257,7 @@ st247:
 	if ( ++p == pe )
 		goto _test_eof247;
 case 247:
-#line 7271 "rzonec.c"
+#line 7261 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -7307,7 +7297,7 @@ st248:
 	if ( ++p == pe )
 		goto _test_eof248;
 case 248:
-#line 7311 "rzonec.c"
+#line 7301 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr327;
 	goto tr310;
@@ -7322,7 +7312,7 @@ st249:
 	if ( ++p == pe )
 		goto _test_eof249;
 case 249:
-#line 7326 "rzonec.c"
+#line 7316 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr328;
 	goto tr310;
@@ -7337,7 +7327,7 @@ st250:
 	if ( ++p == pe )
 		goto _test_eof250;
 case 250:
-#line 7341 "rzonec.c"
+#line 7331 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -7377,7 +7367,7 @@ st251:
 	if ( ++p == pe )
 		goto _test_eof251;
 case 251:
-#line 7381 "rzonec.c"
+#line 7371 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr329;
 	goto tr310;
@@ -7392,7 +7382,7 @@ st252:
 	if ( ++p == pe )
 		goto _test_eof252;
 case 252:
-#line 7396 "rzonec.c"
+#line 7386 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr330;
 	goto tr310;
@@ -7407,7 +7397,7 @@ st253:
 	if ( ++p == pe )
 		goto _test_eof253;
 case 253:
-#line 7411 "rzonec.c"
+#line 7401 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -7447,7 +7437,7 @@ st254:
 	if ( ++p == pe )
 		goto _test_eof254;
 case 254:
-#line 7451 "rzonec.c"
+#line 7441 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr331;
 	goto tr310;
@@ -7462,7 +7452,7 @@ st255:
 	if ( ++p == pe )
 		goto _test_eof255;
 case 255:
-#line 7466 "rzonec.c"
+#line 7456 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr332;
 	goto tr310;
@@ -7477,7 +7467,7 @@ st256:
 	if ( ++p == pe )
 		goto _test_eof256;
 case 256:
-#line 7481 "rzonec.c"
+#line 7471 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -7517,7 +7507,7 @@ st257:
 	if ( ++p == pe )
 		goto _test_eof257;
 case 257:
-#line 7521 "rzonec.c"
+#line 7511 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr333;
 	goto tr310;
@@ -7532,7 +7522,7 @@ st258:
 	if ( ++p == pe )
 		goto _test_eof258;
 case 258:
-#line 7536 "rzonec.c"
+#line 7526 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr334;
 	goto tr310;
@@ -7547,7 +7537,7 @@ st259:
 	if ( ++p == pe )
 		goto _test_eof259;
 case 259:
-#line 7551 "rzonec.c"
+#line 7541 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -7587,7 +7577,7 @@ st260:
 	if ( ++p == pe )
 		goto _test_eof260;
 case 260:
-#line 7591 "rzonec.c"
+#line 7581 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr335;
 	goto tr310;
@@ -7602,7 +7592,7 @@ st261:
 	if ( ++p == pe )
 		goto _test_eof261;
 case 261:
-#line 7606 "rzonec.c"
+#line 7596 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr336;
 	goto tr310;
@@ -7617,7 +7607,7 @@ st262:
 	if ( ++p == pe )
 		goto _test_eof262;
 case 262:
-#line 7621 "rzonec.c"
+#line 7611 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -7657,7 +7647,7 @@ st263:
 	if ( ++p == pe )
 		goto _test_eof263;
 case 263:
-#line 7661 "rzonec.c"
+#line 7651 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr337;
 	goto tr310;
@@ -7672,7 +7662,7 @@ st264:
 	if ( ++p == pe )
 		goto _test_eof264;
 case 264:
-#line 7676 "rzonec.c"
+#line 7666 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr338;
 	goto tr310;
@@ -7687,7 +7677,7 @@ st265:
 	if ( ++p == pe )
 		goto _test_eof265;
 case 265:
-#line 7691 "rzonec.c"
+#line 7681 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -7727,7 +7717,7 @@ st266:
 	if ( ++p == pe )
 		goto _test_eof266;
 case 266:
-#line 7731 "rzonec.c"
+#line 7721 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr339;
 	goto tr310;
@@ -7742,7 +7732,7 @@ st267:
 	if ( ++p == pe )
 		goto _test_eof267;
 case 267:
-#line 7746 "rzonec.c"
+#line 7736 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr340;
 	goto tr310;
@@ -7757,7 +7747,7 @@ st268:
 	if ( ++p == pe )
 		goto _test_eof268;
 case 268:
-#line 7761 "rzonec.c"
+#line 7751 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -7797,7 +7787,7 @@ st269:
 	if ( ++p == pe )
 		goto _test_eof269;
 case 269:
-#line 7801 "rzonec.c"
+#line 7791 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr341;
 	goto tr310;
@@ -7812,7 +7802,7 @@ st270:
 	if ( ++p == pe )
 		goto _test_eof270;
 case 270:
-#line 7816 "rzonec.c"
+#line 7806 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr342;
 	goto tr310;
@@ -7827,7 +7817,7 @@ st271:
 	if ( ++p == pe )
 		goto _test_eof271;
 case 271:
-#line 7831 "rzonec.c"
+#line 7821 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -7867,7 +7857,7 @@ st272:
 	if ( ++p == pe )
 		goto _test_eof272;
 case 272:
-#line 7871 "rzonec.c"
+#line 7861 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr343;
 	goto tr310;
@@ -7882,7 +7872,7 @@ st273:
 	if ( ++p == pe )
 		goto _test_eof273;
 case 273:
-#line 7886 "rzonec.c"
+#line 7876 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr344;
 	goto tr310;
@@ -7897,7 +7887,7 @@ st274:
 	if ( ++p == pe )
 		goto _test_eof274;
 case 274:
-#line 7901 "rzonec.c"
+#line 7891 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -7937,7 +7927,7 @@ st275:
 	if ( ++p == pe )
 		goto _test_eof275;
 case 275:
-#line 7941 "rzonec.c"
+#line 7931 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr345;
 	goto tr310;
@@ -7952,7 +7942,7 @@ st276:
 	if ( ++p == pe )
 		goto _test_eof276;
 case 276:
-#line 7956 "rzonec.c"
+#line 7946 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr346;
 	goto tr310;
@@ -7967,7 +7957,7 @@ st277:
 	if ( ++p == pe )
 		goto _test_eof277;
 case 277:
-#line 7971 "rzonec.c"
+#line 7961 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -8007,7 +7997,7 @@ st278:
 	if ( ++p == pe )
 		goto _test_eof278;
 case 278:
-#line 8011 "rzonec.c"
+#line 8001 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr347;
 	goto tr310;
@@ -8022,7 +8012,7 @@ st279:
 	if ( ++p == pe )
 		goto _test_eof279;
 case 279:
-#line 8026 "rzonec.c"
+#line 8016 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr348;
 	goto tr310;
@@ -8037,7 +8027,7 @@ st280:
 	if ( ++p == pe )
 		goto _test_eof280;
 case 280:
-#line 8041 "rzonec.c"
+#line 8031 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -8077,7 +8067,7 @@ st281:
 	if ( ++p == pe )
 		goto _test_eof281;
 case 281:
-#line 8081 "rzonec.c"
+#line 8071 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr349;
 	goto tr310;
@@ -8092,7 +8082,7 @@ st282:
 	if ( ++p == pe )
 		goto _test_eof282;
 case 282:
-#line 8096 "rzonec.c"
+#line 8086 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr350;
 	goto tr310;
@@ -8107,7 +8097,7 @@ st283:
 	if ( ++p == pe )
 		goto _test_eof283;
 case 283:
-#line 8111 "rzonec.c"
+#line 8101 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -8147,7 +8137,7 @@ st284:
 	if ( ++p == pe )
 		goto _test_eof284;
 case 284:
-#line 8151 "rzonec.c"
+#line 8141 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr351;
 	goto tr310;
@@ -8162,7 +8152,7 @@ st285:
 	if ( ++p == pe )
 		goto _test_eof285;
 case 285:
-#line 8166 "rzonec.c"
+#line 8156 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr352;
 	goto tr310;
@@ -8177,7 +8167,7 @@ st286:
 	if ( ++p == pe )
 		goto _test_eof286;
 case 286:
-#line 8181 "rzonec.c"
+#line 8171 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -8217,7 +8207,7 @@ st287:
 	if ( ++p == pe )
 		goto _test_eof287;
 case 287:
-#line 8221 "rzonec.c"
+#line 8211 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr353;
 	goto tr310;
@@ -8232,7 +8222,7 @@ st288:
 	if ( ++p == pe )
 		goto _test_eof288;
 case 288:
-#line 8236 "rzonec.c"
+#line 8226 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr354;
 	goto tr310;
@@ -8247,7 +8237,7 @@ st289:
 	if ( ++p == pe )
 		goto _test_eof289;
 case 289:
-#line 8251 "rzonec.c"
+#line 8241 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -8287,7 +8277,7 @@ st290:
 	if ( ++p == pe )
 		goto _test_eof290;
 case 290:
-#line 8291 "rzonec.c"
+#line 8281 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr355;
 	goto tr310;
@@ -8302,7 +8292,7 @@ st291:
 	if ( ++p == pe )
 		goto _test_eof291;
 case 291:
-#line 8306 "rzonec.c"
+#line 8296 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr356;
 	goto tr310;
@@ -8317,7 +8307,7 @@ st292:
 	if ( ++p == pe )
 		goto _test_eof292;
 case 292:
-#line 8321 "rzonec.c"
+#line 8311 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -8357,7 +8347,7 @@ st293:
 	if ( ++p == pe )
 		goto _test_eof293;
 case 293:
-#line 8361 "rzonec.c"
+#line 8351 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr357;
 	goto tr310;
@@ -8372,7 +8362,7 @@ st294:
 	if ( ++p == pe )
 		goto _test_eof294;
 case 294:
-#line 8376 "rzonec.c"
+#line 8366 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr358;
 	goto tr310;
@@ -8387,7 +8377,7 @@ st295:
 	if ( ++p == pe )
 		goto _test_eof295;
 case 295:
-#line 8391 "rzonec.c"
+#line 8381 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -8427,7 +8417,7 @@ st296:
 	if ( ++p == pe )
 		goto _test_eof296;
 case 296:
-#line 8431 "rzonec.c"
+#line 8421 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr359;
 	goto tr310;
@@ -8442,7 +8432,7 @@ st297:
 	if ( ++p == pe )
 		goto _test_eof297;
 case 297:
-#line 8446 "rzonec.c"
+#line 8436 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr360;
 	goto tr310;
@@ -8457,7 +8447,7 @@ st298:
 	if ( ++p == pe )
 		goto _test_eof298;
 case 298:
-#line 8461 "rzonec.c"
+#line 8451 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -8497,7 +8487,7 @@ st299:
 	if ( ++p == pe )
 		goto _test_eof299;
 case 299:
-#line 8501 "rzonec.c"
+#line 8491 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr361;
 	goto tr310;
@@ -8512,7 +8502,7 @@ st300:
 	if ( ++p == pe )
 		goto _test_eof300;
 case 300:
-#line 8516 "rzonec.c"
+#line 8506 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr362;
 	goto tr310;
@@ -8527,7 +8517,7 @@ st301:
 	if ( ++p == pe )
 		goto _test_eof301;
 case 301:
-#line 8531 "rzonec.c"
+#line 8521 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -8567,7 +8557,7 @@ st302:
 	if ( ++p == pe )
 		goto _test_eof302;
 case 302:
-#line 8571 "rzonec.c"
+#line 8561 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr363;
 	goto tr310;
@@ -8582,7 +8572,7 @@ st303:
 	if ( ++p == pe )
 		goto _test_eof303;
 case 303:
-#line 8586 "rzonec.c"
+#line 8576 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr364;
 	goto tr310;
@@ -8597,7 +8587,7 @@ st304:
 	if ( ++p == pe )
 		goto _test_eof304;
 case 304:
-#line 8601 "rzonec.c"
+#line 8591 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -8637,7 +8627,7 @@ st305:
 	if ( ++p == pe )
 		goto _test_eof305;
 case 305:
-#line 8641 "rzonec.c"
+#line 8631 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr365;
 	goto tr310;
@@ -8652,7 +8642,7 @@ st306:
 	if ( ++p == pe )
 		goto _test_eof306;
 case 306:
-#line 8656 "rzonec.c"
+#line 8646 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr366;
 	goto tr310;
@@ -8667,7 +8657,7 @@ st307:
 	if ( ++p == pe )
 		goto _test_eof307;
 case 307:
-#line 8671 "rzonec.c"
+#line 8661 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -8707,7 +8697,7 @@ st308:
 	if ( ++p == pe )
 		goto _test_eof308;
 case 308:
-#line 8711 "rzonec.c"
+#line 8701 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr367;
 	goto tr310;
@@ -8722,7 +8712,7 @@ st309:
 	if ( ++p == pe )
 		goto _test_eof309;
 case 309:
-#line 8726 "rzonec.c"
+#line 8716 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr368;
 	goto tr310;
@@ -8737,7 +8727,7 @@ st310:
 	if ( ++p == pe )
 		goto _test_eof310;
 case 310:
-#line 8741 "rzonec.c"
+#line 8731 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -8777,7 +8767,7 @@ st311:
 	if ( ++p == pe )
 		goto _test_eof311;
 case 311:
-#line 8781 "rzonec.c"
+#line 8771 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr369;
 	goto tr310;
@@ -8792,7 +8782,7 @@ st312:
 	if ( ++p == pe )
 		goto _test_eof312;
 case 312:
-#line 8796 "rzonec.c"
+#line 8786 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr370;
 	goto tr310;
@@ -8807,7 +8797,7 @@ st313:
 	if ( ++p == pe )
 		goto _test_eof313;
 case 313:
-#line 8811 "rzonec.c"
+#line 8801 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -8847,7 +8837,7 @@ st314:
 	if ( ++p == pe )
 		goto _test_eof314;
 case 314:
-#line 8851 "rzonec.c"
+#line 8841 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr371;
 	goto tr310;
@@ -8862,7 +8852,7 @@ st315:
 	if ( ++p == pe )
 		goto _test_eof315;
 case 315:
-#line 8866 "rzonec.c"
+#line 8856 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr372;
 	goto tr310;
@@ -8877,7 +8867,7 @@ st316:
 	if ( ++p == pe )
 		goto _test_eof316;
 case 316:
-#line 8881 "rzonec.c"
+#line 8871 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -8917,7 +8907,7 @@ st317:
 	if ( ++p == pe )
 		goto _test_eof317;
 case 317:
-#line 8921 "rzonec.c"
+#line 8911 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr373;
 	goto tr310;
@@ -8932,7 +8922,7 @@ st318:
 	if ( ++p == pe )
 		goto _test_eof318;
 case 318:
-#line 8936 "rzonec.c"
+#line 8926 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr374;
 	goto tr310;
@@ -8947,7 +8937,7 @@ st319:
 	if ( ++p == pe )
 		goto _test_eof319;
 case 319:
-#line 8951 "rzonec.c"
+#line 8941 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -8987,7 +8977,7 @@ st320:
 	if ( ++p == pe )
 		goto _test_eof320;
 case 320:
-#line 8991 "rzonec.c"
+#line 8981 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr375;
 	goto tr310;
@@ -9002,7 +8992,7 @@ st321:
 	if ( ++p == pe )
 		goto _test_eof321;
 case 321:
-#line 9006 "rzonec.c"
+#line 8996 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr376;
 	goto tr310;
@@ -9017,7 +9007,7 @@ st322:
 	if ( ++p == pe )
 		goto _test_eof322;
 case 322:
-#line 9021 "rzonec.c"
+#line 9011 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -9057,7 +9047,7 @@ st323:
 	if ( ++p == pe )
 		goto _test_eof323;
 case 323:
-#line 9061 "rzonec.c"
+#line 9051 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr377;
 	goto tr310;
@@ -9072,7 +9062,7 @@ st324:
 	if ( ++p == pe )
 		goto _test_eof324;
 case 324:
-#line 9076 "rzonec.c"
+#line 9066 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr378;
 	goto tr310;
@@ -9087,7 +9077,7 @@ st325:
 	if ( ++p == pe )
 		goto _test_eof325;
 case 325:
-#line 9091 "rzonec.c"
+#line 9081 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -9127,7 +9117,7 @@ st326:
 	if ( ++p == pe )
 		goto _test_eof326;
 case 326:
-#line 9131 "rzonec.c"
+#line 9121 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr379;
 	goto tr310;
@@ -9142,7 +9132,7 @@ st327:
 	if ( ++p == pe )
 		goto _test_eof327;
 case 327:
-#line 9146 "rzonec.c"
+#line 9136 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr380;
 	goto tr310;
@@ -9157,7 +9147,7 @@ st328:
 	if ( ++p == pe )
 		goto _test_eof328;
 case 328:
-#line 9161 "rzonec.c"
+#line 9151 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -9197,7 +9187,7 @@ st329:
 	if ( ++p == pe )
 		goto _test_eof329;
 case 329:
-#line 9201 "rzonec.c"
+#line 9191 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr381;
 	goto tr310;
@@ -9212,7 +9202,7 @@ st330:
 	if ( ++p == pe )
 		goto _test_eof330;
 case 330:
-#line 9216 "rzonec.c"
+#line 9206 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr382;
 	goto tr310;
@@ -9227,7 +9217,7 @@ st331:
 	if ( ++p == pe )
 		goto _test_eof331;
 case 331:
-#line 9231 "rzonec.c"
+#line 9221 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -9267,7 +9257,7 @@ st332:
 	if ( ++p == pe )
 		goto _test_eof332;
 case 332:
-#line 9271 "rzonec.c"
+#line 9261 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr383;
 	goto tr310;
@@ -9282,7 +9272,7 @@ st333:
 	if ( ++p == pe )
 		goto _test_eof333;
 case 333:
-#line 9286 "rzonec.c"
+#line 9276 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr384;
 	goto tr310;
@@ -9297,7 +9287,7 @@ st334:
 	if ( ++p == pe )
 		goto _test_eof334;
 case 334:
-#line 9301 "rzonec.c"
+#line 9291 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -9337,7 +9327,7 @@ st335:
 	if ( ++p == pe )
 		goto _test_eof335;
 case 335:
-#line 9341 "rzonec.c"
+#line 9331 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr385;
 	goto tr310;
@@ -9352,7 +9342,7 @@ st336:
 	if ( ++p == pe )
 		goto _test_eof336;
 case 336:
-#line 9356 "rzonec.c"
+#line 9346 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr386;
 	goto tr310;
@@ -9367,7 +9357,7 @@ st337:
 	if ( ++p == pe )
 		goto _test_eof337;
 case 337:
-#line 9371 "rzonec.c"
+#line 9361 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -9407,7 +9397,7 @@ st338:
 	if ( ++p == pe )
 		goto _test_eof338;
 case 338:
-#line 9411 "rzonec.c"
+#line 9401 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr387;
 	goto tr310;
@@ -9422,7 +9412,7 @@ st339:
 	if ( ++p == pe )
 		goto _test_eof339;
 case 339:
-#line 9426 "rzonec.c"
+#line 9416 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr388;
 	goto tr310;
@@ -9437,7 +9427,7 @@ st340:
 	if ( ++p == pe )
 		goto _test_eof340;
 case 340:
-#line 9441 "rzonec.c"
+#line 9431 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -9477,7 +9467,7 @@ st341:
 	if ( ++p == pe )
 		goto _test_eof341;
 case 341:
-#line 9481 "rzonec.c"
+#line 9471 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr389;
 	goto tr310;
@@ -9492,7 +9482,7 @@ st342:
 	if ( ++p == pe )
 		goto _test_eof342;
 case 342:
-#line 9496 "rzonec.c"
+#line 9486 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr390;
 	goto tr310;
@@ -9507,7 +9497,7 @@ st343:
 	if ( ++p == pe )
 		goto _test_eof343;
 case 343:
-#line 9511 "rzonec.c"
+#line 9501 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -9547,7 +9537,7 @@ st344:
 	if ( ++p == pe )
 		goto _test_eof344;
 case 344:
-#line 9551 "rzonec.c"
+#line 9541 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr391;
 	goto tr310;
@@ -9562,7 +9552,7 @@ st345:
 	if ( ++p == pe )
 		goto _test_eof345;
 case 345:
-#line 9566 "rzonec.c"
+#line 9556 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr392;
 	goto tr310;
@@ -9577,7 +9567,7 @@ st346:
 	if ( ++p == pe )
 		goto _test_eof346;
 case 346:
-#line 9581 "rzonec.c"
+#line 9571 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -9617,7 +9607,7 @@ st347:
 	if ( ++p == pe )
 		goto _test_eof347;
 case 347:
-#line 9621 "rzonec.c"
+#line 9611 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr393;
 	goto tr310;
@@ -9632,7 +9622,7 @@ st348:
 	if ( ++p == pe )
 		goto _test_eof348;
 case 348:
-#line 9636 "rzonec.c"
+#line 9626 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr394;
 	goto tr310;
@@ -9647,7 +9637,7 @@ st349:
 	if ( ++p == pe )
 		goto _test_eof349;
 case 349:
-#line 9651 "rzonec.c"
+#line 9641 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -9687,7 +9677,7 @@ st350:
 	if ( ++p == pe )
 		goto _test_eof350;
 case 350:
-#line 9691 "rzonec.c"
+#line 9681 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr395;
 	goto tr310;
@@ -9702,7 +9692,7 @@ st351:
 	if ( ++p == pe )
 		goto _test_eof351;
 case 351:
-#line 9706 "rzonec.c"
+#line 9696 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr396;
 	goto tr310;
@@ -9717,7 +9707,7 @@ st352:
 	if ( ++p == pe )
 		goto _test_eof352;
 case 352:
-#line 9721 "rzonec.c"
+#line 9711 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -9757,7 +9747,7 @@ st353:
 	if ( ++p == pe )
 		goto _test_eof353;
 case 353:
-#line 9761 "rzonec.c"
+#line 9751 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr397;
 	goto tr310;
@@ -9772,7 +9762,7 @@ st354:
 	if ( ++p == pe )
 		goto _test_eof354;
 case 354:
-#line 9776 "rzonec.c"
+#line 9766 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr398;
 	goto tr310;
@@ -9787,7 +9777,7 @@ st355:
 	if ( ++p == pe )
 		goto _test_eof355;
 case 355:
-#line 9791 "rzonec.c"
+#line 9781 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -9827,7 +9817,7 @@ st356:
 	if ( ++p == pe )
 		goto _test_eof356;
 case 356:
-#line 9831 "rzonec.c"
+#line 9821 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr399;
 	goto tr310;
@@ -9842,7 +9832,7 @@ st357:
 	if ( ++p == pe )
 		goto _test_eof357;
 case 357:
-#line 9846 "rzonec.c"
+#line 9836 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr400;
 	goto tr310;
@@ -9857,7 +9847,7 @@ st358:
 	if ( ++p == pe )
 		goto _test_eof358;
 case 358:
-#line 9861 "rzonec.c"
+#line 9851 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -9897,7 +9887,7 @@ st359:
 	if ( ++p == pe )
 		goto _test_eof359;
 case 359:
-#line 9901 "rzonec.c"
+#line 9891 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr401;
 	goto tr310;
@@ -9912,7 +9902,7 @@ st360:
 	if ( ++p == pe )
 		goto _test_eof360;
 case 360:
-#line 9916 "rzonec.c"
+#line 9906 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr402;
 	goto tr310;
@@ -9927,7 +9917,7 @@ st361:
 	if ( ++p == pe )
 		goto _test_eof361;
 case 361:
-#line 9931 "rzonec.c"
+#line 9921 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -9967,7 +9957,7 @@ st362:
 	if ( ++p == pe )
 		goto _test_eof362;
 case 362:
-#line 9971 "rzonec.c"
+#line 9961 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr403;
 	goto tr310;
@@ -9982,7 +9972,7 @@ st363:
 	if ( ++p == pe )
 		goto _test_eof363;
 case 363:
-#line 9986 "rzonec.c"
+#line 9976 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr404;
 	goto tr310;
@@ -9997,7 +9987,7 @@ st364:
 	if ( ++p == pe )
 		goto _test_eof364;
 case 364:
-#line 10001 "rzonec.c"
+#line 9991 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -10037,7 +10027,7 @@ st365:
 	if ( ++p == pe )
 		goto _test_eof365;
 case 365:
-#line 10041 "rzonec.c"
+#line 10031 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr405;
 	goto tr310;
@@ -10052,7 +10042,7 @@ st366:
 	if ( ++p == pe )
 		goto _test_eof366;
 case 366:
-#line 10056 "rzonec.c"
+#line 10046 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr406;
 	goto tr310;
@@ -10067,7 +10057,7 @@ st367:
 	if ( ++p == pe )
 		goto _test_eof367;
 case 367:
-#line 10071 "rzonec.c"
+#line 10061 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -10107,7 +10097,7 @@ st368:
 	if ( ++p == pe )
 		goto _test_eof368;
 case 368:
-#line 10111 "rzonec.c"
+#line 10101 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr407;
 	goto tr310;
@@ -10122,7 +10112,7 @@ st369:
 	if ( ++p == pe )
 		goto _test_eof369;
 case 369:
-#line 10126 "rzonec.c"
+#line 10116 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr408;
 	goto tr310;
@@ -10137,7 +10127,7 @@ st370:
 	if ( ++p == pe )
 		goto _test_eof370;
 case 370:
-#line 10141 "rzonec.c"
+#line 10131 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -10177,7 +10167,7 @@ st371:
 	if ( ++p == pe )
 		goto _test_eof371;
 case 371:
-#line 10181 "rzonec.c"
+#line 10171 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr409;
 	goto tr310;
@@ -10192,7 +10182,7 @@ st372:
 	if ( ++p == pe )
 		goto _test_eof372;
 case 372:
-#line 10196 "rzonec.c"
+#line 10186 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr410;
 	goto tr310;
@@ -10207,7 +10197,7 @@ st373:
 	if ( ++p == pe )
 		goto _test_eof373;
 case 373:
-#line 10211 "rzonec.c"
+#line 10201 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -10247,7 +10237,7 @@ st374:
 	if ( ++p == pe )
 		goto _test_eof374;
 case 374:
-#line 10251 "rzonec.c"
+#line 10241 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr411;
 	goto tr310;
@@ -10262,7 +10252,7 @@ st375:
 	if ( ++p == pe )
 		goto _test_eof375;
 case 375:
-#line 10266 "rzonec.c"
+#line 10256 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr412;
 	goto tr310;
@@ -10277,7 +10267,7 @@ st376:
 	if ( ++p == pe )
 		goto _test_eof376;
 case 376:
-#line 10281 "rzonec.c"
+#line 10271 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -10317,7 +10307,7 @@ st377:
 	if ( ++p == pe )
 		goto _test_eof377;
 case 377:
-#line 10321 "rzonec.c"
+#line 10311 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr413;
 	goto tr310;
@@ -10332,7 +10322,7 @@ st378:
 	if ( ++p == pe )
 		goto _test_eof378;
 case 378:
-#line 10336 "rzonec.c"
+#line 10326 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr414;
 	goto tr310;
@@ -10347,7 +10337,7 @@ st379:
 	if ( ++p == pe )
 		goto _test_eof379;
 case 379:
-#line 10351 "rzonec.c"
+#line 10341 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -10387,7 +10377,7 @@ st380:
 	if ( ++p == pe )
 		goto _test_eof380;
 case 380:
-#line 10391 "rzonec.c"
+#line 10381 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr415;
 	goto tr310;
@@ -10402,7 +10392,7 @@ st381:
 	if ( ++p == pe )
 		goto _test_eof381;
 case 381:
-#line 10406 "rzonec.c"
+#line 10396 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr416;
 	goto tr310;
@@ -10417,7 +10407,7 @@ st382:
 	if ( ++p == pe )
 		goto _test_eof382;
 case 382:
-#line 10421 "rzonec.c"
+#line 10411 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -10457,7 +10447,7 @@ st383:
 	if ( ++p == pe )
 		goto _test_eof383;
 case 383:
-#line 10461 "rzonec.c"
+#line 10451 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr417;
 	goto tr310;
@@ -10472,7 +10462,7 @@ st384:
 	if ( ++p == pe )
 		goto _test_eof384;
 case 384:
-#line 10476 "rzonec.c"
+#line 10466 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr418;
 	goto tr310;
@@ -10487,7 +10477,7 @@ st385:
 	if ( ++p == pe )
 		goto _test_eof385;
 case 385:
-#line 10491 "rzonec.c"
+#line 10481 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -10527,7 +10517,7 @@ st386:
 	if ( ++p == pe )
 		goto _test_eof386;
 case 386:
-#line 10531 "rzonec.c"
+#line 10521 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr419;
 	goto tr310;
@@ -10542,7 +10532,7 @@ st387:
 	if ( ++p == pe )
 		goto _test_eof387;
 case 387:
-#line 10546 "rzonec.c"
+#line 10536 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr420;
 	goto tr310;
@@ -10557,7 +10547,7 @@ st388:
 	if ( ++p == pe )
 		goto _test_eof388;
 case 388:
-#line 10561 "rzonec.c"
+#line 10551 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -10597,7 +10587,7 @@ st389:
 	if ( ++p == pe )
 		goto _test_eof389;
 case 389:
-#line 10601 "rzonec.c"
+#line 10591 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr421;
 	goto tr310;
@@ -10612,7 +10602,7 @@ st390:
 	if ( ++p == pe )
 		goto _test_eof390;
 case 390:
-#line 10616 "rzonec.c"
+#line 10606 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr422;
 	goto tr310;
@@ -10627,7 +10617,7 @@ st391:
 	if ( ++p == pe )
 		goto _test_eof391;
 case 391:
-#line 10631 "rzonec.c"
+#line 10621 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -10667,7 +10657,7 @@ st392:
 	if ( ++p == pe )
 		goto _test_eof392;
 case 392:
-#line 10671 "rzonec.c"
+#line 10661 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr423;
 	goto tr310;
@@ -10682,7 +10672,7 @@ st393:
 	if ( ++p == pe )
 		goto _test_eof393;
 case 393:
-#line 10686 "rzonec.c"
+#line 10676 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr424;
 	goto tr310;
@@ -10697,7 +10687,7 @@ st394:
 	if ( ++p == pe )
 		goto _test_eof394;
 case 394:
-#line 10701 "rzonec.c"
+#line 10691 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -10737,7 +10727,7 @@ st395:
 	if ( ++p == pe )
 		goto _test_eof395;
 case 395:
-#line 10741 "rzonec.c"
+#line 10731 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr425;
 	goto tr310;
@@ -10752,7 +10742,7 @@ st396:
 	if ( ++p == pe )
 		goto _test_eof396;
 case 396:
-#line 10756 "rzonec.c"
+#line 10746 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr426;
 	goto tr310;
@@ -10767,7 +10757,7 @@ st397:
 	if ( ++p == pe )
 		goto _test_eof397;
 case 397:
-#line 10771 "rzonec.c"
+#line 10761 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -10807,7 +10797,7 @@ st398:
 	if ( ++p == pe )
 		goto _test_eof398;
 case 398:
-#line 10811 "rzonec.c"
+#line 10801 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr427;
 	goto tr310;
@@ -10822,7 +10812,7 @@ st399:
 	if ( ++p == pe )
 		goto _test_eof399;
 case 399:
-#line 10826 "rzonec.c"
+#line 10816 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr428;
 	goto tr310;
@@ -10837,7 +10827,7 @@ st400:
 	if ( ++p == pe )
 		goto _test_eof400;
 case 400:
-#line 10841 "rzonec.c"
+#line 10831 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -10877,7 +10867,7 @@ st401:
 	if ( ++p == pe )
 		goto _test_eof401;
 case 401:
-#line 10881 "rzonec.c"
+#line 10871 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr429;
 	goto tr310;
@@ -10892,7 +10882,7 @@ st402:
 	if ( ++p == pe )
 		goto _test_eof402;
 case 402:
-#line 10896 "rzonec.c"
+#line 10886 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr430;
 	goto tr310;
@@ -10907,7 +10897,7 @@ st403:
 	if ( ++p == pe )
 		goto _test_eof403;
 case 403:
-#line 10911 "rzonec.c"
+#line 10901 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -10947,7 +10937,7 @@ st404:
 	if ( ++p == pe )
 		goto _test_eof404;
 case 404:
-#line 10951 "rzonec.c"
+#line 10941 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr431;
 	goto tr310;
@@ -10962,7 +10952,7 @@ st405:
 	if ( ++p == pe )
 		goto _test_eof405;
 case 405:
-#line 10966 "rzonec.c"
+#line 10956 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr432;
 	goto tr310;
@@ -10977,7 +10967,7 @@ st406:
 	if ( ++p == pe )
 		goto _test_eof406;
 case 406:
-#line 10981 "rzonec.c"
+#line 10971 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -11017,7 +11007,7 @@ st407:
 	if ( ++p == pe )
 		goto _test_eof407;
 case 407:
-#line 11021 "rzonec.c"
+#line 11011 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr433;
 	goto tr310;
@@ -11032,7 +11022,7 @@ st408:
 	if ( ++p == pe )
 		goto _test_eof408;
 case 408:
-#line 11036 "rzonec.c"
+#line 11026 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr434;
 	goto tr310;
@@ -11047,7 +11037,7 @@ st409:
 	if ( ++p == pe )
 		goto _test_eof409;
 case 409:
-#line 11051 "rzonec.c"
+#line 11041 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -11087,7 +11077,7 @@ st410:
 	if ( ++p == pe )
 		goto _test_eof410;
 case 410:
-#line 11091 "rzonec.c"
+#line 11081 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr435;
 	goto tr310;
@@ -11102,7 +11092,7 @@ st411:
 	if ( ++p == pe )
 		goto _test_eof411;
 case 411:
-#line 11106 "rzonec.c"
+#line 11096 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr436;
 	goto tr310;
@@ -11117,7 +11107,7 @@ st412:
 	if ( ++p == pe )
 		goto _test_eof412;
 case 412:
-#line 11121 "rzonec.c"
+#line 11111 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr1;
 		case 32: goto tr1;
@@ -11257,7 +11247,7 @@ st421:
 	if ( ++p == pe )
 		goto _test_eof421;
 case 421:
-#line 11261 "rzonec.c"
+#line 11251 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr447;
 		case 34: goto tr447;
@@ -11291,7 +11281,7 @@ st422:
 	if ( ++p == pe )
 		goto _test_eof422;
 case 422:
-#line 11295 "rzonec.c"
+#line 11285 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr447;
 		case 34: goto tr447;
@@ -11325,7 +11315,7 @@ st423:
 	if ( ++p == pe )
 		goto _test_eof423;
 case 423:
-#line 11329 "rzonec.c"
+#line 11319 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr447;
 		case 34: goto tr447;
@@ -11359,7 +11349,7 @@ st424:
 	if ( ++p == pe )
 		goto _test_eof424;
 case 424:
-#line 11363 "rzonec.c"
+#line 11353 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr447;
 		case 34: goto tr447;
@@ -11393,7 +11383,7 @@ st425:
 	if ( ++p == pe )
 		goto _test_eof425;
 case 425:
-#line 11397 "rzonec.c"
+#line 11387 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr447;
 		case 34: goto tr447;
@@ -11427,7 +11417,7 @@ st426:
 	if ( ++p == pe )
 		goto _test_eof426;
 case 426:
-#line 11431 "rzonec.c"
+#line 11421 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr447;
 		case 34: goto tr447;
@@ -11461,7 +11451,7 @@ st427:
 	if ( ++p == pe )
 		goto _test_eof427;
 case 427:
-#line 11465 "rzonec.c"
+#line 11455 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr447;
 		case 34: goto tr447;
@@ -11495,7 +11485,7 @@ st428:
 	if ( ++p == pe )
 		goto _test_eof428;
 case 428:
-#line 11499 "rzonec.c"
+#line 11489 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr447;
 		case 34: goto tr447;
@@ -11529,7 +11519,7 @@ st429:
 	if ( ++p == pe )
 		goto _test_eof429;
 case 429:
-#line 11533 "rzonec.c"
+#line 11523 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr447;
 		case 34: goto tr447;
@@ -11563,7 +11553,7 @@ st430:
 	if ( ++p == pe )
 		goto _test_eof430;
 case 430:
-#line 11567 "rzonec.c"
+#line 11557 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr447;
 		case 34: goto tr447;
@@ -11597,7 +11587,7 @@ st431:
 	if ( ++p == pe )
 		goto _test_eof431;
 case 431:
-#line 11601 "rzonec.c"
+#line 11591 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr447;
 		case 34: goto tr447;
@@ -11631,7 +11621,7 @@ st432:
 	if ( ++p == pe )
 		goto _test_eof432;
 case 432:
-#line 11635 "rzonec.c"
+#line 11625 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr447;
 		case 34: goto tr447;
@@ -11665,7 +11655,7 @@ st433:
 	if ( ++p == pe )
 		goto _test_eof433;
 case 433:
-#line 11669 "rzonec.c"
+#line 11659 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr447;
 		case 34: goto tr447;
@@ -11699,7 +11689,7 @@ st434:
 	if ( ++p == pe )
 		goto _test_eof434;
 case 434:
-#line 11703 "rzonec.c"
+#line 11693 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr447;
 		case 34: goto tr447;
@@ -11733,7 +11723,7 @@ st435:
 	if ( ++p == pe )
 		goto _test_eof435;
 case 435:
-#line 11737 "rzonec.c"
+#line 11727 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr447;
 		case 34: goto tr447;
@@ -11767,7 +11757,7 @@ st436:
 	if ( ++p == pe )
 		goto _test_eof436;
 case 436:
-#line 11771 "rzonec.c"
+#line 11761 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr447;
 		case 34: goto tr447;
@@ -11801,7 +11791,7 @@ st437:
 	if ( ++p == pe )
 		goto _test_eof437;
 case 437:
-#line 11805 "rzonec.c"
+#line 11795 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr447;
 		case 34: goto tr447;
@@ -11835,7 +11825,7 @@ st438:
 	if ( ++p == pe )
 		goto _test_eof438;
 case 438:
-#line 11839 "rzonec.c"
+#line 11829 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr447;
 		case 34: goto tr447;
@@ -11869,7 +11859,7 @@ st439:
 	if ( ++p == pe )
 		goto _test_eof439;
 case 439:
-#line 11873 "rzonec.c"
+#line 11863 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr447;
 		case 34: goto tr447;
@@ -11903,7 +11893,7 @@ st440:
 	if ( ++p == pe )
 		goto _test_eof440;
 case 440:
-#line 11907 "rzonec.c"
+#line 11897 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr447;
 		case 34: goto tr447;
@@ -11937,7 +11927,7 @@ st441:
 	if ( ++p == pe )
 		goto _test_eof441;
 case 441:
-#line 11941 "rzonec.c"
+#line 11931 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr447;
 		case 34: goto tr447;
@@ -11971,7 +11961,7 @@ st442:
 	if ( ++p == pe )
 		goto _test_eof442;
 case 442:
-#line 11975 "rzonec.c"
+#line 11965 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr447;
 		case 34: goto tr447;
@@ -12005,7 +11995,7 @@ st443:
 	if ( ++p == pe )
 		goto _test_eof443;
 case 443:
-#line 12009 "rzonec.c"
+#line 11999 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr447;
 		case 34: goto tr447;
@@ -12039,7 +12029,7 @@ st444:
 	if ( ++p == pe )
 		goto _test_eof444;
 case 444:
-#line 12043 "rzonec.c"
+#line 12033 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr447;
 		case 34: goto tr447;
@@ -12073,7 +12063,7 @@ st445:
 	if ( ++p == pe )
 		goto _test_eof445;
 case 445:
-#line 12077 "rzonec.c"
+#line 12067 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr447;
 		case 34: goto tr447;
@@ -12107,7 +12097,7 @@ st446:
 	if ( ++p == pe )
 		goto _test_eof446;
 case 446:
-#line 12111 "rzonec.c"
+#line 12101 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr447;
 		case 34: goto tr447;
@@ -12141,7 +12131,7 @@ st447:
 	if ( ++p == pe )
 		goto _test_eof447;
 case 447:
-#line 12145 "rzonec.c"
+#line 12135 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr447;
 		case 34: goto tr447;
@@ -12175,7 +12165,7 @@ st448:
 	if ( ++p == pe )
 		goto _test_eof448;
 case 448:
-#line 12179 "rzonec.c"
+#line 12169 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr447;
 		case 34: goto tr447;
@@ -12209,7 +12199,7 @@ st449:
 	if ( ++p == pe )
 		goto _test_eof449;
 case 449:
-#line 12213 "rzonec.c"
+#line 12203 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr447;
 		case 34: goto tr447;
@@ -12243,7 +12233,7 @@ st450:
 	if ( ++p == pe )
 		goto _test_eof450;
 case 450:
-#line 12247 "rzonec.c"
+#line 12237 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr447;
 		case 34: goto tr447;
@@ -12277,7 +12267,7 @@ st451:
 	if ( ++p == pe )
 		goto _test_eof451;
 case 451:
-#line 12281 "rzonec.c"
+#line 12271 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr447;
 		case 34: goto tr447;
@@ -12311,7 +12301,7 @@ st452:
 	if ( ++p == pe )
 		goto _test_eof452;
 case 452:
-#line 12315 "rzonec.c"
+#line 12305 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr447;
 		case 34: goto tr447;
@@ -12345,7 +12335,7 @@ st453:
 	if ( ++p == pe )
 		goto _test_eof453;
 case 453:
-#line 12349 "rzonec.c"
+#line 12339 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr447;
 		case 34: goto tr447;
@@ -12379,7 +12369,7 @@ st454:
 	if ( ++p == pe )
 		goto _test_eof454;
 case 454:
-#line 12383 "rzonec.c"
+#line 12373 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr447;
 		case 34: goto tr447;
@@ -12413,7 +12403,7 @@ st455:
 	if ( ++p == pe )
 		goto _test_eof455;
 case 455:
-#line 12417 "rzonec.c"
+#line 12407 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr447;
 		case 34: goto tr447;
@@ -12447,7 +12437,7 @@ st456:
 	if ( ++p == pe )
 		goto _test_eof456;
 case 456:
-#line 12451 "rzonec.c"
+#line 12441 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr447;
 		case 34: goto tr447;
@@ -12481,7 +12471,7 @@ st457:
 	if ( ++p == pe )
 		goto _test_eof457;
 case 457:
-#line 12485 "rzonec.c"
+#line 12475 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr447;
 		case 34: goto tr447;
@@ -12515,7 +12505,7 @@ st458:
 	if ( ++p == pe )
 		goto _test_eof458;
 case 458:
-#line 12519 "rzonec.c"
+#line 12509 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr447;
 		case 34: goto tr447;
@@ -12549,7 +12539,7 @@ st459:
 	if ( ++p == pe )
 		goto _test_eof459;
 case 459:
-#line 12553 "rzonec.c"
+#line 12543 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr447;
 		case 34: goto tr447;
@@ -12583,7 +12573,7 @@ st460:
 	if ( ++p == pe )
 		goto _test_eof460;
 case 460:
-#line 12587 "rzonec.c"
+#line 12577 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr447;
 		case 34: goto tr447;
@@ -12617,7 +12607,7 @@ st461:
 	if ( ++p == pe )
 		goto _test_eof461;
 case 461:
-#line 12621 "rzonec.c"
+#line 12611 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr447;
 		case 34: goto tr447;
@@ -12651,7 +12641,7 @@ st462:
 	if ( ++p == pe )
 		goto _test_eof462;
 case 462:
-#line 12655 "rzonec.c"
+#line 12645 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr447;
 		case 34: goto tr447;
@@ -12685,7 +12675,7 @@ st463:
 	if ( ++p == pe )
 		goto _test_eof463;
 case 463:
-#line 12689 "rzonec.c"
+#line 12679 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr447;
 		case 34: goto tr447;
@@ -12719,7 +12709,7 @@ st464:
 	if ( ++p == pe )
 		goto _test_eof464;
 case 464:
-#line 12723 "rzonec.c"
+#line 12713 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr447;
 		case 34: goto tr447;
@@ -12753,7 +12743,7 @@ st465:
 	if ( ++p == pe )
 		goto _test_eof465;
 case 465:
-#line 12757 "rzonec.c"
+#line 12747 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr447;
 		case 34: goto tr447;
@@ -12787,7 +12777,7 @@ st466:
 	if ( ++p == pe )
 		goto _test_eof466;
 case 466:
-#line 12791 "rzonec.c"
+#line 12781 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr447;
 		case 34: goto tr447;
@@ -12821,7 +12811,7 @@ st467:
 	if ( ++p == pe )
 		goto _test_eof467;
 case 467:
-#line 12825 "rzonec.c"
+#line 12815 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr447;
 		case 34: goto tr447;
@@ -12855,7 +12845,7 @@ st468:
 	if ( ++p == pe )
 		goto _test_eof468;
 case 468:
-#line 12859 "rzonec.c"
+#line 12849 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr447;
 		case 34: goto tr447;
@@ -12889,7 +12879,7 @@ st469:
 	if ( ++p == pe )
 		goto _test_eof469;
 case 469:
-#line 12893 "rzonec.c"
+#line 12883 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr447;
 		case 34: goto tr447;
@@ -12923,7 +12913,7 @@ st470:
 	if ( ++p == pe )
 		goto _test_eof470;
 case 470:
-#line 12927 "rzonec.c"
+#line 12917 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr447;
 		case 34: goto tr447;
@@ -12957,7 +12947,7 @@ st471:
 	if ( ++p == pe )
 		goto _test_eof471;
 case 471:
-#line 12961 "rzonec.c"
+#line 12951 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr447;
 		case 34: goto tr447;
@@ -12991,7 +12981,7 @@ st472:
 	if ( ++p == pe )
 		goto _test_eof472;
 case 472:
-#line 12995 "rzonec.c"
+#line 12985 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr447;
 		case 34: goto tr447;
@@ -13025,7 +13015,7 @@ st473:
 	if ( ++p == pe )
 		goto _test_eof473;
 case 473:
-#line 13029 "rzonec.c"
+#line 13019 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr447;
 		case 34: goto tr447;
@@ -13059,7 +13049,7 @@ st474:
 	if ( ++p == pe )
 		goto _test_eof474;
 case 474:
-#line 13063 "rzonec.c"
+#line 13053 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr447;
 		case 34: goto tr447;
@@ -13093,7 +13083,7 @@ st475:
 	if ( ++p == pe )
 		goto _test_eof475;
 case 475:
-#line 13097 "rzonec.c"
+#line 13087 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr447;
 		case 34: goto tr447;
@@ -13127,7 +13117,7 @@ st476:
 	if ( ++p == pe )
 		goto _test_eof476;
 case 476:
-#line 13131 "rzonec.c"
+#line 13121 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr447;
 		case 34: goto tr447;
@@ -13161,7 +13151,7 @@ st477:
 	if ( ++p == pe )
 		goto _test_eof477;
 case 477:
-#line 13165 "rzonec.c"
+#line 13155 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr447;
 		case 34: goto tr447;
@@ -13195,7 +13185,7 @@ st478:
 	if ( ++p == pe )
 		goto _test_eof478;
 case 478:
-#line 13199 "rzonec.c"
+#line 13189 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr447;
 		case 34: goto tr447;
@@ -13229,7 +13219,7 @@ st479:
 	if ( ++p == pe )
 		goto _test_eof479;
 case 479:
-#line 13233 "rzonec.c"
+#line 13223 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr447;
 		case 34: goto tr447;
@@ -13263,7 +13253,7 @@ st480:
 	if ( ++p == pe )
 		goto _test_eof480;
 case 480:
-#line 13267 "rzonec.c"
+#line 13257 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr447;
 		case 34: goto tr447;
@@ -13297,7 +13287,7 @@ st481:
 	if ( ++p == pe )
 		goto _test_eof481;
 case 481:
-#line 13301 "rzonec.c"
+#line 13291 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr447;
 		case 34: goto tr447;
@@ -13331,7 +13321,7 @@ st482:
 	if ( ++p == pe )
 		goto _test_eof482;
 case 482:
-#line 13335 "rzonec.c"
+#line 13325 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr447;
 		case 34: goto tr447;
@@ -13365,7 +13355,7 @@ st483:
 	if ( ++p == pe )
 		goto _test_eof483;
 case 483:
-#line 13369 "rzonec.c"
+#line 13359 "rzonec.c"
 	if ( (*p) == 46 )
 		goto tr451;
 	goto tr447;
@@ -13380,7 +13370,7 @@ st484:
 	if ( ++p == pe )
 		goto _test_eof484;
 case 484:
-#line 13384 "rzonec.c"
+#line 13374 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr576;
 		case 10: goto tr577;
@@ -13424,7 +13414,7 @@ st485:
 	if ( ++p == pe )
 		goto _test_eof485;
 case 485:
-#line 13428 "rzonec.c"
+#line 13418 "rzonec.c"
 	if ( (*p) > 55 ) {
 		if ( 56 <= (*p) && (*p) <= 57 )
 			goto tr583;
@@ -13449,7 +13439,7 @@ st486:
 	if ( ++p == pe )
 		goto _test_eof486;
 case 486:
-#line 13453 "rzonec.c"
+#line 13443 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr584;
 		case 34: goto tr584;
@@ -13493,7 +13483,7 @@ st488:
 	if ( ++p == pe )
 		goto _test_eof488;
 case 488:
-#line 13497 "rzonec.c"
+#line 13487 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr584;
 		case 34: goto tr584;
@@ -13537,7 +13527,7 @@ st490:
 	if ( ++p == pe )
 		goto _test_eof490;
 case 490:
-#line 13541 "rzonec.c"
+#line 13531 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr584;
 		case 34: goto tr584;
@@ -13581,7 +13571,7 @@ st492:
 	if ( ++p == pe )
 		goto _test_eof492;
 case 492:
-#line 13585 "rzonec.c"
+#line 13575 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr584;
 		case 34: goto tr584;
@@ -13625,7 +13615,7 @@ st494:
 	if ( ++p == pe )
 		goto _test_eof494;
 case 494:
-#line 13629 "rzonec.c"
+#line 13619 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr584;
 		case 34: goto tr584;
@@ -13669,7 +13659,7 @@ st496:
 	if ( ++p == pe )
 		goto _test_eof496;
 case 496:
-#line 13673 "rzonec.c"
+#line 13663 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr584;
 		case 34: goto tr584;
@@ -13713,7 +13703,7 @@ st498:
 	if ( ++p == pe )
 		goto _test_eof498;
 case 498:
-#line 13717 "rzonec.c"
+#line 13707 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr584;
 		case 34: goto tr584;
@@ -13757,7 +13747,7 @@ st500:
 	if ( ++p == pe )
 		goto _test_eof500;
 case 500:
-#line 13761 "rzonec.c"
+#line 13751 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr584;
 		case 34: goto tr584;
@@ -13801,7 +13791,7 @@ st502:
 	if ( ++p == pe )
 		goto _test_eof502;
 case 502:
-#line 13805 "rzonec.c"
+#line 13795 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr584;
 		case 34: goto tr584;
@@ -13845,7 +13835,7 @@ st504:
 	if ( ++p == pe )
 		goto _test_eof504;
 case 504:
-#line 13849 "rzonec.c"
+#line 13839 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr584;
 		case 34: goto tr584;
@@ -13889,7 +13879,7 @@ st506:
 	if ( ++p == pe )
 		goto _test_eof506;
 case 506:
-#line 13893 "rzonec.c"
+#line 13883 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr584;
 		case 34: goto tr584;
@@ -13933,7 +13923,7 @@ st508:
 	if ( ++p == pe )
 		goto _test_eof508;
 case 508:
-#line 13937 "rzonec.c"
+#line 13927 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr584;
 		case 34: goto tr584;
@@ -13977,7 +13967,7 @@ st510:
 	if ( ++p == pe )
 		goto _test_eof510;
 case 510:
-#line 13981 "rzonec.c"
+#line 13971 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr584;
 		case 34: goto tr584;
@@ -14021,7 +14011,7 @@ st512:
 	if ( ++p == pe )
 		goto _test_eof512;
 case 512:
-#line 14025 "rzonec.c"
+#line 14015 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr584;
 		case 34: goto tr584;
@@ -14065,7 +14055,7 @@ st514:
 	if ( ++p == pe )
 		goto _test_eof514;
 case 514:
-#line 14069 "rzonec.c"
+#line 14059 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr584;
 		case 34: goto tr584;
@@ -14109,7 +14099,7 @@ st516:
 	if ( ++p == pe )
 		goto _test_eof516;
 case 516:
-#line 14113 "rzonec.c"
+#line 14103 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr584;
 		case 34: goto tr584;
@@ -14153,7 +14143,7 @@ st518:
 	if ( ++p == pe )
 		goto _test_eof518;
 case 518:
-#line 14157 "rzonec.c"
+#line 14147 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr584;
 		case 34: goto tr584;
@@ -14197,7 +14187,7 @@ st520:
 	if ( ++p == pe )
 		goto _test_eof520;
 case 520:
-#line 14201 "rzonec.c"
+#line 14191 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr584;
 		case 34: goto tr584;
@@ -14241,7 +14231,7 @@ st522:
 	if ( ++p == pe )
 		goto _test_eof522;
 case 522:
-#line 14245 "rzonec.c"
+#line 14235 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr584;
 		case 34: goto tr584;
@@ -14285,7 +14275,7 @@ st524:
 	if ( ++p == pe )
 		goto _test_eof524;
 case 524:
-#line 14289 "rzonec.c"
+#line 14279 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr584;
 		case 34: goto tr584;
@@ -14329,7 +14319,7 @@ st526:
 	if ( ++p == pe )
 		goto _test_eof526;
 case 526:
-#line 14333 "rzonec.c"
+#line 14323 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr584;
 		case 34: goto tr584;
@@ -14373,7 +14363,7 @@ st528:
 	if ( ++p == pe )
 		goto _test_eof528;
 case 528:
-#line 14377 "rzonec.c"
+#line 14367 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr584;
 		case 34: goto tr584;
@@ -14417,7 +14407,7 @@ st530:
 	if ( ++p == pe )
 		goto _test_eof530;
 case 530:
-#line 14421 "rzonec.c"
+#line 14411 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr584;
 		case 34: goto tr584;
@@ -14461,7 +14451,7 @@ st532:
 	if ( ++p == pe )
 		goto _test_eof532;
 case 532:
-#line 14465 "rzonec.c"
+#line 14455 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr584;
 		case 34: goto tr584;
@@ -14505,7 +14495,7 @@ st534:
 	if ( ++p == pe )
 		goto _test_eof534;
 case 534:
-#line 14509 "rzonec.c"
+#line 14499 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr584;
 		case 34: goto tr584;
@@ -14549,7 +14539,7 @@ st536:
 	if ( ++p == pe )
 		goto _test_eof536;
 case 536:
-#line 14553 "rzonec.c"
+#line 14543 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr584;
 		case 34: goto tr584;
@@ -14593,7 +14583,7 @@ st538:
 	if ( ++p == pe )
 		goto _test_eof538;
 case 538:
-#line 14597 "rzonec.c"
+#line 14587 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr584;
 		case 34: goto tr584;
@@ -14637,7 +14627,7 @@ st540:
 	if ( ++p == pe )
 		goto _test_eof540;
 case 540:
-#line 14641 "rzonec.c"
+#line 14631 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr584;
 		case 34: goto tr584;
@@ -14681,7 +14671,7 @@ st542:
 	if ( ++p == pe )
 		goto _test_eof542;
 case 542:
-#line 14685 "rzonec.c"
+#line 14675 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr584;
 		case 34: goto tr584;
@@ -14725,7 +14715,7 @@ st544:
 	if ( ++p == pe )
 		goto _test_eof544;
 case 544:
-#line 14729 "rzonec.c"
+#line 14719 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr584;
 		case 34: goto tr584;
@@ -14769,7 +14759,7 @@ st546:
 	if ( ++p == pe )
 		goto _test_eof546;
 case 546:
-#line 14773 "rzonec.c"
+#line 14763 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr584;
 		case 34: goto tr584;
@@ -14813,7 +14803,7 @@ st548:
 	if ( ++p == pe )
 		goto _test_eof548;
 case 548:
-#line 14817 "rzonec.c"
+#line 14807 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr584;
 		case 34: goto tr584;
@@ -14857,7 +14847,7 @@ st550:
 	if ( ++p == pe )
 		goto _test_eof550;
 case 550:
-#line 14861 "rzonec.c"
+#line 14851 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr584;
 		case 34: goto tr584;
@@ -14901,7 +14891,7 @@ st552:
 	if ( ++p == pe )
 		goto _test_eof552;
 case 552:
-#line 14905 "rzonec.c"
+#line 14895 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr584;
 		case 34: goto tr584;
@@ -14945,7 +14935,7 @@ st554:
 	if ( ++p == pe )
 		goto _test_eof554;
 case 554:
-#line 14949 "rzonec.c"
+#line 14939 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr584;
 		case 34: goto tr584;
@@ -14989,7 +14979,7 @@ st556:
 	if ( ++p == pe )
 		goto _test_eof556;
 case 556:
-#line 14993 "rzonec.c"
+#line 14983 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr584;
 		case 34: goto tr584;
@@ -15033,7 +15023,7 @@ st558:
 	if ( ++p == pe )
 		goto _test_eof558;
 case 558:
-#line 15037 "rzonec.c"
+#line 15027 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr584;
 		case 34: goto tr584;
@@ -15077,7 +15067,7 @@ st560:
 	if ( ++p == pe )
 		goto _test_eof560;
 case 560:
-#line 15081 "rzonec.c"
+#line 15071 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr584;
 		case 34: goto tr584;
@@ -15121,7 +15111,7 @@ st562:
 	if ( ++p == pe )
 		goto _test_eof562;
 case 562:
-#line 15125 "rzonec.c"
+#line 15115 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr584;
 		case 34: goto tr584;
@@ -15165,7 +15155,7 @@ st564:
 	if ( ++p == pe )
 		goto _test_eof564;
 case 564:
-#line 15169 "rzonec.c"
+#line 15159 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr584;
 		case 34: goto tr584;
@@ -15209,7 +15199,7 @@ st566:
 	if ( ++p == pe )
 		goto _test_eof566;
 case 566:
-#line 15213 "rzonec.c"
+#line 15203 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr584;
 		case 34: goto tr584;
@@ -15253,7 +15243,7 @@ st568:
 	if ( ++p == pe )
 		goto _test_eof568;
 case 568:
-#line 15257 "rzonec.c"
+#line 15247 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr584;
 		case 34: goto tr584;
@@ -15297,7 +15287,7 @@ st570:
 	if ( ++p == pe )
 		goto _test_eof570;
 case 570:
-#line 15301 "rzonec.c"
+#line 15291 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr584;
 		case 34: goto tr584;
@@ -15341,7 +15331,7 @@ st572:
 	if ( ++p == pe )
 		goto _test_eof572;
 case 572:
-#line 15345 "rzonec.c"
+#line 15335 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr584;
 		case 34: goto tr584;
@@ -15385,7 +15375,7 @@ st574:
 	if ( ++p == pe )
 		goto _test_eof574;
 case 574:
-#line 15389 "rzonec.c"
+#line 15379 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr584;
 		case 34: goto tr584;
@@ -15429,7 +15419,7 @@ st576:
 	if ( ++p == pe )
 		goto _test_eof576;
 case 576:
-#line 15433 "rzonec.c"
+#line 15423 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr584;
 		case 34: goto tr584;
@@ -15473,7 +15463,7 @@ st578:
 	if ( ++p == pe )
 		goto _test_eof578;
 case 578:
-#line 15477 "rzonec.c"
+#line 15467 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr584;
 		case 34: goto tr584;
@@ -15517,7 +15507,7 @@ st580:
 	if ( ++p == pe )
 		goto _test_eof580;
 case 580:
-#line 15521 "rzonec.c"
+#line 15511 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr584;
 		case 34: goto tr584;
@@ -15561,7 +15551,7 @@ st582:
 	if ( ++p == pe )
 		goto _test_eof582;
 case 582:
-#line 15565 "rzonec.c"
+#line 15555 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr584;
 		case 34: goto tr584;
@@ -15605,7 +15595,7 @@ st584:
 	if ( ++p == pe )
 		goto _test_eof584;
 case 584:
-#line 15609 "rzonec.c"
+#line 15599 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr584;
 		case 34: goto tr584;
@@ -15649,7 +15639,7 @@ st586:
 	if ( ++p == pe )
 		goto _test_eof586;
 case 586:
-#line 15653 "rzonec.c"
+#line 15643 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr584;
 		case 34: goto tr584;
@@ -15693,7 +15683,7 @@ st588:
 	if ( ++p == pe )
 		goto _test_eof588;
 case 588:
-#line 15697 "rzonec.c"
+#line 15687 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr584;
 		case 34: goto tr584;
@@ -15737,7 +15727,7 @@ st590:
 	if ( ++p == pe )
 		goto _test_eof590;
 case 590:
-#line 15741 "rzonec.c"
+#line 15731 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr584;
 		case 34: goto tr584;
@@ -15781,7 +15771,7 @@ st592:
 	if ( ++p == pe )
 		goto _test_eof592;
 case 592:
-#line 15785 "rzonec.c"
+#line 15775 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr584;
 		case 34: goto tr584;
@@ -15825,7 +15815,7 @@ st594:
 	if ( ++p == pe )
 		goto _test_eof594;
 case 594:
-#line 15829 "rzonec.c"
+#line 15819 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr584;
 		case 34: goto tr584;
@@ -15869,7 +15859,7 @@ st596:
 	if ( ++p == pe )
 		goto _test_eof596;
 case 596:
-#line 15873 "rzonec.c"
+#line 15863 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr584;
 		case 34: goto tr584;
@@ -15913,7 +15903,7 @@ st598:
 	if ( ++p == pe )
 		goto _test_eof598;
 case 598:
-#line 15917 "rzonec.c"
+#line 15907 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr584;
 		case 34: goto tr584;
@@ -15957,7 +15947,7 @@ st600:
 	if ( ++p == pe )
 		goto _test_eof600;
 case 600:
-#line 15961 "rzonec.c"
+#line 15951 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr584;
 		case 34: goto tr584;
@@ -16001,7 +15991,7 @@ st602:
 	if ( ++p == pe )
 		goto _test_eof602;
 case 602:
-#line 16005 "rzonec.c"
+#line 15995 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr584;
 		case 34: goto tr584;
@@ -16045,7 +16035,7 @@ st604:
 	if ( ++p == pe )
 		goto _test_eof604;
 case 604:
-#line 16049 "rzonec.c"
+#line 16039 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr584;
 		case 34: goto tr584;
@@ -16089,7 +16079,7 @@ st606:
 	if ( ++p == pe )
 		goto _test_eof606;
 case 606:
-#line 16093 "rzonec.c"
+#line 16083 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr584;
 		case 34: goto tr584;
@@ -16133,7 +16123,7 @@ st608:
 	if ( ++p == pe )
 		goto _test_eof608;
 case 608:
-#line 16137 "rzonec.c"
+#line 16127 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr584;
 		case 34: goto tr584;
@@ -16177,7 +16167,7 @@ st610:
 	if ( ++p == pe )
 		goto _test_eof610;
 case 610:
-#line 16181 "rzonec.c"
+#line 16171 "rzonec.c"
 	if ( (*p) == 46 )
 		goto tr451;
 	goto tr584;
@@ -16204,7 +16194,7 @@ st611:
 	if ( ++p == pe )
 		goto _test_eof611;
 case 611:
-#line 16208 "rzonec.c"
+#line 16198 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr710;
 	goto tr709;
@@ -16219,7 +16209,7 @@ st612:
 	if ( ++p == pe )
 		goto _test_eof612;
 case 612:
-#line 16223 "rzonec.c"
+#line 16213 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr711;
 	goto tr709;
@@ -16234,7 +16224,7 @@ st613:
 	if ( ++p == pe )
 		goto _test_eof613;
 case 613:
-#line 16238 "rzonec.c"
+#line 16228 "rzonec.c"
 	if ( (*p) == 46 )
 		goto tr451;
 	goto tr709;
@@ -16261,7 +16251,7 @@ st614:
 	if ( ++p == pe )
 		goto _test_eof614;
 case 614:
-#line 16265 "rzonec.c"
+#line 16255 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr712;
 	goto tr709;
@@ -16276,7 +16266,7 @@ st615:
 	if ( ++p == pe )
 		goto _test_eof615;
 case 615:
-#line 16280 "rzonec.c"
+#line 16270 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr713;
 	goto tr709;
@@ -16291,7 +16281,7 @@ st616:
 	if ( ++p == pe )
 		goto _test_eof616;
 case 616:
-#line 16295 "rzonec.c"
+#line 16285 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr709;
 		case 34: goto tr709;
@@ -16330,7 +16320,7 @@ st617:
 	if ( ++p == pe )
 		goto _test_eof617;
 case 617:
-#line 16334 "rzonec.c"
+#line 16324 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr714;
 	goto tr709;
@@ -16345,7 +16335,7 @@ st618:
 	if ( ++p == pe )
 		goto _test_eof618;
 case 618:
-#line 16349 "rzonec.c"
+#line 16339 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr715;
 	goto tr709;
@@ -16360,7 +16350,7 @@ st619:
 	if ( ++p == pe )
 		goto _test_eof619;
 case 619:
-#line 16364 "rzonec.c"
+#line 16354 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr709;
 		case 34: goto tr709;
@@ -16399,7 +16389,7 @@ st620:
 	if ( ++p == pe )
 		goto _test_eof620;
 case 620:
-#line 16403 "rzonec.c"
+#line 16393 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr716;
 	goto tr709;
@@ -16414,7 +16404,7 @@ st621:
 	if ( ++p == pe )
 		goto _test_eof621;
 case 621:
-#line 16418 "rzonec.c"
+#line 16408 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr717;
 	goto tr709;
@@ -16429,7 +16419,7 @@ st622:
 	if ( ++p == pe )
 		goto _test_eof622;
 case 622:
-#line 16433 "rzonec.c"
+#line 16423 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr709;
 		case 34: goto tr709;
@@ -16468,7 +16458,7 @@ st623:
 	if ( ++p == pe )
 		goto _test_eof623;
 case 623:
-#line 16472 "rzonec.c"
+#line 16462 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr718;
 	goto tr709;
@@ -16483,7 +16473,7 @@ st624:
 	if ( ++p == pe )
 		goto _test_eof624;
 case 624:
-#line 16487 "rzonec.c"
+#line 16477 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr719;
 	goto tr709;
@@ -16498,7 +16488,7 @@ st625:
 	if ( ++p == pe )
 		goto _test_eof625;
 case 625:
-#line 16502 "rzonec.c"
+#line 16492 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr709;
 		case 34: goto tr709;
@@ -16537,7 +16527,7 @@ st626:
 	if ( ++p == pe )
 		goto _test_eof626;
 case 626:
-#line 16541 "rzonec.c"
+#line 16531 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr720;
 	goto tr709;
@@ -16552,7 +16542,7 @@ st627:
 	if ( ++p == pe )
 		goto _test_eof627;
 case 627:
-#line 16556 "rzonec.c"
+#line 16546 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr721;
 	goto tr709;
@@ -16567,7 +16557,7 @@ st628:
 	if ( ++p == pe )
 		goto _test_eof628;
 case 628:
-#line 16571 "rzonec.c"
+#line 16561 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr709;
 		case 34: goto tr709;
@@ -16606,7 +16596,7 @@ st629:
 	if ( ++p == pe )
 		goto _test_eof629;
 case 629:
-#line 16610 "rzonec.c"
+#line 16600 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr722;
 	goto tr709;
@@ -16621,7 +16611,7 @@ st630:
 	if ( ++p == pe )
 		goto _test_eof630;
 case 630:
-#line 16625 "rzonec.c"
+#line 16615 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr723;
 	goto tr709;
@@ -16636,7 +16626,7 @@ st631:
 	if ( ++p == pe )
 		goto _test_eof631;
 case 631:
-#line 16640 "rzonec.c"
+#line 16630 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr709;
 		case 34: goto tr709;
@@ -16675,7 +16665,7 @@ st632:
 	if ( ++p == pe )
 		goto _test_eof632;
 case 632:
-#line 16679 "rzonec.c"
+#line 16669 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr724;
 	goto tr709;
@@ -16690,7 +16680,7 @@ st633:
 	if ( ++p == pe )
 		goto _test_eof633;
 case 633:
-#line 16694 "rzonec.c"
+#line 16684 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr725;
 	goto tr709;
@@ -16705,7 +16695,7 @@ st634:
 	if ( ++p == pe )
 		goto _test_eof634;
 case 634:
-#line 16709 "rzonec.c"
+#line 16699 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr709;
 		case 34: goto tr709;
@@ -16744,7 +16734,7 @@ st635:
 	if ( ++p == pe )
 		goto _test_eof635;
 case 635:
-#line 16748 "rzonec.c"
+#line 16738 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr726;
 	goto tr709;
@@ -16759,7 +16749,7 @@ st636:
 	if ( ++p == pe )
 		goto _test_eof636;
 case 636:
-#line 16763 "rzonec.c"
+#line 16753 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr727;
 	goto tr709;
@@ -16774,7 +16764,7 @@ st637:
 	if ( ++p == pe )
 		goto _test_eof637;
 case 637:
-#line 16778 "rzonec.c"
+#line 16768 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr709;
 		case 34: goto tr709;
@@ -16813,7 +16803,7 @@ st638:
 	if ( ++p == pe )
 		goto _test_eof638;
 case 638:
-#line 16817 "rzonec.c"
+#line 16807 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr728;
 	goto tr709;
@@ -16828,7 +16818,7 @@ st639:
 	if ( ++p == pe )
 		goto _test_eof639;
 case 639:
-#line 16832 "rzonec.c"
+#line 16822 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr729;
 	goto tr709;
@@ -16843,7 +16833,7 @@ st640:
 	if ( ++p == pe )
 		goto _test_eof640;
 case 640:
-#line 16847 "rzonec.c"
+#line 16837 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr709;
 		case 34: goto tr709;
@@ -16882,7 +16872,7 @@ st641:
 	if ( ++p == pe )
 		goto _test_eof641;
 case 641:
-#line 16886 "rzonec.c"
+#line 16876 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr730;
 	goto tr709;
@@ -16897,7 +16887,7 @@ st642:
 	if ( ++p == pe )
 		goto _test_eof642;
 case 642:
-#line 16901 "rzonec.c"
+#line 16891 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr731;
 	goto tr709;
@@ -16912,7 +16902,7 @@ st643:
 	if ( ++p == pe )
 		goto _test_eof643;
 case 643:
-#line 16916 "rzonec.c"
+#line 16906 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr709;
 		case 34: goto tr709;
@@ -16951,7 +16941,7 @@ st644:
 	if ( ++p == pe )
 		goto _test_eof644;
 case 644:
-#line 16955 "rzonec.c"
+#line 16945 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr732;
 	goto tr709;
@@ -16966,7 +16956,7 @@ st645:
 	if ( ++p == pe )
 		goto _test_eof645;
 case 645:
-#line 16970 "rzonec.c"
+#line 16960 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr733;
 	goto tr709;
@@ -16981,7 +16971,7 @@ st646:
 	if ( ++p == pe )
 		goto _test_eof646;
 case 646:
-#line 16985 "rzonec.c"
+#line 16975 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr709;
 		case 34: goto tr709;
@@ -17020,7 +17010,7 @@ st647:
 	if ( ++p == pe )
 		goto _test_eof647;
 case 647:
-#line 17024 "rzonec.c"
+#line 17014 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr734;
 	goto tr709;
@@ -17035,7 +17025,7 @@ st648:
 	if ( ++p == pe )
 		goto _test_eof648;
 case 648:
-#line 17039 "rzonec.c"
+#line 17029 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr735;
 	goto tr709;
@@ -17050,7 +17040,7 @@ st649:
 	if ( ++p == pe )
 		goto _test_eof649;
 case 649:
-#line 17054 "rzonec.c"
+#line 17044 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr709;
 		case 34: goto tr709;
@@ -17089,7 +17079,7 @@ st650:
 	if ( ++p == pe )
 		goto _test_eof650;
 case 650:
-#line 17093 "rzonec.c"
+#line 17083 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr736;
 	goto tr709;
@@ -17104,7 +17094,7 @@ st651:
 	if ( ++p == pe )
 		goto _test_eof651;
 case 651:
-#line 17108 "rzonec.c"
+#line 17098 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr737;
 	goto tr709;
@@ -17119,7 +17109,7 @@ st652:
 	if ( ++p == pe )
 		goto _test_eof652;
 case 652:
-#line 17123 "rzonec.c"
+#line 17113 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr709;
 		case 34: goto tr709;
@@ -17158,7 +17148,7 @@ st653:
 	if ( ++p == pe )
 		goto _test_eof653;
 case 653:
-#line 17162 "rzonec.c"
+#line 17152 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr738;
 	goto tr709;
@@ -17173,7 +17163,7 @@ st654:
 	if ( ++p == pe )
 		goto _test_eof654;
 case 654:
-#line 17177 "rzonec.c"
+#line 17167 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr739;
 	goto tr709;
@@ -17188,7 +17178,7 @@ st655:
 	if ( ++p == pe )
 		goto _test_eof655;
 case 655:
-#line 17192 "rzonec.c"
+#line 17182 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr709;
 		case 34: goto tr709;
@@ -17227,7 +17217,7 @@ st656:
 	if ( ++p == pe )
 		goto _test_eof656;
 case 656:
-#line 17231 "rzonec.c"
+#line 17221 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr740;
 	goto tr709;
@@ -17242,7 +17232,7 @@ st657:
 	if ( ++p == pe )
 		goto _test_eof657;
 case 657:
-#line 17246 "rzonec.c"
+#line 17236 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr741;
 	goto tr709;
@@ -17257,7 +17247,7 @@ st658:
 	if ( ++p == pe )
 		goto _test_eof658;
 case 658:
-#line 17261 "rzonec.c"
+#line 17251 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr709;
 		case 34: goto tr709;
@@ -17296,7 +17286,7 @@ st659:
 	if ( ++p == pe )
 		goto _test_eof659;
 case 659:
-#line 17300 "rzonec.c"
+#line 17290 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr742;
 	goto tr709;
@@ -17311,7 +17301,7 @@ st660:
 	if ( ++p == pe )
 		goto _test_eof660;
 case 660:
-#line 17315 "rzonec.c"
+#line 17305 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr743;
 	goto tr709;
@@ -17326,7 +17316,7 @@ st661:
 	if ( ++p == pe )
 		goto _test_eof661;
 case 661:
-#line 17330 "rzonec.c"
+#line 17320 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr709;
 		case 34: goto tr709;
@@ -17365,7 +17355,7 @@ st662:
 	if ( ++p == pe )
 		goto _test_eof662;
 case 662:
-#line 17369 "rzonec.c"
+#line 17359 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr744;
 	goto tr709;
@@ -17380,7 +17370,7 @@ st663:
 	if ( ++p == pe )
 		goto _test_eof663;
 case 663:
-#line 17384 "rzonec.c"
+#line 17374 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr745;
 	goto tr709;
@@ -17395,7 +17385,7 @@ st664:
 	if ( ++p == pe )
 		goto _test_eof664;
 case 664:
-#line 17399 "rzonec.c"
+#line 17389 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr709;
 		case 34: goto tr709;
@@ -17434,7 +17424,7 @@ st665:
 	if ( ++p == pe )
 		goto _test_eof665;
 case 665:
-#line 17438 "rzonec.c"
+#line 17428 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr746;
 	goto tr709;
@@ -17449,7 +17439,7 @@ st666:
 	if ( ++p == pe )
 		goto _test_eof666;
 case 666:
-#line 17453 "rzonec.c"
+#line 17443 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr747;
 	goto tr709;
@@ -17464,7 +17454,7 @@ st667:
 	if ( ++p == pe )
 		goto _test_eof667;
 case 667:
-#line 17468 "rzonec.c"
+#line 17458 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr709;
 		case 34: goto tr709;
@@ -17503,7 +17493,7 @@ st668:
 	if ( ++p == pe )
 		goto _test_eof668;
 case 668:
-#line 17507 "rzonec.c"
+#line 17497 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr748;
 	goto tr709;
@@ -17518,7 +17508,7 @@ st669:
 	if ( ++p == pe )
 		goto _test_eof669;
 case 669:
-#line 17522 "rzonec.c"
+#line 17512 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr749;
 	goto tr709;
@@ -17533,7 +17523,7 @@ st670:
 	if ( ++p == pe )
 		goto _test_eof670;
 case 670:
-#line 17537 "rzonec.c"
+#line 17527 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr709;
 		case 34: goto tr709;
@@ -17572,7 +17562,7 @@ st671:
 	if ( ++p == pe )
 		goto _test_eof671;
 case 671:
-#line 17576 "rzonec.c"
+#line 17566 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr750;
 	goto tr709;
@@ -17587,7 +17577,7 @@ st672:
 	if ( ++p == pe )
 		goto _test_eof672;
 case 672:
-#line 17591 "rzonec.c"
+#line 17581 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr751;
 	goto tr709;
@@ -17602,7 +17592,7 @@ st673:
 	if ( ++p == pe )
 		goto _test_eof673;
 case 673:
-#line 17606 "rzonec.c"
+#line 17596 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr709;
 		case 34: goto tr709;
@@ -17641,7 +17631,7 @@ st674:
 	if ( ++p == pe )
 		goto _test_eof674;
 case 674:
-#line 17645 "rzonec.c"
+#line 17635 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr752;
 	goto tr709;
@@ -17656,7 +17646,7 @@ st675:
 	if ( ++p == pe )
 		goto _test_eof675;
 case 675:
-#line 17660 "rzonec.c"
+#line 17650 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr753;
 	goto tr709;
@@ -17671,7 +17661,7 @@ st676:
 	if ( ++p == pe )
 		goto _test_eof676;
 case 676:
-#line 17675 "rzonec.c"
+#line 17665 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr709;
 		case 34: goto tr709;
@@ -17710,7 +17700,7 @@ st677:
 	if ( ++p == pe )
 		goto _test_eof677;
 case 677:
-#line 17714 "rzonec.c"
+#line 17704 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr754;
 	goto tr709;
@@ -17725,7 +17715,7 @@ st678:
 	if ( ++p == pe )
 		goto _test_eof678;
 case 678:
-#line 17729 "rzonec.c"
+#line 17719 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr755;
 	goto tr709;
@@ -17740,7 +17730,7 @@ st679:
 	if ( ++p == pe )
 		goto _test_eof679;
 case 679:
-#line 17744 "rzonec.c"
+#line 17734 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr709;
 		case 34: goto tr709;
@@ -17779,7 +17769,7 @@ st680:
 	if ( ++p == pe )
 		goto _test_eof680;
 case 680:
-#line 17783 "rzonec.c"
+#line 17773 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr756;
 	goto tr709;
@@ -17794,7 +17784,7 @@ st681:
 	if ( ++p == pe )
 		goto _test_eof681;
 case 681:
-#line 17798 "rzonec.c"
+#line 17788 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr757;
 	goto tr709;
@@ -17809,7 +17799,7 @@ st682:
 	if ( ++p == pe )
 		goto _test_eof682;
 case 682:
-#line 17813 "rzonec.c"
+#line 17803 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr709;
 		case 34: goto tr709;
@@ -17848,7 +17838,7 @@ st683:
 	if ( ++p == pe )
 		goto _test_eof683;
 case 683:
-#line 17852 "rzonec.c"
+#line 17842 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr758;
 	goto tr709;
@@ -17863,7 +17853,7 @@ st684:
 	if ( ++p == pe )
 		goto _test_eof684;
 case 684:
-#line 17867 "rzonec.c"
+#line 17857 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr759;
 	goto tr709;
@@ -17878,7 +17868,7 @@ st685:
 	if ( ++p == pe )
 		goto _test_eof685;
 case 685:
-#line 17882 "rzonec.c"
+#line 17872 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr709;
 		case 34: goto tr709;
@@ -17917,7 +17907,7 @@ st686:
 	if ( ++p == pe )
 		goto _test_eof686;
 case 686:
-#line 17921 "rzonec.c"
+#line 17911 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr760;
 	goto tr709;
@@ -17932,7 +17922,7 @@ st687:
 	if ( ++p == pe )
 		goto _test_eof687;
 case 687:
-#line 17936 "rzonec.c"
+#line 17926 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr761;
 	goto tr709;
@@ -17947,7 +17937,7 @@ st688:
 	if ( ++p == pe )
 		goto _test_eof688;
 case 688:
-#line 17951 "rzonec.c"
+#line 17941 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr709;
 		case 34: goto tr709;
@@ -17986,7 +17976,7 @@ st689:
 	if ( ++p == pe )
 		goto _test_eof689;
 case 689:
-#line 17990 "rzonec.c"
+#line 17980 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr762;
 	goto tr709;
@@ -18001,7 +17991,7 @@ st690:
 	if ( ++p == pe )
 		goto _test_eof690;
 case 690:
-#line 18005 "rzonec.c"
+#line 17995 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr763;
 	goto tr709;
@@ -18016,7 +18006,7 @@ st691:
 	if ( ++p == pe )
 		goto _test_eof691;
 case 691:
-#line 18020 "rzonec.c"
+#line 18010 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr709;
 		case 34: goto tr709;
@@ -18055,7 +18045,7 @@ st692:
 	if ( ++p == pe )
 		goto _test_eof692;
 case 692:
-#line 18059 "rzonec.c"
+#line 18049 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr764;
 	goto tr709;
@@ -18070,7 +18060,7 @@ st693:
 	if ( ++p == pe )
 		goto _test_eof693;
 case 693:
-#line 18074 "rzonec.c"
+#line 18064 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr765;
 	goto tr709;
@@ -18085,7 +18075,7 @@ st694:
 	if ( ++p == pe )
 		goto _test_eof694;
 case 694:
-#line 18089 "rzonec.c"
+#line 18079 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr709;
 		case 34: goto tr709;
@@ -18124,7 +18114,7 @@ st695:
 	if ( ++p == pe )
 		goto _test_eof695;
 case 695:
-#line 18128 "rzonec.c"
+#line 18118 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr766;
 	goto tr709;
@@ -18139,7 +18129,7 @@ st696:
 	if ( ++p == pe )
 		goto _test_eof696;
 case 696:
-#line 18143 "rzonec.c"
+#line 18133 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr767;
 	goto tr709;
@@ -18154,7 +18144,7 @@ st697:
 	if ( ++p == pe )
 		goto _test_eof697;
 case 697:
-#line 18158 "rzonec.c"
+#line 18148 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr709;
 		case 34: goto tr709;
@@ -18193,7 +18183,7 @@ st698:
 	if ( ++p == pe )
 		goto _test_eof698;
 case 698:
-#line 18197 "rzonec.c"
+#line 18187 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr768;
 	goto tr709;
@@ -18208,7 +18198,7 @@ st699:
 	if ( ++p == pe )
 		goto _test_eof699;
 case 699:
-#line 18212 "rzonec.c"
+#line 18202 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr769;
 	goto tr709;
@@ -18223,7 +18213,7 @@ st700:
 	if ( ++p == pe )
 		goto _test_eof700;
 case 700:
-#line 18227 "rzonec.c"
+#line 18217 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr709;
 		case 34: goto tr709;
@@ -18262,7 +18252,7 @@ st701:
 	if ( ++p == pe )
 		goto _test_eof701;
 case 701:
-#line 18266 "rzonec.c"
+#line 18256 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr770;
 	goto tr709;
@@ -18277,7 +18267,7 @@ st702:
 	if ( ++p == pe )
 		goto _test_eof702;
 case 702:
-#line 18281 "rzonec.c"
+#line 18271 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr771;
 	goto tr709;
@@ -18292,7 +18282,7 @@ st703:
 	if ( ++p == pe )
 		goto _test_eof703;
 case 703:
-#line 18296 "rzonec.c"
+#line 18286 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr709;
 		case 34: goto tr709;
@@ -18331,7 +18321,7 @@ st704:
 	if ( ++p == pe )
 		goto _test_eof704;
 case 704:
-#line 18335 "rzonec.c"
+#line 18325 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr772;
 	goto tr709;
@@ -18346,7 +18336,7 @@ st705:
 	if ( ++p == pe )
 		goto _test_eof705;
 case 705:
-#line 18350 "rzonec.c"
+#line 18340 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr773;
 	goto tr709;
@@ -18361,7 +18351,7 @@ st706:
 	if ( ++p == pe )
 		goto _test_eof706;
 case 706:
-#line 18365 "rzonec.c"
+#line 18355 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr709;
 		case 34: goto tr709;
@@ -18400,7 +18390,7 @@ st707:
 	if ( ++p == pe )
 		goto _test_eof707;
 case 707:
-#line 18404 "rzonec.c"
+#line 18394 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr774;
 	goto tr709;
@@ -18415,7 +18405,7 @@ st708:
 	if ( ++p == pe )
 		goto _test_eof708;
 case 708:
-#line 18419 "rzonec.c"
+#line 18409 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr775;
 	goto tr709;
@@ -18430,7 +18420,7 @@ st709:
 	if ( ++p == pe )
 		goto _test_eof709;
 case 709:
-#line 18434 "rzonec.c"
+#line 18424 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr709;
 		case 34: goto tr709;
@@ -18469,7 +18459,7 @@ st710:
 	if ( ++p == pe )
 		goto _test_eof710;
 case 710:
-#line 18473 "rzonec.c"
+#line 18463 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr776;
 	goto tr709;
@@ -18484,7 +18474,7 @@ st711:
 	if ( ++p == pe )
 		goto _test_eof711;
 case 711:
-#line 18488 "rzonec.c"
+#line 18478 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr777;
 	goto tr709;
@@ -18499,7 +18489,7 @@ st712:
 	if ( ++p == pe )
 		goto _test_eof712;
 case 712:
-#line 18503 "rzonec.c"
+#line 18493 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr709;
 		case 34: goto tr709;
@@ -18538,7 +18528,7 @@ st713:
 	if ( ++p == pe )
 		goto _test_eof713;
 case 713:
-#line 18542 "rzonec.c"
+#line 18532 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr778;
 	goto tr709;
@@ -18553,7 +18543,7 @@ st714:
 	if ( ++p == pe )
 		goto _test_eof714;
 case 714:
-#line 18557 "rzonec.c"
+#line 18547 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr779;
 	goto tr709;
@@ -18568,7 +18558,7 @@ st715:
 	if ( ++p == pe )
 		goto _test_eof715;
 case 715:
-#line 18572 "rzonec.c"
+#line 18562 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr709;
 		case 34: goto tr709;
@@ -18607,7 +18597,7 @@ st716:
 	if ( ++p == pe )
 		goto _test_eof716;
 case 716:
-#line 18611 "rzonec.c"
+#line 18601 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr780;
 	goto tr709;
@@ -18622,7 +18612,7 @@ st717:
 	if ( ++p == pe )
 		goto _test_eof717;
 case 717:
-#line 18626 "rzonec.c"
+#line 18616 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr781;
 	goto tr709;
@@ -18637,7 +18627,7 @@ st718:
 	if ( ++p == pe )
 		goto _test_eof718;
 case 718:
-#line 18641 "rzonec.c"
+#line 18631 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr709;
 		case 34: goto tr709;
@@ -18676,7 +18666,7 @@ st719:
 	if ( ++p == pe )
 		goto _test_eof719;
 case 719:
-#line 18680 "rzonec.c"
+#line 18670 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr782;
 	goto tr709;
@@ -18691,7 +18681,7 @@ st720:
 	if ( ++p == pe )
 		goto _test_eof720;
 case 720:
-#line 18695 "rzonec.c"
+#line 18685 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr783;
 	goto tr709;
@@ -18706,7 +18696,7 @@ st721:
 	if ( ++p == pe )
 		goto _test_eof721;
 case 721:
-#line 18710 "rzonec.c"
+#line 18700 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr709;
 		case 34: goto tr709;
@@ -18745,7 +18735,7 @@ st722:
 	if ( ++p == pe )
 		goto _test_eof722;
 case 722:
-#line 18749 "rzonec.c"
+#line 18739 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr784;
 	goto tr709;
@@ -18760,7 +18750,7 @@ st723:
 	if ( ++p == pe )
 		goto _test_eof723;
 case 723:
-#line 18764 "rzonec.c"
+#line 18754 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr785;
 	goto tr709;
@@ -18775,7 +18765,7 @@ st724:
 	if ( ++p == pe )
 		goto _test_eof724;
 case 724:
-#line 18779 "rzonec.c"
+#line 18769 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr709;
 		case 34: goto tr709;
@@ -18814,7 +18804,7 @@ st725:
 	if ( ++p == pe )
 		goto _test_eof725;
 case 725:
-#line 18818 "rzonec.c"
+#line 18808 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr786;
 	goto tr709;
@@ -18829,7 +18819,7 @@ st726:
 	if ( ++p == pe )
 		goto _test_eof726;
 case 726:
-#line 18833 "rzonec.c"
+#line 18823 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr787;
 	goto tr709;
@@ -18844,7 +18834,7 @@ st727:
 	if ( ++p == pe )
 		goto _test_eof727;
 case 727:
-#line 18848 "rzonec.c"
+#line 18838 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr709;
 		case 34: goto tr709;
@@ -18883,7 +18873,7 @@ st728:
 	if ( ++p == pe )
 		goto _test_eof728;
 case 728:
-#line 18887 "rzonec.c"
+#line 18877 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr788;
 	goto tr709;
@@ -18898,7 +18888,7 @@ st729:
 	if ( ++p == pe )
 		goto _test_eof729;
 case 729:
-#line 18902 "rzonec.c"
+#line 18892 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr789;
 	goto tr709;
@@ -18913,7 +18903,7 @@ st730:
 	if ( ++p == pe )
 		goto _test_eof730;
 case 730:
-#line 18917 "rzonec.c"
+#line 18907 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr709;
 		case 34: goto tr709;
@@ -18952,7 +18942,7 @@ st731:
 	if ( ++p == pe )
 		goto _test_eof731;
 case 731:
-#line 18956 "rzonec.c"
+#line 18946 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr790;
 	goto tr709;
@@ -18967,7 +18957,7 @@ st732:
 	if ( ++p == pe )
 		goto _test_eof732;
 case 732:
-#line 18971 "rzonec.c"
+#line 18961 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr791;
 	goto tr709;
@@ -18982,7 +18972,7 @@ st733:
 	if ( ++p == pe )
 		goto _test_eof733;
 case 733:
-#line 18986 "rzonec.c"
+#line 18976 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr709;
 		case 34: goto tr709;
@@ -19021,7 +19011,7 @@ st734:
 	if ( ++p == pe )
 		goto _test_eof734;
 case 734:
-#line 19025 "rzonec.c"
+#line 19015 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr792;
 	goto tr709;
@@ -19036,7 +19026,7 @@ st735:
 	if ( ++p == pe )
 		goto _test_eof735;
 case 735:
-#line 19040 "rzonec.c"
+#line 19030 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr793;
 	goto tr709;
@@ -19051,7 +19041,7 @@ st736:
 	if ( ++p == pe )
 		goto _test_eof736;
 case 736:
-#line 19055 "rzonec.c"
+#line 19045 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr709;
 		case 34: goto tr709;
@@ -19090,7 +19080,7 @@ st737:
 	if ( ++p == pe )
 		goto _test_eof737;
 case 737:
-#line 19094 "rzonec.c"
+#line 19084 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr794;
 	goto tr709;
@@ -19105,7 +19095,7 @@ st738:
 	if ( ++p == pe )
 		goto _test_eof738;
 case 738:
-#line 19109 "rzonec.c"
+#line 19099 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr795;
 	goto tr709;
@@ -19120,7 +19110,7 @@ st739:
 	if ( ++p == pe )
 		goto _test_eof739;
 case 739:
-#line 19124 "rzonec.c"
+#line 19114 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr709;
 		case 34: goto tr709;
@@ -19159,7 +19149,7 @@ st740:
 	if ( ++p == pe )
 		goto _test_eof740;
 case 740:
-#line 19163 "rzonec.c"
+#line 19153 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr796;
 	goto tr709;
@@ -19174,7 +19164,7 @@ st741:
 	if ( ++p == pe )
 		goto _test_eof741;
 case 741:
-#line 19178 "rzonec.c"
+#line 19168 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr797;
 	goto tr709;
@@ -19189,7 +19179,7 @@ st742:
 	if ( ++p == pe )
 		goto _test_eof742;
 case 742:
-#line 19193 "rzonec.c"
+#line 19183 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr709;
 		case 34: goto tr709;
@@ -19228,7 +19218,7 @@ st743:
 	if ( ++p == pe )
 		goto _test_eof743;
 case 743:
-#line 19232 "rzonec.c"
+#line 19222 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr798;
 	goto tr709;
@@ -19243,7 +19233,7 @@ st744:
 	if ( ++p == pe )
 		goto _test_eof744;
 case 744:
-#line 19247 "rzonec.c"
+#line 19237 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr799;
 	goto tr709;
@@ -19258,7 +19248,7 @@ st745:
 	if ( ++p == pe )
 		goto _test_eof745;
 case 745:
-#line 19262 "rzonec.c"
+#line 19252 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr709;
 		case 34: goto tr709;
@@ -19297,7 +19287,7 @@ st746:
 	if ( ++p == pe )
 		goto _test_eof746;
 case 746:
-#line 19301 "rzonec.c"
+#line 19291 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr800;
 	goto tr709;
@@ -19312,7 +19302,7 @@ st747:
 	if ( ++p == pe )
 		goto _test_eof747;
 case 747:
-#line 19316 "rzonec.c"
+#line 19306 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr801;
 	goto tr709;
@@ -19327,7 +19317,7 @@ st748:
 	if ( ++p == pe )
 		goto _test_eof748;
 case 748:
-#line 19331 "rzonec.c"
+#line 19321 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr709;
 		case 34: goto tr709;
@@ -19366,7 +19356,7 @@ st749:
 	if ( ++p == pe )
 		goto _test_eof749;
 case 749:
-#line 19370 "rzonec.c"
+#line 19360 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr802;
 	goto tr709;
@@ -19381,7 +19371,7 @@ st750:
 	if ( ++p == pe )
 		goto _test_eof750;
 case 750:
-#line 19385 "rzonec.c"
+#line 19375 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr803;
 	goto tr709;
@@ -19396,7 +19386,7 @@ st751:
 	if ( ++p == pe )
 		goto _test_eof751;
 case 751:
-#line 19400 "rzonec.c"
+#line 19390 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr709;
 		case 34: goto tr709;
@@ -19435,7 +19425,7 @@ st752:
 	if ( ++p == pe )
 		goto _test_eof752;
 case 752:
-#line 19439 "rzonec.c"
+#line 19429 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr804;
 	goto tr709;
@@ -19450,7 +19440,7 @@ st753:
 	if ( ++p == pe )
 		goto _test_eof753;
 case 753:
-#line 19454 "rzonec.c"
+#line 19444 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr805;
 	goto tr709;
@@ -19465,7 +19455,7 @@ st754:
 	if ( ++p == pe )
 		goto _test_eof754;
 case 754:
-#line 19469 "rzonec.c"
+#line 19459 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr709;
 		case 34: goto tr709;
@@ -19504,7 +19494,7 @@ st755:
 	if ( ++p == pe )
 		goto _test_eof755;
 case 755:
-#line 19508 "rzonec.c"
+#line 19498 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr806;
 	goto tr709;
@@ -19519,7 +19509,7 @@ st756:
 	if ( ++p == pe )
 		goto _test_eof756;
 case 756:
-#line 19523 "rzonec.c"
+#line 19513 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr807;
 	goto tr709;
@@ -19534,7 +19524,7 @@ st757:
 	if ( ++p == pe )
 		goto _test_eof757;
 case 757:
-#line 19538 "rzonec.c"
+#line 19528 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr709;
 		case 34: goto tr709;
@@ -19573,7 +19563,7 @@ st758:
 	if ( ++p == pe )
 		goto _test_eof758;
 case 758:
-#line 19577 "rzonec.c"
+#line 19567 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr808;
 	goto tr709;
@@ -19588,7 +19578,7 @@ st759:
 	if ( ++p == pe )
 		goto _test_eof759;
 case 759:
-#line 19592 "rzonec.c"
+#line 19582 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr809;
 	goto tr709;
@@ -19603,7 +19593,7 @@ st760:
 	if ( ++p == pe )
 		goto _test_eof760;
 case 760:
-#line 19607 "rzonec.c"
+#line 19597 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr709;
 		case 34: goto tr709;
@@ -19642,7 +19632,7 @@ st761:
 	if ( ++p == pe )
 		goto _test_eof761;
 case 761:
-#line 19646 "rzonec.c"
+#line 19636 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr810;
 	goto tr709;
@@ -19657,7 +19647,7 @@ st762:
 	if ( ++p == pe )
 		goto _test_eof762;
 case 762:
-#line 19661 "rzonec.c"
+#line 19651 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr811;
 	goto tr709;
@@ -19672,7 +19662,7 @@ st763:
 	if ( ++p == pe )
 		goto _test_eof763;
 case 763:
-#line 19676 "rzonec.c"
+#line 19666 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr709;
 		case 34: goto tr709;
@@ -19711,7 +19701,7 @@ st764:
 	if ( ++p == pe )
 		goto _test_eof764;
 case 764:
-#line 19715 "rzonec.c"
+#line 19705 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr812;
 	goto tr709;
@@ -19726,7 +19716,7 @@ st765:
 	if ( ++p == pe )
 		goto _test_eof765;
 case 765:
-#line 19730 "rzonec.c"
+#line 19720 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr813;
 	goto tr709;
@@ -19741,7 +19731,7 @@ st766:
 	if ( ++p == pe )
 		goto _test_eof766;
 case 766:
-#line 19745 "rzonec.c"
+#line 19735 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr709;
 		case 34: goto tr709;
@@ -19780,7 +19770,7 @@ st767:
 	if ( ++p == pe )
 		goto _test_eof767;
 case 767:
-#line 19784 "rzonec.c"
+#line 19774 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr814;
 	goto tr709;
@@ -19795,7 +19785,7 @@ st768:
 	if ( ++p == pe )
 		goto _test_eof768;
 case 768:
-#line 19799 "rzonec.c"
+#line 19789 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr815;
 	goto tr709;
@@ -19810,7 +19800,7 @@ st769:
 	if ( ++p == pe )
 		goto _test_eof769;
 case 769:
-#line 19814 "rzonec.c"
+#line 19804 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr709;
 		case 34: goto tr709;
@@ -19849,7 +19839,7 @@ st770:
 	if ( ++p == pe )
 		goto _test_eof770;
 case 770:
-#line 19853 "rzonec.c"
+#line 19843 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr816;
 	goto tr709;
@@ -19864,7 +19854,7 @@ st771:
 	if ( ++p == pe )
 		goto _test_eof771;
 case 771:
-#line 19868 "rzonec.c"
+#line 19858 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr817;
 	goto tr709;
@@ -19879,7 +19869,7 @@ st772:
 	if ( ++p == pe )
 		goto _test_eof772;
 case 772:
-#line 19883 "rzonec.c"
+#line 19873 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr709;
 		case 34: goto tr709;
@@ -19918,7 +19908,7 @@ st773:
 	if ( ++p == pe )
 		goto _test_eof773;
 case 773:
-#line 19922 "rzonec.c"
+#line 19912 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr818;
 	goto tr709;
@@ -19933,7 +19923,7 @@ st774:
 	if ( ++p == pe )
 		goto _test_eof774;
 case 774:
-#line 19937 "rzonec.c"
+#line 19927 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr819;
 	goto tr709;
@@ -19948,7 +19938,7 @@ st775:
 	if ( ++p == pe )
 		goto _test_eof775;
 case 775:
-#line 19952 "rzonec.c"
+#line 19942 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr709;
 		case 34: goto tr709;
@@ -19987,7 +19977,7 @@ st776:
 	if ( ++p == pe )
 		goto _test_eof776;
 case 776:
-#line 19991 "rzonec.c"
+#line 19981 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr820;
 	goto tr709;
@@ -20002,7 +19992,7 @@ st777:
 	if ( ++p == pe )
 		goto _test_eof777;
 case 777:
-#line 20006 "rzonec.c"
+#line 19996 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr821;
 	goto tr709;
@@ -20017,7 +20007,7 @@ st778:
 	if ( ++p == pe )
 		goto _test_eof778;
 case 778:
-#line 20021 "rzonec.c"
+#line 20011 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr709;
 		case 34: goto tr709;
@@ -20056,7 +20046,7 @@ st779:
 	if ( ++p == pe )
 		goto _test_eof779;
 case 779:
-#line 20060 "rzonec.c"
+#line 20050 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr822;
 	goto tr709;
@@ -20071,7 +20061,7 @@ st780:
 	if ( ++p == pe )
 		goto _test_eof780;
 case 780:
-#line 20075 "rzonec.c"
+#line 20065 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr823;
 	goto tr709;
@@ -20086,7 +20076,7 @@ st781:
 	if ( ++p == pe )
 		goto _test_eof781;
 case 781:
-#line 20090 "rzonec.c"
+#line 20080 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr709;
 		case 34: goto tr709;
@@ -20125,7 +20115,7 @@ st782:
 	if ( ++p == pe )
 		goto _test_eof782;
 case 782:
-#line 20129 "rzonec.c"
+#line 20119 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr824;
 	goto tr709;
@@ -20140,7 +20130,7 @@ st783:
 	if ( ++p == pe )
 		goto _test_eof783;
 case 783:
-#line 20144 "rzonec.c"
+#line 20134 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr825;
 	goto tr709;
@@ -20155,7 +20145,7 @@ st784:
 	if ( ++p == pe )
 		goto _test_eof784;
 case 784:
-#line 20159 "rzonec.c"
+#line 20149 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr709;
 		case 34: goto tr709;
@@ -20194,7 +20184,7 @@ st785:
 	if ( ++p == pe )
 		goto _test_eof785;
 case 785:
-#line 20198 "rzonec.c"
+#line 20188 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr826;
 	goto tr709;
@@ -20209,7 +20199,7 @@ st786:
 	if ( ++p == pe )
 		goto _test_eof786;
 case 786:
-#line 20213 "rzonec.c"
+#line 20203 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr827;
 	goto tr709;
@@ -20224,7 +20214,7 @@ st787:
 	if ( ++p == pe )
 		goto _test_eof787;
 case 787:
-#line 20228 "rzonec.c"
+#line 20218 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr709;
 		case 34: goto tr709;
@@ -20263,7 +20253,7 @@ st788:
 	if ( ++p == pe )
 		goto _test_eof788;
 case 788:
-#line 20267 "rzonec.c"
+#line 20257 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr828;
 	goto tr709;
@@ -20278,7 +20268,7 @@ st789:
 	if ( ++p == pe )
 		goto _test_eof789;
 case 789:
-#line 20282 "rzonec.c"
+#line 20272 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr829;
 	goto tr709;
@@ -20293,7 +20283,7 @@ st790:
 	if ( ++p == pe )
 		goto _test_eof790;
 case 790:
-#line 20297 "rzonec.c"
+#line 20287 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr709;
 		case 34: goto tr709;
@@ -20332,7 +20322,7 @@ st791:
 	if ( ++p == pe )
 		goto _test_eof791;
 case 791:
-#line 20336 "rzonec.c"
+#line 20326 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr830;
 	goto tr709;
@@ -20347,7 +20337,7 @@ st792:
 	if ( ++p == pe )
 		goto _test_eof792;
 case 792:
-#line 20351 "rzonec.c"
+#line 20341 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr831;
 	goto tr709;
@@ -20362,7 +20352,7 @@ st793:
 	if ( ++p == pe )
 		goto _test_eof793;
 case 793:
-#line 20366 "rzonec.c"
+#line 20356 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr709;
 		case 34: goto tr709;
@@ -20401,7 +20391,7 @@ st794:
 	if ( ++p == pe )
 		goto _test_eof794;
 case 794:
-#line 20405 "rzonec.c"
+#line 20395 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr832;
 	goto tr709;
@@ -20416,7 +20406,7 @@ st795:
 	if ( ++p == pe )
 		goto _test_eof795;
 case 795:
-#line 20420 "rzonec.c"
+#line 20410 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr833;
 	goto tr709;
@@ -20431,7 +20421,7 @@ st796:
 	if ( ++p == pe )
 		goto _test_eof796;
 case 796:
-#line 20435 "rzonec.c"
+#line 20425 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr709;
 		case 34: goto tr709;
@@ -20470,7 +20460,7 @@ st797:
 	if ( ++p == pe )
 		goto _test_eof797;
 case 797:
-#line 20474 "rzonec.c"
+#line 20464 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr834;
 	goto tr709;
@@ -20485,7 +20475,7 @@ st798:
 	if ( ++p == pe )
 		goto _test_eof798;
 case 798:
-#line 20489 "rzonec.c"
+#line 20479 "rzonec.c"
 	if ( 48 <= (*p) && (*p) <= 55 )
 		goto tr835;
 	goto tr709;
@@ -20500,7 +20490,7 @@ st799:
 	if ( ++p == pe )
 		goto _test_eof799;
 case 799:
-#line 20504 "rzonec.c"
+#line 20494 "rzonec.c"
 	switch( (*p) ) {
 		case 32: goto tr709;
 		case 34: goto tr709;
@@ -20530,7 +20520,7 @@ st800:
 	if ( ++p == pe )
 		goto _test_eof800;
 case 800:
-#line 20534 "rzonec.c"
+#line 20524 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr576;
 		case 10: goto tr577;
@@ -20595,7 +20585,7 @@ st805:
 	if ( ++p == pe )
 		goto _test_eof805;
 case 805:
-#line 20599 "rzonec.c"
+#line 20589 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr843;
 		case 10: goto tr844;
@@ -20648,7 +20638,7 @@ st806:
 	if ( ++p == pe )
 		goto _test_eof806;
 case 806:
-#line 20652 "rzonec.c"
+#line 20642 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr843;
 		case 10: goto tr844;
@@ -20681,7 +20671,7 @@ st807:
 	if ( ++p == pe )
 		goto _test_eof807;
 case 807:
-#line 20685 "rzonec.c"
+#line 20675 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr180;
 		case 32: goto tr180;
@@ -20706,7 +20696,7 @@ st808:
 	if ( ++p == pe )
 		goto _test_eof808;
 case 808:
-#line 20710 "rzonec.c"
+#line 20700 "rzonec.c"
 	switch( (*p) ) {
 		case 9: goto tr848;
 		case 32: goto tr848;
@@ -20731,7 +20721,7 @@ st811:
 	if ( ++p == pe )
 		goto _test_eof811;
 case 811:
-#line 20735 "rzonec.c"
+#line 20725 "rzonec.c"
 	goto st0;
 	}
 	_test_eof810: cs = 810; goto _test_eof; 
@@ -22683,14 +22673,14 @@ case 811:
         p--; {goto st809;}
     }
 	break;
-#line 22687 "rzonec.c"
+#line 22677 "rzonec.c"
 	}
 	}
 
 	_out: {}
 	}
 
-#line 124 "rzonec.rl"
+#line 120 "rzonec.rl"
     }
     close(fd);
     fflush(stdout);
@@ -22703,7 +22693,7 @@ case 811:
  *
  */
 int
-zparser_process_rr(void)
+zparser_process_rr(zparser_type* parser)
 {
     /* supported CLASS */
     if (parser->current_rr.klass != DNS_CLASS_IN) {
@@ -22740,6 +22730,7 @@ extern int optind;
 int
 rzonec(int argc, char **argv)
 {
+    zparser_type* parser = NULL;
     char* origin = NULL;
     char* dbfile = NULL;
     char* zonefile = NULL;
@@ -22790,7 +22781,7 @@ rzonec(int argc, char **argv)
     }
 */
     /* Create the parser */
-    zparser_create();
+    parser = zparser_create();
     if (!parser) {
         fprintf(stderr, "[%s] error creating the parser\n", logstr);
         exit(1);
@@ -22801,7 +22792,7 @@ rzonec(int argc, char **argv)
      */
     fprintf(stdout, "[%s] reading zone %s file %s db %s.\n", logstr, origin,
         zonefile, dbfile);
-    ret = zparser_read_zone(zonefile);
+    ret = zparser_read_zone(parser, zonefile);
 
     fprintf(stdout, "[%s] read %d lines in zone %s.\n", logstr, parser->line,
         origin);
@@ -22824,7 +22815,7 @@ rzonec(int argc, char **argv)
     region_log(parser->rr_region, "rr region");
 
     /* Cleanup the parser */
-    zparser_cleanup();
+    zparser_cleanup(parser);
 
     /* Print the total number of errors */
     if (ret > 0) {

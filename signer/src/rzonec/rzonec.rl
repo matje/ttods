@@ -24,8 +24,6 @@
 #define MAX_BUFSIZE 1024
 #define DEFAULT_TTL 3600
 
-static zparser_type* parser;
-
 static const char* logstr = "rzonec";
 
 
@@ -46,13 +44,14 @@ static const char* logstr = "rzonec";
  * Create parser.
  *
  */
-int
+zparser_type*
 zparser_create()
 {
+    zparser_type* parser;
     region_type* r = region_create();
     region_type* rrr = region_create();
     if (!r || !rrr) {
-        return 0;
+        return NULL;
     }
     parser = (zparser_type*) region_alloc(r, sizeof(zparser_type));
     parser->tmp_rdata = (rdata_type*) region_alloc(r, DNS_RDATA_MAX *
@@ -80,7 +79,7 @@ zparser_create()
     parser->current_rr.klass = DNS_CLASS_IN;
     parser->current_rr.rdlen = 0;
     parser->current_rr.rdata = parser->tmp_rdata;
-    return 1;
+    return parser;
 }
 
 
@@ -89,11 +88,10 @@ zparser_create()
  *
  */
 void
-zparser_cleanup(void)
+zparser_cleanup(zparser_type* parser)
 {
     region_cleanup(parser->rr_region);
     region_cleanup(parser->region);
-    parser = NULL;
     return;
 }
 
@@ -103,7 +101,7 @@ zparser_cleanup(void)
  *
  */
 int
-zparser_read_zone(const char* file)
+zparser_read_zone(zparser_type* parser, const char* file)
 {
     char buf[MAX_BUFSIZE];
     ssize_t r;
@@ -115,11 +113,9 @@ zparser_read_zone(const char* file)
     ods_log_debug("[%s] read %lu bytes.\n", logstr, r);
     if (r > 0) {
         int cs = 0;
-/*        int res = 0; */
         char* p = &buf[0];
         char* pe = p + r + 1;
         char* eof = NULL;
-        %% write init;
         %% write exec;
     }
     close(fd);
@@ -133,7 +129,7 @@ zparser_read_zone(const char* file)
  *
  */
 int
-zparser_process_rr(void)
+zparser_process_rr(zparser_type* parser)
 {
     /* supported CLASS */
     if (parser->current_rr.klass != DNS_CLASS_IN) {
@@ -170,6 +166,7 @@ extern int optind;
 int
 rzonec(int argc, char **argv)
 {
+    zparser_type* parser = NULL;
     char* origin = NULL;
     char* dbfile = NULL;
     char* zonefile = NULL;
@@ -220,7 +217,7 @@ rzonec(int argc, char **argv)
     }
 */
     /* Create the parser */
-    zparser_create();
+    parser = zparser_create();
     if (!parser) {
         fprintf(stderr, "[%s] error creating the parser\n", logstr);
         exit(1);
@@ -231,7 +228,7 @@ rzonec(int argc, char **argv)
      */
     fprintf(stdout, "[%s] reading zone %s file %s db %s.\n", logstr, origin,
         zonefile, dbfile);
-    ret = zparser_read_zone(zonefile);
+    ret = zparser_read_zone(parser, zonefile);
 
     fprintf(stdout, "[%s] read %d lines in zone %s.\n", logstr, parser->line,
         origin);
@@ -254,7 +251,7 @@ rzonec(int argc, char **argv)
     region_log(parser->rr_region, "rr region");
 
     /* Cleanup the parser */
-    zparser_cleanup();
+    zparser_cleanup(parser);
 
     /* Print the total number of errors */
     if (ret > 0) {
