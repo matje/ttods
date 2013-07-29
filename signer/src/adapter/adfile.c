@@ -52,17 +52,19 @@ ods_status
 adfile_read(struct zone_struct* zone)
 {
     int ret;
+    zparser_type* parser;
     ods_status status = ODS_STATUS_OK;
     ods_log_assert(zone);
     ods_log_assert(zone->adapter_in);
     ods_log_assert(zone->adapter_in->configstr);
     /* create the parser */
-    if (!zparser_create()) {
+    parser = zparser_create();
+    if (!parser) {
         ods_log_crit("[%s] create zone parser failed", logstr);
         return ODS_STATUS_ZPARSERERR;
     }
-    ret = zparser_read_zone(zone->adapter_in->configstr);
-    zparser_cleanup();
+    ret = zparser_read_zone(parser, zone->adapter_in->configstr);
+    zparser_cleanup(parser);
     if (ret) {
         status = ODS_STATUS_ZPARSERERR;
     }
