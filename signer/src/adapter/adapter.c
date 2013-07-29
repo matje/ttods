@@ -33,6 +33,7 @@
 
 #include "config.h"
 #include "adapter/adapter.h"
+#include "adapter/adfile.h"
 #include "signer/zone.h"
 #include "util/log.h"
 
@@ -83,7 +84,7 @@ adapter_read(struct zone_struct* zone)
         case ADAPTER_FILE:
             ods_log_verbose("[%s] read zone %s from file input adapter %s",
                 logstr, zone->name, zone->adapter_in->configstr);
-            return ODS_STATUS_NOTIMPL;
+            return adfile_read(zone);
             break;
         case ADAPTER_DNS:
             ods_log_warning("[%s] zone %s dns input adapter NOTIMPL",

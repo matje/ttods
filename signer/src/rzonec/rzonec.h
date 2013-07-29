@@ -74,7 +74,7 @@ void zparser_cleanup(void);
  * @return: (int) status.
  *
  */
-int rzonec_process_rr(void);
+int zparser_process_rr(void);
 
 /**
  * Reads the specified zone into the memory.
@@ -82,7 +82,7 @@ int rzonec_process_rr(void);
  * @param:      (int) number of errors.
  *
  */
-int rzonec_read_zone(const char* file);
+int zparser_read_zone(const char* file);
 
 #endif /* RZONEC_RZONEC_H */
 

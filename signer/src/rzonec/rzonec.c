@@ -110,7 +110,7 @@ zparser_cleanup(void)
  *
  */
 int
-rzonec_read_zone(const char* file)
+zparser_read_zone(const char* file)
 {
     char buf[MAX_BUFSIZE];
     ssize_t r;
@@ -155,7 +155,7 @@ tr154:
 #line 191 "zparser.rl"
 	{
         int i;
-        rzonec_process_rr();
+        zparser_process_rr();
         dname_print(stderr, parser->current_rr.owner);
         fprintf(stderr, "\t%u", parser->current_rr.ttl);
         fprintf(stderr, "\t");
@@ -3282,7 +3282,7 @@ tr153:
 #line 191 "zparser.rl"
 	{
         int i;
-        rzonec_process_rr();
+        zparser_process_rr();
         dname_print(stderr, parser->current_rr.owner);
         fprintf(stderr, "\t%u", parser->current_rr.ttl);
         fprintf(stderr, "\t");
@@ -3397,7 +3397,7 @@ tr156:
 #line 191 "zparser.rl"
 	{
         int i;
-        rzonec_process_rr();
+        zparser_process_rr();
         dname_print(stderr, parser->current_rr.owner);
         fprintf(stderr, "\t%u", parser->current_rr.ttl);
         fprintf(stderr, "\t");
@@ -22703,7 +22703,7 @@ case 811:
  *
  */
 int
-rzonec_process_rr(void)
+zparser_process_rr(void)
 {
     /* supported CLASS */
     if (parser->current_rr.klass != DNS_CLASS_IN) {
@@ -22801,7 +22801,7 @@ rzonec(int argc, char **argv)
      */
     fprintf(stdout, "[%s] reading zone %s file %s db %s.\n", logstr, origin,
         zonefile, dbfile);
-    ret = rzonec_read_zone(zonefile);
+    ret = zparser_read_zone(zonefile);
 
     fprintf(stdout, "[%s] read %d lines in zone %s.\n", logstr, parser->line,
         origin);

@@ -32,6 +32,7 @@
  */
 
 #include "config.h"
+#include "adapter/adfile.h"
 #include "util/file.h"
 #include "util/log.h"
 #include "util/str.h"

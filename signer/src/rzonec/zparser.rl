@@ -190,7 +190,7 @@
     }
     action zparser_rr_end {
         int i;
-        rzonec_process_rr();
+        zparser_process_rr();
         dname_print(stderr, parser->current_rr.owner);
         fprintf(stderr, "\t%u", parser->current_rr.ttl);
         fprintf(stderr, "\t");
