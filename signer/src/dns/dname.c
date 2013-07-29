@@ -91,6 +91,19 @@ label_length(const uint8_t* label)
 
 
 /**
+ * Data of label.
+ *
+ */
+const uint8_t*
+label_data(const uint8_t* label)
+{
+    assert(label);
+    assert(label_is_normal(label));
+    return label + 1;
+}
+
+
+/**
  * Get the next label.
  *
  */
@@ -103,6 +116,32 @@ label_next(const uint8_t* label)
     return label + label_length(label) + 1;
 }
 
+
+/**
+ * Compare labels.
+ *
+ */
+int
+label_compare(const uint8_t* label1, const uint8_t* label2)
+{
+    int length1;
+    int lenght2;
+    size_t size;
+    int result;
+    ods_log_assert(label1);
+    ods_log_assert(label2);
+    ods_log_assert(label_is_normal(label1));
+    ods_log_assert(label_is_normal(label2));
+    length1 = label_length(label1);
+    lenght2 = label_length(label2);
+    size = length1 < lenght2 ? length1 : lenght2;
+    result = memcmp(label_data(label1), label_data(label2), size);
+    if (result) {
+        return result;
+    } else {
+        return (int) length1 - (int) lenght2;
+    }
+}
 
 
 /**
@@ -209,6 +248,53 @@ dname_clone(region_type* r, const dname_type* dname)
     assert(r);
     assert(dname);
     return (dname_type*) region_alloc_init(r, dname, dname_total_size(dname));
+}
+
+
+/**
+ * Compare domain names.
+ *
+ */
+int
+dname_compare(dname_type* dname1, dname_type* dname2)
+{
+    const dname_type* left = (const dname_type*) dname1;
+    const dname_type* right = (const dname_type*) dname2;
+    int result;
+    uint8_t label_count;
+    uint8_t i;
+    ods_log_assert(left);
+    ods_log_assert(right);
+    if (left == right) {
+        return 0;
+    }
+    label_count = (left->label_count <= right->label_count ?
+        left->label_count : right->label_count);
+    /* skip the root label by starting at label 1. */
+    for (i = 1; i < label_count; ++i) {
+        result = label_compare(dname_label(left, i), dname_label(right, i));
+        if (result) {
+            return result;
+        }
+    }
+    /* dname with the fewest labels is "first".  */
+    return (int) left->label_count - (int) right->label_count;
+}
+
+
+/**
+ * Return label of domain name.
+ *
+ */
+const uint8_t*
+dname_label(const dname_type* dname, uint8_t index)
+{
+    uint8_t label_index;
+    ods_log_assert(dname != NULL);
+    ods_log_assert(index < dname->label_count);
+    label_index = dname_label_offsets(dname)[index];
+    ods_log_assert(label_index < dname->size);
+    return dname_name(dname) + label_index;
 }
 
 
