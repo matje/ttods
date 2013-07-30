@@ -14,7 +14,7 @@ AM_CFLAGS =	-std=c99
 
 bin_PROGRAMS = ttods-hsmutil ttods-hsmspeed
 
-man1_MANS = ods-hsmutil.1 ods-hsmspeed.1
+man1_MANS = ttods-hsmutil.1 ttods-hsmspeed.1
 
 ttods_hsmutil_SOURCES = hsmutil.c hsmtest.c hsmtest.h
 ttods_hsmutil_LDADD = ../lib/libhsm.a @LDNS_LIBS@ @XML2_LIBS@ $(LIBCOMPAT)

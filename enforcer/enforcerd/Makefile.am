@@ -20,7 +20,7 @@ AM_CPPFLAGS = \
 	@LDNS_INCLUDES@
 
 sbin_PROGRAMS = ttods-enforcerd
-man8_MANS = ods-enforcerd.8
+man8_MANS = ttods-enforcerd.8
 
 ttods_enforcerd_SOURCES = enforcer.c enforcer.h
 ttods_enforcerd_LDADD = $(LIBENFORCER) $(LIBKSM) $(LIBHSM) $(LIBCOMPAT)

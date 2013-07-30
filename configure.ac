@@ -290,10 +290,10 @@ AC_CONFIG_FILES([
 	signer/man/ttods-signerd.8
 	signer/src/Makefile
 	tools/Makefile
-	tools/ods-control
+	tools/ttods-control
 	tools/solaris/Makefile
-	tools/solaris/ods-enforcerd.init
-	tools/solaris/ods-signerd.init
+	tools/solaris/ttods-enforcerd.init
+	tools/solaris/ttods-signerd.init
 	tools/ttods-timing.5
 	tools/ttods.7
 	tools/ttods-control.8

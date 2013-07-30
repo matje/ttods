@@ -11,7 +11,7 @@ MAINTAINERCLEANFILES = \
 
 EXTRA_DIST = \
 	README \
-	ods-enforcerd-smf.xml \
-	ods-signerd-smf.xml \
-	ods-enforcerd.init.in \
-	ods-signerd.init.in
+	ttods-enforcerd-smf.xml \
+	ttods-signerd-smf.xml \
+	ttods-enforcerd.init.in \
+	ttods-signerd.init.in
