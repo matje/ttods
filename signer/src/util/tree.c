@@ -57,15 +57,32 @@ tree_create(region_type* region, int (*cmpfunc)(const void *, const void *))
     return tree;
 }
 
+
 /**
  * Insert node into tree.
  *
  */
+tree_node*
+tree_insert(tree_type* tree, tree_node* node)
+{
+    ods_log_assert(tree);
+    ods_log_assert(node);
+    return ldns_rbtree_insert(tree->storage, (ldns_rbnode_t*) node);
+}
+
 
 /**
  * Search tree.
  *
  */
+tree_node*
+tree_search(tree_type* tree, const void* key)
+{
+    ods_log_assert(tree);
+    ods_log_assert(key);
+    return ldns_rbtree_search(tree->storage, key);
+}
+
 
 /**
  * Delete node from tree.

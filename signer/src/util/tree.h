@@ -38,10 +38,21 @@
 
 #include <ldns/ldns.h>
 
+/**
+ * Tree storage structure.
+ *
+ */
 typedef struct tree_struct tree_type;
 struct tree_struct {
     ldns_rbtree_t* storage;
 };
+
+/**
+ * Tree node.
+ *
+ */
+typedef ldns_rbnode_t tree_node;
+
 
 /**
  * Create tree storage.
@@ -52,6 +63,24 @@ struct tree_struct {
  */
 tree_type* tree_create(region_type* region,
     int (*cmpfunc)(const void *, const void *));
+
+/**
+ * Insert node into tree.
+ * @param tree: tree.
+ * @param node: node.
+ * @return:     (tree_node*) inserted node, NULL on error.
+ *
+ */
+tree_node* tree_insert(tree_type* tree, tree_node* node);
+
+/**
+ * Search tree.
+ * @param tree: tree.
+ * @param key:  search key.
+ * @return:     (tree_node*) searched node, NULL if not found.
+ *
+ */
+tree_node* tree_search(tree_type* tree, const void* key);
 
 /**
  * Clean up tree storage.
