@@ -374,7 +374,7 @@
                      >zparser_rdata_start $zparser_rdata_char
                      %zparser_rdata_ipv4  $!zerror_rdata_ipv4;
 
-    rdata_a          = delim . rdata_ipv4 %zparser_rdata_ipv4;
+    rdata_a          = delim . rdata_ipv4;
 
     rdata_ns         = delim . "RDATA_NS";
     rdata_md         = delim . "RDATA_MD";
