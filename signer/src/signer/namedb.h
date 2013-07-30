@@ -35,6 +35,8 @@
 #define SIGNER_NAMEDB_H
 
 #include "config.h"
+#include "util/tree.h"
+#include "util/region.h"
 
 #include <ldns/ldns.h>
 
@@ -46,17 +48,16 @@ struct zone_struct;
  */
 typedef struct namedb_struct namedb_type;
 struct namedb_struct {
-    struct zone_struct* zone;
-    ldns_rbtree_t* domains;
+    tree_type* domains;
 };
 
 /**
  * Create a new namedb.
- * @param zone: zone ref.
- * @return: namedb_type* namedb.
+ * @param region: memory region.
+ * @return:       (namedb_type*) namedb.
  *
  */
-namedb_type* namedb_create(struct zone_struct* zone);
+namedb_type* namedb_create(region_type* region);
 
 /**
  * Clean up namedb.

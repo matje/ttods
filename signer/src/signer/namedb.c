@@ -55,56 +55,19 @@ domain_compare(const void* a, const void* b)
 
 
 /**
- * Initialize domains.
- *
- */
-static void
-namedb_init_domains(namedb_type* db)
-{
-    if (db) {
-        db->domains = ldns_rbtree_create(domain_compare);
-    }
-    return;
-}
-
-
-/**
  * Create a new namedb.
  *
  */
 namedb_type*
-namedb_create(struct zone_struct* zone)
+namedb_create(region_type* region)
 {
     namedb_type* db = NULL;
-    ods_log_assert(zone);
-    ods_log_assert(zone->name);
-    ods_log_assert(zone->region);
-    db = (namedb_type*) region_alloc(zone->region, sizeof(namedb_type));
-    db->zone = zone;
+    tree_type* domains = NULL;
+    ods_log_assert(region);
 
-    namedb_init_domains(db);
-    if (!db->domains) {
-        ods_log_error("[%s] unable to create namedb for zone %s: "
-            "init domains failed", logstr, zone->name);
-        namedb_cleanup(db);
-        return NULL;
-    }
+    db = (namedb_type*) region_alloc(region, sizeof(namedb_type));
+    db->domains = tree_create(region, domain_compare);
     return db;
-}
-
-
-/**
- * Clean up domains.
- *
- */
-static void
-namedb_cleanup_domains(namedb_type* db)
-{
-    if (db && db->domains) {
-        ldns_rbtree_free(db->domains);
-        db->domains = NULL;
-    }
-    return;
 }
 
 
@@ -115,14 +78,8 @@ namedb_cleanup_domains(namedb_type* db)
 void
 namedb_cleanup(namedb_type* db)
 {
-    zone_type* zone = NULL;
-    if (!db) {
-        return;
+    if (db) {
+        tree_cleanup(db);
     }
-    zone = (zone_type*) db->zone;
-    if (!zone || !zone->region) {
-        return;
-    }
-    namedb_cleanup_domains(db);
     return;
 }
