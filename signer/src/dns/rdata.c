@@ -33,6 +33,7 @@
 
 #include "dns/dns.h"
 #include "dns/rdata.h"
+#include "dns/wf.h"
 
 #include <arpa/inet.h>
 #include <errno.h>
@@ -49,6 +50,17 @@ static uint8_t*
 rdata_get_data(rdata_type* rdata)
 {
     return (uint8_t*) (rdata->data + 1);
+}
+
+
+/**
+ * Get dname from RDATA element.
+ *
+ */
+static dname_type*
+rdata_get_dname(rdata_type* rdata)
+{
+    return rdata->dname;
 }
 
 
@@ -72,6 +84,47 @@ rdata_print_ipv4(FILE* fd, rdata_type* rdata)
 
 
 /**
+ * Print dname RDATA element.
+ *
+ */
+static void
+rdata_print_dname(FILE* fd, rdata_type* rdata)
+{
+    char str[DNAME_MAXLEN*5];
+    /* assert fd, rdata */
+    dname_str(rdata_get_dname(rdata), &str[0]);
+    fprintf(fd, "%s", str);
+    return;
+}
+
+
+/**
+ * Print int32 RDATA element.
+ *
+ */
+static void
+rdata_print_int32(FILE* fd, rdata_type* rdata)
+{
+    uint32_t data = wf_read_uint32(rdata_get_data(rdata));
+    fprintf(fd, "%lu", (unsigned long) data);
+    return;
+}
+
+
+/**
+ * Print time format RDATA element.
+ *
+ */
+static void
+rdata_print_timef(FILE* fd, rdata_type* rdata)
+{
+    uint32_t data = wf_read_uint32(rdata_get_data(rdata));
+    fprintf(fd, "%lu", (unsigned long) data);
+    return;
+}
+
+
+/**
  * Print RDATA element.
  *
  */
@@ -87,6 +140,17 @@ rdata_print(FILE* fd, rdata_type* rdata, uint16_t rrtype, uint8_t pos)
         case DNS_RDATA_IPV4:
             rdata_print_ipv4(fd, rdata);
             break;
+        case DNS_RDATA_COMPRESSED_DNAME:
+            rdata_print_dname(fd, rdata);
+            break;
+        case DNS_RDATA_INT32:
+            rdata_print_int32(fd, rdata);
+            break;
+        case DNS_RDATA_TIMEF:
+            rdata_print_timef(fd, rdata);
+            break;
+        case DNS_RDATA_UNCOMPRESSED_DNAME:
+        case DNS_RDATA_BINARY:
         default:
             fprintf(fd, "<unknown>");
             break;
