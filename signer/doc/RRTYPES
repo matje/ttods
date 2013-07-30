@@ -1,0 +1,9 @@
+Supported RRtypes
+-----------------
+
+  "A"        1,    # RFC 1035, Section 3.4.1
+
+  "SOA"      6,    # RFC 1035, Section 3.3.13
+                   SOA TTL semantics updated by rfc2308
+                   dname compression in RDATA [TODO]
+

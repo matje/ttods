@@ -1,6 +1,6 @@
 $Id: README 6186 2012-02-22 20:26:00Z matthijs $
 
-The signer engine and its tools are part of the OpenDNSSEC project.
+The signer engine is part of the OpenDNSSEC project.
 For more information, visit http://www.opendnssec.org
 
 CONTENTS:
@@ -17,19 +17,18 @@ INTRODUCTION
 -------------------------------------------------------------------
 
 As part of the OpenDNSSEC project, the task of the signer engine is to
-schedule signing operation on DNS zones. Taking input from the KASP, it
-will automatically sign zones and keep their signatures up-to-date.
+schedule signing operations on DNS zones. Taking input from the Key and
+Signing Policy (KASP), it will automatically sign zones and keep their
+signatures up-to-date.
 
-Until version 1.3, OpenDNSSEC could only handle file-to-file signing. 
-With the Zonefetcher enabled, AXFR-to-file signing was possible. Version
-1.4 and up can handle unsigned zones in file, AXFR and IXFR format, as well
+OpenDNSSEC can handle unsigned zones in file, AXFR and IXFR format, as well
 as output signed zones as file, AXFR and IXFR. When a zone has changed,
 the engine can run a specified command, for instance to signal an actual
 DNS server that it should reload its zones (useful for file output).
 
 The signer engine has a scheduler, including a set of workers to do zone
 manipulation, and zone in- and output is handled by different types of
-adapters. 
+adapters.
 
 The signer is written in c is run as a daemon. When a zone needs to be
 sorted or (re)signed, the workers will report for duty and perform the job.
@@ -63,11 +62,15 @@ make install
 
 The options provided with configure:
 
---with-ldns=<dir> The base directory (prefix) of your ldns installation,
-                  if it isn't in your standard path.
---prefix=<dir>    Installation directory. All files will be installed
-                  relative to this path, and default search paths will
-                  be relative to the prefix. Defaults to /usr/local
+--with-ldns=<dir>  The base directory (prefix) of your ldns installation,
+                   if it isn't in your standard path.
+
+--prefix=<dir>     Installation directory. All files will be installed
+                   relative to this path, and default search paths will
+                   be relative to the prefix. Defaults to /usr/local
+
+--enable-timeshift Enable the possibility to enforce a specific datetime
+                   in an environment variable. For debugging purposes.
 
 The signer engine will be installed in
 <prefix>/sbin
@@ -265,6 +268,11 @@ Put something like this in your zonelist.xml:
 The example.com.dns.xml holds all master and slave configurations for
 transfers.
 
+-------------------------------------------------------------------
+SUPPORTED RRTYPES
+-------------------------------------------------------------------
+
+See doc/RRTYPES for a list of supported RRTYPES.
 
 -------------------------------------------------------------------
 DEBUGGING
@@ -275,4 +283,5 @@ If the signer is build with the '--enable-timeshift' option, one can
 override the system clock using the ENFORCER_TIMESHIFT environment variable.
 ENFORCER_TIMESHIFT should be set to the timestamp (in YYYYMMDDHHMMSS format).
 When running with timeshift, the program will run once only and exit.
+
 
