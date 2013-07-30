@@ -33,6 +33,7 @@
 
 #include "config.h"
 #include "signer/signconf.h"
+#include "rzonec/zonec.h"
 #include "signer/zone.h"
 #include "util/duration.h"
 #include "util/log.h"
@@ -48,7 +49,9 @@ static const char* logstr = "zone";
 static void
 zone_init(zone_type* zone)
 {
-    zone->default_ttl = 3600; /* TODO: configure --default-ttl option? */
+    zone->signconf = signconf_create(zone->region);
+    zone->namedb = namedb_create(zone->region);
+    zone->default_ttl = DEFAULT_TTL;
     zone->policy_name = NULL;
     zone->signconf_filename = NULL;
     zone->task = NULL;
@@ -88,28 +91,10 @@ zone_create(char* name, ldns_rr_class klass)
     }
     /* [end] PS 9218653 */
     zone->name = (const char*) region_strdup(region, name);
-    if (!zone->name) {
-        ods_log_crit("[%s] region strdup(%s) failed", logstr, name);
-        zone_cleanup(zone);
-        return NULL;
-    }
     zone->apex = dname_create(region, name);
     if (!zone->apex) {
         ods_log_crit("[%s] apex %s create failed", logstr, name);
-        zone_cleanup(zone);
-        return NULL;
-    }
-    zone->signconf = signconf_create(region);
-    if (!zone->signconf) {
-        ods_fatal_exit("[%s] create signconf failed", logstr);
-        zone_cleanup(zone);
-        return NULL;
-    }
-    zone->namedb = namedb_create((struct zone_struct*) zone);
-    if (!zone->namedb) {
-        ods_fatal_exit("[%s] create namedb failed", logstr);
-        zone_cleanup(zone);
-        return NULL;
+        exit(1);
     }
     zone_init(zone);
     return zone;

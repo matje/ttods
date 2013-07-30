@@ -50,10 +50,6 @@ signconf_create(region_type* r)
     signconf_type* sc;
     ods_log_assert(r);
     sc = (signconf_type*) region_alloc(r, sizeof(signconf_type));
-    if (!sc) {
-        ods_log_crit("[%s] region alloc failed", logstr);
-        return NULL;
-    }
     sc->last_modified = 0;
     /* Signatures */
     duration_init(&(sc->sig_resign_interval));
