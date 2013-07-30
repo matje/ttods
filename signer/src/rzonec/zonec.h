@@ -17,6 +17,7 @@
 
 #include <stdint.h>
 
+#define DEFAULT_TTL 3600
 
 /**
  * Add parsed RDATA element into currently parsed resource record.

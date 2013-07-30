@@ -24,7 +24,6 @@
 #include <sys/stat.h>
 
 #define MAX_BUFSIZE 1024
-#define DEFAULT_TTL 3600
 
 static const char* logstr = "rzonec";
 

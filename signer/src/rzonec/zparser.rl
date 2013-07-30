@@ -196,6 +196,7 @@
     action zparser_rr_end {
         int i;
         zparser_process_rr(parser);
+        fprintf(stderr, "RR: ");
         dname_print(stderr, parser->current_rr.owner);
         fprintf(stderr, "\t%u", parser->current_rr.ttl);
         fprintf(stderr, "\t");
@@ -203,7 +204,7 @@
         fprintf(stderr, "\t");
         rr_print_rrtype(stderr, parser->current_rr.type);
         for (i = 0; i < parser->current_rr.rdlen; i++) {
-            fprintf(stderr, " ");
+            fprintf(stderr, "rdata:");
             rdata_print(stderr, &parser->current_rr.rdata[i],
                 parser->current_rr.type, i);
         }
@@ -221,8 +222,30 @@
         parser->rdbuf[parser->rdsize] = '\0';
         if (!zonec_rdata_add(parser->region, &parser->current_rr,
             DNS_RDATA_IPV4, parser->rdbuf, parser->rdsize)) {
-            ods_log_error("[zparser] error: line %d: bad IPv4 address "
-                "'%s'", parser->line, parser->rdbuf);
+            parser->totalerrors++;
+            fhold; fgoto line;
+        }
+    }
+    action zparser_rdata_compressed_dname {
+        parser->rdbuf[parser->rdsize] = '\0';
+        if (!zonec_rdata_add(parser->region, &parser->current_rr,
+            DNS_RDATA_COMPRESSED_DNAME, parser->rdbuf, parser->rdsize)) {
+            parser->totalerrors++;
+            fhold; fgoto line;
+        }
+    }
+    action zparser_rdata_int32 {
+        parser->rdbuf[parser->rdsize] = '\0';
+        if (!zonec_rdata_add(parser->region, &parser->current_rr,
+            DNS_RDATA_INT32, parser->rdbuf, parser->rdsize)) {
+            parser->totalerrors++;
+            fhold; fgoto line;
+        }
+    }
+    action zparser_rdata_timef {
+        parser->rdbuf[parser->rdsize] = '\0';
+        if (!zonec_rdata_add(parser->region, &parser->current_rr,
+            DNS_RDATA_TIMEF, parser->rdbuf, parser->rdsize)) {
             parser->totalerrors++;
             fhold; fgoto line;
         }
@@ -290,7 +313,25 @@
         fhold; fgoto line;
     }
     action zerror_rdata_ipv4 {
-        ods_log_error("[zparser] error: line %d: bad IPv4 address format",
+        ods_log_error("[zparser] error: line %d: bad IPv4 address rdata format",
+            parser->line);
+        parser->totalerrors++;
+        fhold; fgoto line;
+    }
+    action zerror_rdata_dname {
+        ods_log_error("[zparser] error: line %d: bad dname rdata format",
+            parser->line);
+        parser->totalerrors++;
+        fhold; fgoto line;
+    }
+    action zerror_rdata_int32 {
+        ods_log_error("[zparser] error: line %d: bad int32 rdata format",
+            parser->line);
+        parser->totalerrors++;
+        fhold; fgoto line;
+    }
+    action zerror_rdata_timef {
+        ods_log_error("[zparser] error: line %d: bad time rdata format",
             parser->line);
         parser->totalerrors++;
         fhold; fgoto line;
@@ -369,18 +410,33 @@
     # We could parse CS, CH, HS, NONE, ANY and CLASS<%d>
 
     # RDATAs
-    rdata_ipv4       = ((digit {1,3}) . '.' . (digit {1,3}) . '.'
+    rd_ipv4          = ((digit {1,3}) . '.' . (digit {1,3}) . '.'
                      .  (digit {1,3}) . '.' . (digit {1,3}))
                      >zparser_rdata_start $zparser_rdata_char
                      %zparser_rdata_ipv4  $!zerror_rdata_ipv4;
 
-    rdata_a          = delim . rdata_ipv4;
+    rd_dname         = (abs_dname | rel_dname)
+                     >zparser_rdata_start $zparser_rdata_char
+                     %zparser_rdata_compressed_dname $!zerror_rdata_dname;
+
+    rd_int32        = digit+
+                     >zparser_rdata_start $zparser_rdata_char
+                     %zparser_rdata_int32  $!zerror_rdata_int32;
+
+    rd_timef        = ttl
+                     >zparser_rdata_start $zparser_rdata_char
+                     %zparser_rdata_timef  $!zerror_rdata_timef;
+
+    rdata_a          = delim . rd_ipv4;
 
     rdata_ns         = delim . "RDATA_NS";
     rdata_md         = delim . "RDATA_MD";
     rdata_mf         = delim . "RDATA_MF";
     rdata_cname      = delim . "RDATA_CNAME";
-    rdata_soa        = delim . "RDATA_SOA";
+
+    rdata_soa        = ((delim . rd_dname){2}) . (delim . rd_int32) .
+                       ((delim . rd_timef){4});
+
 
     rrtype_and_rdata =
         ( "A"          . rdata_a         >{parser->current_rr.type = DNS_TYPE_A;}
@@ -388,7 +444,7 @@
 #        | "MD"         . rdata_md        >{parser->current_rr.type = DNS_TYPE_MD;}
 #        | "MF"         . rdata_mf        >{parser->current_rr.type = DNS_TYPE_MF;}
 #        | "CNAME"      . rdata_cname     >{parser->current_rr.type = DNS_TYPE_CNAME;}
-#        | "SOA"        . rdata_soa       >{parser->current_rr.type = DNS_TYPE_SOA;}
+        | "SOA"        . rdata_soa       >{parser->current_rr.type = DNS_TYPE_SOA;}
         )                                $!zerror_rr_typedata;
 
     # RFC 1035: <rr> contents take one of the following forms:
