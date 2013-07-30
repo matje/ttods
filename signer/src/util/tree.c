@@ -59,6 +59,20 @@ tree_create(region_type* region, int (*cmpfunc)(const void *, const void *))
 
 
 /**
+ * Get number of nodes in tree.
+ *
+ */
+size_t
+tree_count(tree_type* tree)
+{
+    if (tree && tree->storage) {
+        return tree->storage->count;
+    }
+    return 0;
+}
+
+
+/**
  * Insert node into tree.
  *
  */

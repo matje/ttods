@@ -50,18 +50,10 @@ schedule_create(region_type* r)
     schedule_type* s;
     ods_log_assert(r);
     s = (schedule_type*) region_alloc(r, sizeof(schedule_type));
-    if (!s) {
-        ods_log_crit("[%s] region alloc failed", logstr);
-        return NULL;
-    }
+    s->region = r;
     s->loading = 0;
     s->flushcount = 0;
-    s->tasks = ldns_rbtree_create(task_compare);
-    if (!s->tasks) {
-        ods_log_crit("[%s] create rbtree failed", logstr);
-        free(s);
-        return NULL;
-    }
+    s->tasks = tree_create(r, task_compare);
     lock_basic_init(&s->s_lock);
     lock_basic_set(&s->s_cond);
     return s;
@@ -75,13 +67,13 @@ schedule_create(region_type* r)
 void*
 schedule_lookup_task(schedule_type* s, void* t)
 {
-    ldns_rbnode_t* node = LDNS_RBTREE_NULL;
+    tree_node* node = TREE_NULL;
     void* lookup = NULL;
     if (!s || !t || !s->tasks) {
         return NULL;
     }
-    node = ldns_rbtree_search(s->tasks, t);
-    if (node && node != LDNS_RBTREE_NULL) {
+    node = tree_search(s->tasks, t);
+    if (node && node != TREE_NULL) {
         lookup = (void*) node->data;
     }
     return lookup;
@@ -122,25 +114,25 @@ schedule_next(schedule_type* s)
 void*
 schedule_peek(schedule_type* s)
 {
-    ldns_rbnode_t* first_node = LDNS_RBTREE_NULL;
-    ldns_rbnode_t* node = LDNS_RBTREE_NULL;
+    tree_node* first_node = TREE_NULL;
+    tree_node* node = TREE_NULL;
     task_type* first = NULL;
     if (!s || !s->tasks) {
         return NULL;
     }
-    first_node = ldns_rbtree_first(s->tasks);
+    first_node = tree_first(s->tasks);
     if (!first_node) {
         return NULL;
     }
     if (s->flushcount > 0) {
         /* find remaining to be flushed tasks */
         node = first_node;
-        while (node && node != LDNS_RBTREE_NULL) {
+        while (node && node != TREE_NULL) {
             first = (task_type*) node->data;
             if (first->flush) {
                 return (void*) first;
             }
-            node = ldns_rbtree_next(node);
+            node = tree_next(node);
         }
         /* no more to be flushed tasks found */
         ods_log_warning("[%s] failed to find flush-task, while there should "
@@ -157,14 +149,12 @@ schedule_peek(schedule_type* s)
  * Convert task to a tree node.
  *
  */
-static ldns_rbnode_t*
-task2node(void* t)
+static tree_node*
+task2node(schedule_type* s, void* t)
 {
-    ldns_rbnode_t* node = (ldns_rbnode_t*) malloc(sizeof(ldns_rbnode_t));
-    if (node) {
-        node->key = t;
-        node->data = t;
-    }
+    tree_node* node = (tree_node*) region_alloc(s->region, sizeof(tree_node));
+    node->key = t;
+    node->data = t;
     return node;
 }
 
@@ -189,13 +179,13 @@ schedule_task(schedule_type* s, void* t, int log)
             task_what2str(task->what), task_who2str(task));
         return ODS_STATUS_SCHEDULERR;
     }
-    new_node = task2node(t);
+    new_node = task2node(s, t);
     if (!new_node) {
         ods_log_error("[%s] convert task to node failed", logstr,
             task_what2str(task->what), task_who2str(task));
         return ODS_STATUS_MALLOCERR;
     }
-    ins_node = ldns_rbtree_insert(s->tasks, new_node);
+    ins_node = tree_insert(s->tasks, new_node);
     if (!ins_node) {
         ods_log_error("[%s] rbtree insert failed", logstr,
             task_what2str(task->what), task_who2str(task));
@@ -219,14 +209,14 @@ schedule_task(schedule_type* s, void* t, int log)
 void*
 unschedule_task(schedule_type* s, void* t)
 {
-    ldns_rbnode_t* del_node = LDNS_RBTREE_NULL;
+    tree_node* del_node = TREE_NULL;
     task_type* del_task = (task_type*) t;
     ods_log_assert(s);
     ods_log_assert(s->tasks);
     ods_log_assert(t);
     ods_log_debug("[%s] unschedule task %s for zone %s",
         logstr, task_what2str(del_task->what), task_who2str(del_task));
-    del_node = ldns_rbtree_delete(s->tasks, t);
+    del_node = tree_delete(s->tasks, t);
     if (del_node) {
         del_task = (task_type*) del_node->data;
         free((void*)del_node);
@@ -266,25 +256,6 @@ reschedule_task(schedule_type* s, void* t, int what, time_t when)
 
 
 /**
- * Internal task cleanup function.
- *
- */
-static void
-task_delfunc(ldns_rbnode_t* elem)
-{
-    task_type* task;
-    if (elem && elem != LDNS_RBTREE_NULL) {
-        task = (task_type*) elem->data;
-        task_delfunc(elem->left);
-        task_delfunc(elem->right);
-        task_cleanup(task);
-        free(elem);
-    }
-    return;
-}
-
-
-/**
  * Clean up schedule.
  *
  */
@@ -295,10 +266,7 @@ schedule_cleanup(schedule_type* s)
         return;
     }
     ods_log_debug("[%s] cleanup tasks", logstr);
-    if (s->tasks) {
-        task_delfunc(s->tasks->root);
-        ldns_rbtree_free(s->tasks);
-    }
+    tree_cleanup(s->tasks);
     lock_basic_destroy(&s->s_lock);
     lock_basic_off(&s->s_cond);
     return;

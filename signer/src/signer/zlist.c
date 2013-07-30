@@ -74,16 +74,7 @@ zlist_create(region_type* r)
     zlist_type* zlist;
     ods_log_assert(r);
     zlist = (zlist_type*) region_alloc(r, sizeof(zlist_type));
-    if (!zlist) {
-        ods_log_crit("[%s] region_alloc failed", logstr);
-        return NULL;
-    }
-    zlist->zones = ldns_rbtree_create(zone_compare);
-    if (!zlist->zones) {
-        ods_log_crit("[%s] rbtree create failed", logstr);
-        free((void*) zlist);
-        return NULL;
-    }
+    zlist->zones = tree_create(r, zone_compare);
     zlist->last_modified = 0;
     zlist->just_added = 0;
     zlist->just_updated = 0;
@@ -97,13 +88,12 @@ zlist_create(region_type* r)
  * Convert a zone to a tree node.
  *
  */
-static ldns_rbnode_t*
+static tree_node*
 zone2node(zone_type* zone)
 {
-    ldns_rbnode_t* node = (ldns_rbnode_t*) calloc(1, sizeof(ldns_rbnode_t));
-    if (!node) {
-        return NULL;
-    }
+    /* assume zone and zone->region */
+    tree_node* node = (tree_node*) region_alloc(zone->region,
+        sizeof(tree_node));
     node->key = zone;
     node->data = zone;
     return node;
@@ -117,12 +107,9 @@ zone2node(zone_type* zone)
 static zone_type*
 zlist_lookup_zone(zlist_type* zlist, zone_type* zone)
 {
-    ldns_rbnode_t* node = LDNS_RBTREE_NULL;
-    if (zlist && zlist->zones && zone) {
-        node = ldns_rbtree_search(zlist->zones, zone);
-        if (node) {
-            return (zone_type*) node->data;
-        }
+    tree_node* node = tree_search(zlist->zones, zone);
+    if (node) {
+        return (zone_type*) node->data;
     }
     return NULL;
 }
@@ -135,7 +122,7 @@ zlist_lookup_zone(zlist_type* zlist, zone_type* zone)
 zone_type*
 zlist_add_zone(zlist_type* zlist, zone_type* zone)
 {
-    ldns_rbnode_t* new_node = NULL;
+    tree_node* new_node = NULL;
     ods_log_assert(zlist);
     ods_log_assert(zlist->zones);
     ods_log_assert(zone);
@@ -148,9 +135,8 @@ zlist_add_zone(zlist_type* zlist, zone_type* zone)
     }
     /* add */
     new_node = zone2node(zone);
-    if (ldns_rbtree_insert(zlist->zones, new_node) == NULL) {
+    if (tree_insert(zlist->zones, new_node) == NULL) {
         ods_log_error("[%s] rbtree insert failed", logstr, zone->name);
-        free((void*) new_node);
         zone_cleanup(zone);
         return NULL;
     }
@@ -167,20 +153,20 @@ zlist_add_zone(zlist_type* zlist, zone_type* zone)
 zone_type*
 zlist_del_zone(zlist_type* zlist, zone_type* zone)
 {
-    ldns_rbnode_t* old_node = LDNS_RBTREE_NULL;
+    tree_node* old_node = TREE_NULL;
     if (!zlist || !zlist->zones || !zone) {
         goto zlist_del_zone_notpresent;
     }
-    old_node = ldns_rbtree_delete(zlist->zones, zone);
+    old_node = tree_delete(zlist->zones, zone);
     if (!old_node) {
         goto zlist_del_zone_notpresent;
     }
     /* decrement zonelist's just_removed in merge */
-    free((void*) old_node);
     return zone;
 
 zlist_del_zone_notpresent:
-    ods_log_warning("[%s] zone %s not present", logstr, zone->name);
+    ods_log_assert(zone->name);
+    ods_log_warning("[%s] delete zone %s not in storage", logstr, zone->name);
     return zone;
 }
 
@@ -215,19 +201,19 @@ zlist_merge(zlist_type* zl1, zlist_type* zl2)
 {
     zone_type* z1 = NULL;
     zone_type* z2 = NULL;
-    ldns_rbnode_t* n1 = LDNS_RBTREE_NULL;
-    ldns_rbnode_t* n2 = LDNS_RBTREE_NULL;
+    tree_node* n1 = TREE_NULL;
+    tree_node* n2 = TREE_NULL;
     int ret = 0;
     ods_log_assert(zl1);
     ods_log_assert(zl2);
     ods_log_assert(zl1->zones);
     ods_log_assert(zl2->zones);
     ods_log_debug("[%s] merge two zone lists", logstr);
-    n1 = ldns_rbtree_first(zl1->zones);
-    n2 = ldns_rbtree_first(zl2->zones);
-    while (n2 && n2 != LDNS_RBTREE_NULL) {
+    n1 = tree_first(zl1->zones);
+    n2 = tree_first(zl2->zones);
+    while (n2 && n2 != TREE_NULL) {
         z2 = (zone_type*) n2->data;
-        if (n1 && n1 != LDNS_RBTREE_NULL) {
+        if (n1 && n1 != TREE_NULL) {
             z1 = (zone_type*) n1->data;
         } else {
             z1 = NULL;
@@ -242,7 +228,7 @@ zlist_merge(zlist_type* zl1, zlist_type* zl2)
                 ods_log_crit("[%s] merge failed: z2 not added", logstr);
                 return;
             }
-            n2 = ldns_rbtree_next(n2);
+            n2 = tree_next(n2);
         } else {
             /* compare the zones z1 and z2 */
             ret = zone_compare(z1, z2);
@@ -250,7 +236,7 @@ zlist_merge(zlist_type* zl1, zlist_type* zl2)
                 /* remove zone z1, it is not present in the new list zl2 */
                 z1->zl_status = ZONE_ZL_REMOVED;
                 zl1->just_removed++;
-                n1 = ldns_rbtree_next(n1);
+                n1 = tree_next(n1);
             } else if (ret > 0) {
                 /* add the new zone z2 */
                 z2 = zlist_add_zone(zl1, z2);
@@ -258,11 +244,11 @@ zlist_merge(zlist_type* zl1, zlist_type* zl2)
                     ods_log_crit("[%s] merge failed: z2 not added", logstr);
                     return;
                 }
-                n2 = ldns_rbtree_next(n2);
+                n2 = tree_next(n2);
             } else {
                 /* just update zone z1 */
-                n1 = ldns_rbtree_next(n1);
-                n2 = ldns_rbtree_next(n2);
+                n1 = tree_next(n1);
+                n2 = tree_next(n2);
                 zone_merge(z1, z2);
                 zone_cleanup(z2);
                 if (z1->zl_status == ZONE_ZL_UPDATED) {
@@ -273,11 +259,11 @@ zlist_merge(zlist_type* zl1, zlist_type* zl2)
         }
     }
     /* remove remaining zones from z1 */
-    while (n1 && n1 != LDNS_RBTREE_NULL) {
+    while (n1 && n1 != TREE_NULL) {
         z1 = (zone_type*) n1->data;
         z1->zl_status = ZONE_ZL_REMOVED;
         zl1->just_removed++;
-        n1 = ldns_rbtree_next(n1);
+        n1 = tree_next(n1);
     }
     zl1->last_modified = zl2->last_modified;
     return;
@@ -346,56 +332,19 @@ zlist_update(zlist_type* zl, const char* zlfile)
 
 
 /**
- * Internal node cleanup function.
- *
- */
-static void
-node_delfunc(ldns_rbnode_t* elem)
-{
-    if (elem && elem != LDNS_RBTREE_NULL) {
-        node_delfunc(elem->left);
-        node_delfunc(elem->right);
-        free((void*)elem);
-    }
-    return;
-}
-
-
-/**
  * Free zonelist.
  *
  */
 void
 zlist_free(zlist_type* zl)
 {
-    if (!zl) {
+    if (!zl || !zl->zones) {
         return;
     }
     if (zl->zones) {
-        node_delfunc(zl->zones->root);
-        ldns_rbtree_free(zl->zones);
+        tree_cleanup(zl->zones);
     }
     lock_basic_destroy(&zl->zl_lock);
-    return;
-}
-
-
-/**
- * Internal zone cleanup function.
- *
- */
-static void
-zone_delfunc(ldns_rbnode_t* elem)
-{
-    zone_type* zone;
-    if (elem && elem != LDNS_RBTREE_NULL) {
-        zone = (zone_type*) elem->data;
-        zone_delfunc(elem->left);
-        zone_delfunc(elem->right);
-        ods_log_deeebug("[%s] cleanup zone %s", logstr, zone->name);
-        zone_cleanup(zone);
-        free((void*)elem);
-    }
     return;
 }
 
@@ -411,10 +360,7 @@ zlist_cleanup(zlist_type* zl)
         return;
     }
     ods_log_debug("[%s] cleanup zones", logstr);
-    if (zl->zones) {
-        zone_delfunc(zl->zones->root);
-        ldns_rbtree_free(zl->zones);
-    }
+    tree_cleanup(zl->zones);
     lock_basic_destroy(&zl->zl_lock);
     return;
 }

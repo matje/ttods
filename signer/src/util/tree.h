@@ -66,6 +66,14 @@ tree_type* tree_create(region_type* region,
     int (*cmpfunc)(const void *, const void *));
 
 /**
+ * Get number of nodes in tree.
+ * @param tree: tree.
+ * @return:     (size_t) number of nodes in tree.
+ *
+ */
+size_t tree_count(tree_type* tree);
+
+/**
  * Insert node into tree.
  * @param tree: tree.
  * @param node: node.

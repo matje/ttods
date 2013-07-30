@@ -38,6 +38,7 @@
 #include "util/locks.h"
 #include "util/region.h"
 #include "util/status.h"
+#include "util/tree.h"
 
 #include <ldns/ldns.h>
 #include <stdio.h>
@@ -49,7 +50,7 @@
  */
 typedef struct zlist_struct zlist_type;
 struct zlist_struct {
-    ldns_rbtree_t* zones;
+    tree_type* zones;
     time_t last_modified;
     int just_added;
     int just_updated;

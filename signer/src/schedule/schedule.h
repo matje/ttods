@@ -37,8 +37,7 @@
 #include "util/locks.h"
 #include "util/region.h"
 #include "util/status.h"
-
-#include <ldns/ldns.h>
+#include "util/tree.h"
 
 /**
  * Schedule structure.
@@ -46,7 +45,8 @@
  */
 typedef struct schedule_struct schedule_type;
 struct schedule_struct {
-    ldns_rbtree_t* tasks;
+    region_type* region;
+    tree_type* tasks;
     int flushcount;
     int loading;
     lock_basic_type s_lock;

@@ -566,15 +566,15 @@ static void
 engine_log_zone_regions(engine_type* engine)
 {
     zone_type* z = NULL;
-    ldns_rbnode_t* n = LDNS_RBTREE_NULL;
+    tree_node* n = TREE_NULL;
     if (!engine || !engine->zlist || !engine->zlist->zones) {
         return;
     }
-    n = ldns_rbtree_first(engine->zlist->zones);
-    while (n && n != LDNS_RBTREE_NULL) {
+    n = tree_first(engine->zlist->zones);
+    while (n && n != TREE_NULL) {
         z = (zone_type*) n->data;
         region_log(z->region, z->name);
-        n = ldns_rbtree_next(n);
+        n = tree_next(n);
     }
     return;
 }
@@ -698,7 +698,7 @@ set_notify_ns(zone_type* zone, const char* cmd)
 void
 engine_update_zones(engine_type* engine, ods_status zl_changed)
 {
-    ldns_rbnode_t* node = LDNS_RBTREE_NULL;
+    tree_node* node = TREE_NULL;
     ods_status status = ODS_STATUS_OK;
     time_t now = time_now();
     if (!engine || !engine->zlist || !engine->zlist->zones) {
@@ -706,12 +706,12 @@ engine_update_zones(engine_type* engine, ods_status zl_changed)
     }
     ods_log_debug("[%s] commit zone list changes", logstr);
     lock_basic_lock(&engine->zlist->zl_lock);
-    node = ldns_rbtree_first(engine->zlist->zones);
-    while (node && node != LDNS_RBTREE_NULL) {
+    node = tree_first(engine->zlist->zones);
+    while (node && node != TREE_NULL) {
         zone_type* zone = (zone_type*) node->data;
         task_type* task = NULL;
         if (zone->zl_status == ZONE_ZL_REMOVED) {
-            node = ldns_rbtree_next(node);
+            node = tree_next(node);
             lock_basic_lock(&zone->zone_lock);
             (void)zlist_del_zone(engine->zlist, zone);
             /* [TODO] clean up task */
@@ -733,7 +733,7 @@ engine_update_zones(engine_type* engine, ods_status zl_changed)
             if (!task) {
                 ods_log_crit("[%s] create task for zone %s failed", logstr,
                     zone->name);
-                node = ldns_rbtree_next(node);
+                node = tree_next(node);
                 continue;
             }
         }
@@ -760,7 +760,7 @@ engine_update_zones(engine_type* engine, ods_status zl_changed)
         } else {
             zone->zl_status = ZONE_ZL_OK;
         }
-        node = ldns_rbtree_next(node);
+        node = tree_next(node);
     }
     lock_basic_unlock(&engine->zlist->zl_lock);
     return;

@@ -37,6 +37,7 @@
 #include "util/file.h"
 #include "util/locks.h"
 #include "util/log.h"
+#include "util/tree.h"
 
 #include <errno.h>
 #include <fcntl.h>
@@ -115,7 +116,7 @@ cmdhandler_handle_cmd_zones(int sockfd, cmdhandler_type* cmdc,
     engine_type* engine = NULL;
     char buf[ODS_SE_MAXLINE];
     size_t i;
-    ldns_rbnode_t* node = LDNS_RBTREE_NULL;
+    tree_node* node = TREE_NULL;
     zone_type* zone = NULL;
     if (n != 5 || strncmp(cmd, "zones", n) != 0) {
         return 0; /* no match */
@@ -130,19 +131,19 @@ cmdhandler_handle_cmd_zones(int sockfd, cmdhandler_type* cmdc,
     }
     /* how many zones */
     lock_basic_lock(&engine->zlist->zl_lock);
-    (void)snprintf(buf, ODS_SE_MAXLINE, "I have %i zones configured\n",
-        (int) engine->zlist->zones->count);
+    (void)snprintf(buf, ODS_SE_MAXLINE, "I have %d zones configured\n",
+        (int)tree_count(engine->zlist->zones));
     ods_writen(sockfd, buf, strlen(buf));
     /* list zones */
-    node = ldns_rbtree_first(engine->zlist->zones);
-    while (node && node != LDNS_RBTREE_NULL) {
+    node = tree_first(engine->zlist->zones);
+    while (node && node != TREE_NULL) {
         zone = (zone_type*) node->data;
         for (i=0; i < ODS_SE_MAXLINE; i++) {
             buf[i] = 0;
         }
         (void)snprintf(buf, ODS_SE_MAXLINE, "- %s\n", zone->name);
         ods_writen(sockfd, buf, strlen(buf));
-        node = ldns_rbtree_next(node);
+        node = tree_next(node);
     }
     lock_basic_unlock(&engine->zlist->zl_lock);
     return 1;
@@ -232,7 +233,7 @@ cmdhandler_handle_cmd_queue(int sockfd, cmdhandler_type* cmdc,
     char buf[ODS_SE_MAXLINE];
     size_t i;
     time_t now;
-    ldns_rbnode_t* node = LDNS_RBTREE_NULL;
+    tree_node* node = TREE_NULL;
     if (n != 5 || strncmp(cmd, "queue", 5) != 0) {
         return 0; /* no match */
     }
@@ -263,18 +264,18 @@ cmdhandler_handle_cmd_queue(int sockfd, cmdhandler_type* cmdc,
     }
     /* how many tasks */
     (void)snprintf(buf, ODS_SE_MAXLINE, "\nI have %i tasks scheduled.\n",
-        (int) engine->taskq->tasks->count);
+        (int)tree_count(engine->taskq->tasks));
     ods_writen(sockfd, buf, strlen(buf));
     /* list tasks */
-    node = ldns_rbtree_first(engine->taskq->tasks);
-    while (node && node != LDNS_RBTREE_NULL) {
+    node = tree_first(engine->taskq->tasks);
+    while (node && node != TREE_NULL) {
         task_type* task = (task_type*) node->data;
         for (i=0; i < ODS_SE_MAXLINE; i++) {
             buf[i] = 0;
         }
         (void)task2str(task, (char*) &buf[0]);
         ods_writen(sockfd, buf, strlen(buf));
-        node = ldns_rbtree_next(node);
+        node = tree_next(node);
     }
     lock_basic_unlock(&engine->taskq->s_lock);
     return 1;
