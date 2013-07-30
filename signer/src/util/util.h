@@ -34,6 +34,8 @@
 #ifndef UTIL_UTIL_H
 #define UTIL_UTIL_H
 
+#include <stdint.h>
+
 /**
  * A general purpose lookup table.
  *

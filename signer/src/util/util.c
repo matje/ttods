@@ -32,6 +32,7 @@
  */
 
 #include "config.h"
+#include "rzonec/zonec.h"
 #include "util/file.h"
 #include "util/log.h"
 #include "util/str.h"
@@ -308,7 +309,7 @@ util_str2ttl(const char* str, const char** end)
             case '8':
             case '9':
                 i *= 10;
-                i += (**endptr - '0');
+                i += (**end - '0');
                 break;
             default:
                 seconds += i;
