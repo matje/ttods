@@ -45,7 +45,7 @@
 typedef union rdata_union rdata_type;
 union rdata_union {
     /** (Un)compressed) domain names */
-    dname_type* owner; /* TODO: pointer to domain node */
+    dname_type* dname; /* TODO: pointer to domain node */
     /* All other RDATA elements. */
     uint16_t*   data;
 };

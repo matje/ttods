@@ -65,6 +65,7 @@ enum dns_rdata_format_enum {
     DNS_RDATA_COMPRESSED_DNAME,   /* Possibly compressed domain name. */
     DNS_RDATA_UNCOMPRESSED_DNAME, /* Uncompressed domain name. */
     DNS_RDATA_INT32,              /* 32-bit integer. */
+    DNS_RDATA_TIMEF,              /* 32-bit integer representing time. */
     DNS_RDATA_BINARY              /* Binary data (unknown length). */
 };
 typedef enum dns_rdata_format_enum dns_rdata_format;
