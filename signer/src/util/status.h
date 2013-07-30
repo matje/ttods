@@ -1,5 +1,5 @@
 /*
- * $Id: status.c 7057 2013-02-26 09:30:10Z matthijs $
+ * $Id: status.h 7057 2013-02-26 09:30:10Z matthijs $
  *
  * Copyright (c) 2009-2011 NLNet Labs. All rights reserved.
  *
