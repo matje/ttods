@@ -31,5 +31,43 @@
  *
  */
 
+#include "util/log.h"
 #include "util/tree.h"
+
+#include <stdlib.h>
+
+static const char* logstr = "tree";
+
+
+/**
+ * Create tree storage.
+ *
+ */
+tree_type*
+tree_create(region_type* region, int (*cmpfunc)(const void *, const void *))
+{
+    tree_type* tree;
+    ods_log_assert(region);
+    tree = region_alloc(region, sizeof(tree_type));
+    tree->storage = ldns_rbtree_create(cmpfunc);
+    if (!tree->storage) {
+        ods_log_crit("[%s] ldns_rbtree_create() failed", logstr);
+        exit(1);
+    }
+    return tree;
+}
+
+
+/**
+ * Clean up tree storage.
+ *
+ */
+void
+tree_cleanup(tree_type* tree)
+{
+    if (tree) {
+        ldns_rbtree_free(tree->storage);
+    }
+    return;
+}
 

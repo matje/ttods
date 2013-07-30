@@ -34,11 +34,30 @@
 #ifndef UTIL_TREE_H
 #define UTIL_TREE_H
 
+#include "util/region.h"
+
 #include <ldns/ldns.h>
 
 typedef struct tree_struct tree_type;
 struct tree_struct {
     ldns_rbtree_t* storage;
 };
+
+/**
+ * Create tree storage.
+ * @param region:  memory region.
+ * @param cmpfunc: compare function.
+ * @return:        (tree_type*) tree storage.
+ *
+ */
+tree_type* tree_create(region_type* region,
+    int (*cmpfunc)(const void *, const void *));
+
+/**
+ * Clean up tree storage.
+ * @param tree: tree storage.
+ *
+ */
+void tree_cleanup(tree_type* tree);
 
 #endif /* UTIL_TREE_H */
