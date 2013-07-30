@@ -30,6 +30,7 @@ ttods_signerd_SOURCES=		ods-signerd.c \
 				dns/dns.c dns/dns.h \
 				dns/rdata.c dns/rdata.h \
 				dns/rr.c dns/rr.h \
+				dns/wf.c dns/wf.h \
 				parser/confparser.c parser/confparser.h \
 				parser/signconfparser.c parser/signconfparser.h \
 				parser/zlistparser.c parser/zlistparser.h \
