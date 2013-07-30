@@ -88,26 +88,58 @@ tree_search(tree_type* tree, const void* key)
  * Delete node from tree.
  *
  */
+tree_node*
+tree_delete(tree_type* tree, const void* key)
+{
+    ods_log_assert(tree);
+    ods_log_assert(key);
+    return ldns_rbtree_delete(tree->storage, key);
+}
+
 
 /**
  * Get first node from tree.
  *
  */
+tree_node* tree_first(tree_type* tree)
+{
+    ods_log_assert(tree);
+    return ldns_rbtree_first(tree->storage);
+}
+
 
 /**
  * Get last node from tree.
  *
  */
+tree_node* tree_last(tree_type* tree)
+{
+    ods_log_assert(tree);
+    return ldns_rbtree_last(tree->storage);
+}
+
 
 /**
  * Get next node from tree.
  *
  */
+tree_node* tree_next(tree_node* node)
+{
+    ods_log_assert(node);
+    return ldns_rbtree_next((ldns_rbnode_t*) node);
+}
+
 
 /**
  * Get previous node from tree.
  *
  */
+tree_node* tree_prev(tree_node* node)
+{
+    ods_log_assert(node);
+    return ldns_rbtree_previous((ldns_rbnode_t*) node);
+}
+
 
 /**
  * Clean up tree.

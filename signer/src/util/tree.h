@@ -38,6 +38,8 @@
 
 #include <ldns/ldns.h>
 
+#define TREE_NULL LDNS_RBTREE_NULL
+
 /**
  * Tree storage structure.
  *
@@ -52,7 +54,6 @@ struct tree_struct {
  *
  */
 typedef ldns_rbnode_t tree_node;
-
 
 /**
  * Create tree storage.
@@ -81,6 +82,48 @@ tree_node* tree_insert(tree_type* tree, tree_node* node);
  *
  */
 tree_node* tree_search(tree_type* tree, const void* key);
+
+/**
+ * Delete node from tree.
+ * @param tree: tree.
+ * @param key:  search key.
+ * @return:     (tree_node*) deleted node, NULL if not found.
+ *
+ */
+tree_node* tree_delete(tree_type* tree, const void* key);
+
+/**
+ * Get first node from tree.
+ * @param tree: tree.
+ * @return:     (tree_node*) first node, NULL if tree is empty.
+ *
+ */
+tree_node* tree_first(tree_type* tree);
+
+
+/**
+ * Get last node from tree.
+ * @param tree: tree.
+ * @return:     (tree_node*) last node, NULL if tree is empty.
+ *
+ */
+tree_node* tree_last(tree_type* tree);
+
+/**
+ * Get next node from tree.
+ * @param node: node in tree.
+ * @return:     (tree_node*) next node, NULL if there is no next node.
+ *
+ */
+tree_node* tree_next(tree_node* node);
+
+/**
+ * Get previous node from tree.
+ * @param node: node in tree.
+ * @return:     (tree_node*) previous node, NULL if there is no previous node.
+ *
+ */
+tree_node* tree_prev(tree_node* node);
 
 /**
  * Clean up tree storage.
