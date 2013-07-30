@@ -203,6 +203,7 @@
         fprintf(stderr, "\t");
         rr_print_rrtype(stderr, parser->current_rr.type);
         for (i = 0; i < parser->current_rr.rdlen; i++) {
+            fprintf(stderr, " ");
             rdata_print(stderr, &parser->current_rr.rdata[i],
                 parser->current_rr.type, i);
         }
