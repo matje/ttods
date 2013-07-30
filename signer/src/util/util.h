@@ -96,5 +96,14 @@ int util_write_pidfile(const char* pidfile, pid_t pid);
  */
 int util_hexdigit2int(char hx);
 
+/**
+ * Convert string to ttl.
+ * @param str: string.
+ * @param end: last read character.
+ * @return:    (uint32_t) ttl.
+ *
+ */
+uint32_t util_str2ttl(const char* str, const char** end);
+
 #endif /* UTIL_UTIL_H */
 

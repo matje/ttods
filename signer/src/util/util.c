@@ -46,6 +46,8 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#define MSB_32 0x80000000
+
 static const char* logstr = "util";
 
 
@@ -255,3 +257,76 @@ util_hexdigit2int(char hx)
     return -1;
 }
 
+
+/**
+ * Convert string to ttl.
+ *
+ */
+uint32_t
+util_str2ttl(const char* str, const char** end)
+{
+    uint32_t i = 0;
+    uint32_t seconds = 0;
+    for (*end = str; **end; (*end)++) {
+        switch (**end) {
+            case ' ':
+            case '\t':
+                break;
+            case 's':
+            case 'S':
+                seconds += i;
+                i = 0;
+                break;
+            case 'm':
+            case 'M':
+                seconds += i * 60;
+                i = 0;
+                break;
+            case 'h':
+            case 'H':
+                seconds += i * 60 * 60;
+                i = 0;
+                break;
+            case 'd':
+            case 'D':
+                seconds += i * 60 * 60 * 24;
+                i = 0;
+                break;
+            case 'w':
+            case 'W':
+                seconds += i * 60 * 60 * 24 * 7;
+                i = 0;
+                break;
+            case '0':
+            case '1':
+            case '2':
+            case '3':
+            case '4':
+            case '5':
+            case '6':
+            case '7':
+            case '8':
+            case '9':
+                i *= 10;
+                i += (**endptr - '0');
+                break;
+            default:
+                seconds += i;
+                /**
+                 * According to RFC2308, Section 8, the MSB
+                 * (sign bit) should be set to zero.
+                 * If we encounter a value larger than 2^31 -1,
+                 * we fall back to the default TTL.
+                 */
+                if ((seconds & MSB_32)) {
+                    seconds = DEFAULT_TTL;
+                }
+                return seconds;
+        }
+    }
+   seconds += i;
+    if ((seconds & MSB_32)) {
+        seconds = DEFAULT_TTL;
+    }
+    return seconds;
+}
