@@ -73,7 +73,7 @@ zparser_create(dname_type* origin, uint32_t ttl, uint16_t klass)
     parser->label_head = 0;
     parser->label_count = 0;
     /* resource records */
-    parser->current_rr.ttl = DEFAULT_TTL;
+    parser->current_rr.ttl = ttl;
     parser->current_rr.type = 0;
     parser->current_rr.klass = DNS_CLASS_IN;
     parser->current_rr.rdlen = 0;
