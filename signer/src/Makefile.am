@@ -53,6 +53,7 @@ ttods_signerd_SOURCES=		ods-signerd.c \
 				util/region.c util/region.h \
 				util/status.c util/status.h \
 				util/str.c util/str.h \
+				util/tree.c util/tree.h \
 				util/util.c util/util.h \
 				wire/buffer.c wire/buffer.h
 
