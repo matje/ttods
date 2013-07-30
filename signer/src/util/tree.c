@@ -40,7 +40,7 @@ static const char* logstr = "tree";
 
 
 /**
- * Create tree storage.
+ * Create tree.
  *
  */
 tree_type*
@@ -57,9 +57,43 @@ tree_create(region_type* region, int (*cmpfunc)(const void *, const void *))
     return tree;
 }
 
+/**
+ * Insert node into tree.
+ *
+ */
 
 /**
- * Clean up tree storage.
+ * Search tree.
+ *
+ */
+
+/**
+ * Delete node from tree.
+ *
+ */
+
+/**
+ * Get first node from tree.
+ *
+ */
+
+/**
+ * Get last node from tree.
+ *
+ */
+
+/**
+ * Get next node from tree.
+ *
+ */
+
+/**
+ * Get previous node from tree.
+ *
+ */
+
+/**
+ * Clean up tree.
  *
  */
 void
