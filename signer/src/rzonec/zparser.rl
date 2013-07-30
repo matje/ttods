@@ -196,7 +196,6 @@
     action zparser_rr_end {
         int i;
         zparser_process_rr(parser);
-        fprintf(stderr, "RR: ");
         dname_print(stderr, parser->current_rr.owner);
         fprintf(stderr, "\t%u", parser->current_rr.ttl);
         fprintf(stderr, "\t");
@@ -204,7 +203,6 @@
         fprintf(stderr, "\t");
         rr_print_rrtype(stderr, parser->current_rr.type);
         for (i = 0; i < parser->current_rr.rdlen; i++) {
-            fprintf(stderr, "rdata:");
             rdata_print(stderr, &parser->current_rr.rdata[i],
                 parser->current_rr.type, i);
         }
