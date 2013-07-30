@@ -42,7 +42,7 @@ zonec_rdata_ipv4(region_type* region, const char* buf)
     in_addr_t address;
     uint16_t *r = NULL;
     if (inet_pton(AF_INET, buf, &address) != 1) {
-        ods_log_error("[%s] error: invalid rdata IPv4 address '%s'\n", logstr,
+        ods_log_error("[%s] error: invalid rdata IPv4 address '%s'", logstr,
             buf);
     } else {
         r = zonec_rdata_init(region, &address, sizeof(address));
@@ -86,7 +86,7 @@ zonec_rdata_timef(region_type* region, const char* buf)
     const char* end;
     timef = util_str2ttl(buf, &end);
     if (*end != '\0') {
-        ods_log_error("[%s] error: invalid rdata time '%s'\n", logstr,
+        ods_log_error("[%s] error: invalid rdata time '%s'", logstr,
             buf);
     } else {
         timef = htonl(timef);
@@ -104,14 +104,15 @@ int
 zonec_rdata_add(region_type* region, rr_type* rr, dns_rdata_format rdformat,
    const char* rdbuf, size_t rdsize)
 {
+    char str[DNAME_MAXLEN*5];
     uint16_t* d = NULL;
     dname_type* dname = NULL;
     if (rr->rdlen > DNS_RDATA_MAX) {
-        ods_log_error("[%s] error: too many rdata elements\n", logstr);
+        ods_log_error("[%s] error: too many rdata elements", logstr);
         return 0;
     }
     if (!rdsize) {
-        ods_log_error("[%s] error: empty rdata element\n", logstr);
+        ods_log_error("[%s] error: empty rdata element", logstr);
         return 0;
     }
 
@@ -121,6 +122,7 @@ zonec_rdata_add(region_type* region, rr_type* rr, dns_rdata_format rdformat,
             break;
         case DNS_RDATA_COMPRESSED_DNAME:
             dname = zonec_rdata_dname(region, rdbuf);
+            dname_str(dname, &str[0]);
             break;
         case DNS_RDATA_INT32:
             d = zonec_rdata_int32(region, rdbuf);
@@ -138,14 +140,14 @@ zonec_rdata_add(region_type* region, rr_type* rr, dns_rdata_format rdformat,
     if (rdformat == DNS_RDATA_COMPRESSED_DNAME
         || rdformat == DNS_RDATA_UNCOMPRESSED_DNAME) {
         if (!dname) {
-            ods_log_error("[%s] error: bad rdata element '%s'\n", logstr,
+            ods_log_error("[%s] error: bad rdata element '%s'", logstr,
                 rdbuf);
             return 0;
         }
-        rr->rdata[rr->rdlen].dname = d;
+        rr->rdata[rr->rdlen].dname = dname;
     } else {
         if (!d) {
-            ods_log_error("[%s] error: bad rdata element '%s'\n", logstr,
+            ods_log_error("[%s] error: bad rdata element '%s'", logstr,
                 rdbuf);
             return 0;
         }
