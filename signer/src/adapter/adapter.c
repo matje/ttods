@@ -117,6 +117,10 @@ adapter_write(struct zone_struct* zone)
     ods_log_assert(zone->adapter_out->configstr);
     switch(zone->adapter_out->type) {
         case ADAPTER_FILE:
+            ods_log_verbose("[%s] write zone %s to file input adapter %s",
+                logstr, zone->name, zone->adapter_out->configstr);
+            return adfile_write(zone);
+            break;
         case ADAPTER_DNS:
         case ADAPTER_UPDATE:
             ods_log_warning("[%s] zone %s output adapter NOTIMPL",

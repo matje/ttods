@@ -66,7 +66,8 @@ adfile_read(struct zone_struct* zone)
     ret = zparser_read_zone(parser, zone->adapter_in->configstr);
     zparser_cleanup(parser);
     if (ret) {
-        status = ODS_STATUS_ZPARSERERR;
+        ods_log_crit("[%s] zone parser encountered errors", logstr);
+/*        status = ODS_STATUS_ZPARSERERR; */
     }
     if (status == ODS_STATUS_OK) {
         /* commit transaction */
@@ -75,3 +76,25 @@ adfile_read(struct zone_struct* zone)
 }
 
 
+/**
+ * Write zone to zonefile.
+ *
+ */
+ods_status
+adfile_write(struct zone_struct* zone)
+{
+    FILE* fd;
+    ods_status status = ODS_STATUS_OK;
+    ods_log_assert(zone);
+    ods_log_assert(zone->adapter_out);
+    ods_log_assert(zone->adapter_out->configstr);
+    fd = ods_fopen(zone->adapter_out->configstr, NULL, "w");
+    if (!fd) {
+        ods_log_crit("[%s] open file %s for writing failed: %s", logstr,
+            zone->adapter_out->configstr, strerror(errno));
+        return ODS_STATUS_FOPENERR;
+    }
+    status = zone_print(fd, zone);
+    ods_fclose(fd);
+    return status;
+}
