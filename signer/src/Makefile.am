@@ -41,6 +41,7 @@ ttods_signerd_SOURCES=		ods-signerd.c \
 				schedule/task.c schedule/task.h \
 				signer/domain.c signer/domain.h \
 				signer/namedb.c signer/namedb.h \
+				signer/rrset.c signer/rrset.h \
 				signer/signconf.c signer/signconf.h \
 				signer/tools.c signer/tools.h \
 				signer/zlist.c signer/zlist.h \
