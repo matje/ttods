@@ -70,3 +70,49 @@ rr_print_class(FILE* fd, uint16_t klass)
     return;
 }
 
+
+/**
+ * Compare records only on RDATA.
+ *
+ */
+int
+rr_compare_rdata(rr_type* rr1, rr_type* rr2)
+{
+    size_t i;
+    int res;
+    rrstruct_type* rrstruct;
+    ods_log_assert(rr1);
+    ods_log_assert(rr2);
+    ods_log_assert(!dname_compare(rr1->owner, rr2->owner));
+    ods_log_assert(rr1->type == rr2->type);
+    ods_log_assert(rr1->klass == rr2->klass);
+    ods_log_assert(rr1->rdlen == rr2->rdlen);
+    rrstruct = dns_rrstruct_by_type(rr1->type);
+    for (i=0; i < rr1->rdlen; i++) {
+        switch (rrstruct->rdata[i]) {
+            case DNS_RDATA_COMPRESSED_DNAME:
+            case DNS_RDATA_UNCOMPRESSED_DNAME:
+                res = dname_compare(rdata_get_dname(&rr1->rdata[i]),
+                    rdata_get_dname(&rr2->rdata[i]));
+                break;
+            case DNS_RDATA_IPV4:
+            case DNS_RDATA_INT32:
+            case DNS_RDATA_TIMEF:
+            case DNS_RDATA_BINARY:
+            default:
+                if (rdata_size(&rr1->rdata[i]) < rdata_size(&rr2->rdata[i])) {
+                    return 1;
+                }
+                if (rdata_size(&rr1->rdata[i]) > rdata_size(&rr2->rdata[i])) {
+                    return -1;
+                }
+                res = memcmp(rdata_get_data(&rr1->rdata[i]),
+                    rdata_get_data(&rr2->rdata[i]), rdata_size(&rr1->rdata[i]));
+                break;
+        }
+        if (res) {
+            return res;
+        }
+    }
+    return 0;
+}

@@ -72,5 +72,14 @@ void rr_print_rrtype(FILE* fd, uint16_t rrtype);
  */
 void rr_print_class(FILE* fd, uint16_t klass);
 
+/**
+ * Compare records.
+ * @param rr1: one record.
+ * @param rr2: another record.
+ * @return:    (int) 0 if equal, <0 if rr1 is smaller, >0 otherwise.
+ *
+ */
+int rr_compare(rr_type* rr1, rr_type* rr2);
+
 #endif /* DNS_RR_H */
 
