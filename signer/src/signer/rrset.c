@@ -106,7 +106,7 @@ rrset_create(struct domain_struct* domain, uint16_t type)
     rrset->rrs = NULL;
     rrset->rrtype = type;
     rrset->rr_count = 0;
-    rrset->needs_signing = 0;
+    rrset->needs_singing = 0;
     return rrset;
 }
 
@@ -155,7 +155,7 @@ rrset_add_rr(rrset_type* rrset, rr_type* rr)
     rrset->rrs[rrset->rr_count - 1].exists = 0;
     rrset->rrs[rrset->rr_count - 1].is_added = 1;
     rrset->rrs[rrset->rr_count - 1].is_removed = 0;
-    rrset->needs_signing = 1;
+    rrset->needs_singing = 1;
     return &rrset->rrs[rrset->rr_count -1];
 }
 

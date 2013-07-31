@@ -64,7 +64,7 @@ struct rrset_struct {
     uint16_t rrtype;
     record_type* rrs;
     size_t rr_count;
-    unsigned needs_signing : 1;
+    unsigned needs_singing : 1;
 };
 
 /**
