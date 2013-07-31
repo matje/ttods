@@ -50,7 +50,7 @@ struct zone_struct;
  */
 typedef struct domain_struct domain_type;
 struct domain_struct {
-    ldns_rdf* dname;
+    dname_type* dname;
     struct zone_struct* zone;
     tree_node* node;
     domain_type* parent;
