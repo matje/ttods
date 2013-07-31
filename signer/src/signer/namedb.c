@@ -188,6 +188,28 @@ namedb_add_domain(namedb_type* db, dname_type* dname)
 
 
 /**
+ * Print namedb.
+ *
+ */
+void
+namedb_print(FILE* fd, namedb_type* db, ods_status* status)
+{
+    tree_node* node;
+    domain_type* domain;
+    ods_log_assert(fd);
+    ods_log_assert(db);
+    ods_log_assert(status);
+    node = tree_first(db->domains);
+    while (node && node != TREE_NULL) {
+        domain = (domain_type*) node->data;
+        domain_print(fd, domain, status);
+        node = tree_next(node);
+    }
+    return;
+}
+
+
+/**
  * Clean up namedb.
  *
  */

@@ -41,6 +41,7 @@
 #include "util/status.h"
 #include "signer/domain.h"
 
+#include <stdio.h>
 #include <ldns/ldns.h>
 
 struct zone_struct;
@@ -91,6 +92,15 @@ domain_type* namedb_lookup_domain(namedb_type* db, dname_type* dname);
  *
  */
 domain_type* namedb_add_domain(namedb_type* db, dname_type* dname);
+
+/**
+ * Print namedb.
+ * @param fd:     file descriptor.
+ * @param namedb: namedb.
+ * @param status: status.
+ *
+ */
+void namedb_print(FILE* fd, namedb_type* db, ods_status* status);
 
 /**
  * Clean up namedb.
