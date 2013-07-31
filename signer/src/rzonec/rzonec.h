@@ -12,8 +12,9 @@
 
 #include <stdint.h>
 
-#include "util/region.h"
 #include "rzonec/zonec.h"
+#include "signer/zone.h"
+#include "util/region.h"
 
 /**
  * Zone parser structure.
@@ -23,6 +24,7 @@ typedef struct zparser zparser_type;
 struct zparser {
     region_type* region;      /* global memory region */
     dname_type* origin;       /* current origin */
+    zone_type* zone;          /* currently parsed zone */
     /* We could handle ttl as a duration */
     uint64_t ttl;             /* current ttl */
     uint32_t klass;           /* zone class */
@@ -58,13 +60,11 @@ struct zparser {
 
 /**
  * Create parser.
- * @param origin: initial $ORIGIN.
- * @param ttl:    initial $TTL.
- * @param klass:  zone CLASS.
+ * @param zone: zone to be parsed.
  * @return: (zparser_type*) parser.
  *
  */
-zparser_type* zparser_create(dname_type* origin, uint32_t ttl, uint16_t klass);
+zparser_type* zparser_create(zone_type* zone);
 
 /**
  * Cleanup parser.

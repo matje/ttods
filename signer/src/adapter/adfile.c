@@ -58,7 +58,7 @@ adfile_read(struct zone_struct* zone)
     ods_log_assert(zone->adapter_in);
     ods_log_assert(zone->adapter_in->configstr);
     /* create the parser */
-    parser = zparser_create(zone->apex, zone->default_ttl, zone->klass);
+    parser = zparser_create(zone);
     if (!parser) {
         ods_log_crit("[%s] create zone parser failed", logstr);
         return ODS_STATUS_ZPARSERERR;

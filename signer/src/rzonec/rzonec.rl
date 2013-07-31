@@ -46,7 +46,7 @@ static const char* logstr = "rzonec";
  *
  */
 zparser_type*
-zparser_create(dname_type* origin, uint32_t ttl, uint16_t klass)
+zparser_create(zone_type* zone)
 {
     zparser_type* parser;
     region_type* r = region_create();
@@ -57,9 +57,10 @@ zparser_create(dname_type* origin, uint32_t ttl, uint16_t klass)
     parser->tmp_rdata = (rdata_type*) region_alloc(r, DNS_RDATA_MAX *
         sizeof(rdata_type));
     parser->region = r;
-    parser->origin = origin;
-    parser->ttl = ttl;
-    parser->klass = klass;
+    parser->zone = zone;
+    parser->origin = zone->apex;
+    parser->ttl = zone->default_ttl;
+    parser->klass = zone->klass;
     parser->line = 1;
     parser->comments = 0;
     parser->numrrs = 0;
@@ -73,7 +74,7 @@ zparser_create(dname_type* origin, uint32_t ttl, uint16_t klass)
     parser->label_head = 0;
     parser->label_count = 0;
     /* resource records */
-    parser->current_rr.ttl = ttl;
+    parser->current_rr.ttl = parser->ttl;
     parser->current_rr.type = 0;
     parser->current_rr.klass = DNS_CLASS_IN;
     parser->current_rr.rdlen = 0;
