@@ -296,9 +296,7 @@ zone_cleanup(zone_type* zone)
     free((void*) zone->signconf_filename);
     adapter_cleanup(zone->adapter_in);
     adapter_cleanup(zone->adapter_out);
-/*
     dname_cleanup(zone->apex);
-*/
     namedb_cleanup(zone->namedb);
     signconf_cleanup(zone->signconf);
     region_cleanup(zone->region);
