@@ -235,13 +235,27 @@ zone_reschedule_task(zone_type* zone, schedule_type* s, int what)
 ods_status
 zone_add_rr(zone_type* zone, rr_type* rr, int do_stats)
 {
+    ods_status status;
     domain_type* domain;
 /*    rrset_type* rrset; */
     ods_log_assert(zone);
     ods_log_assert(rr);
-/*    domain = namedb_lookup_domain(zone->db, rr->owner); */
+    domain = namedb_lookup_domain(zone->namedb, rr->owner);
     if (!domain) {
-        /* add domain */
+        domain = namedb_add_domain(zone->namedb, rr->owner);
+        ods_log_assert(domain);
+        if (dname_compare(domain->dname, zone->apex) == 0) {
+            domain->is_apex = 1;
+        } else {
+            status = namedb_entize(zone->namedb, domain, zone->apex);
+            if (status != ODS_STATUS_OK) {
+                char str[DNAME_MAXLEN*5];
+                dname_str(domain->dname, &str[0]);
+                ods_log_error("[%s] failed to entize domain %s: %s", logstr,
+                    str, ods_status2str(status));
+                return ODS_STATUS_ENTIZEERR;
+            }
+        }
     }
 /*    rrset = domain_lookup_rrset(domain, rr->type);
     if (!rrset) {

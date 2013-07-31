@@ -69,6 +69,7 @@ ods_lookup_table ods_status_str[] = {
     { ODS_STATUS_STRFORMERR, "String format error" },
     { ODS_STATUS_SYNTAXERR, "Syntax error" },
     { ODS_STATUS_ZPARSERERR, "Zone parser error" },
+    { ODS_STATUS_ENTIZEERR, "Error adding empty non-terminals" },
 
     { 0, NULL }
 };
