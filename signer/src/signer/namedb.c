@@ -103,14 +103,14 @@ namedb_add_domain(namedb_type* db, dname_type* dname)
     node = domain2node(domain);
     if (!tree_insert(db->domains, node)) {
         ods_log_error("[%s] add domain failed: already present", logstr);
-/*        dname_log(domain->dname, "ERR +DOMAIN", LOG_ERR); */
+        dname_log(domain->dname, "ERR +DOMAIN", LOG_ERR);
         domain_cleanup(domain);
         return NULL;
     }
     domain = (domain_type*) node->data;
     domain->node = node;
     domain->is_new = 1;
-/*    log_dname(domain->dname, "+DOMAIN", LOG_DEEEBUG); */
+    dname_log(domain->dname, "+DOMAIN", LOG_DEEEBUG);
     return domain;
 }
 

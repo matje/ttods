@@ -176,6 +176,15 @@ void dname_print(FILE* fd, dname_type* dname);
 void dname_str(dname_type* dname, char* buf);
 
 /**
+ * Log domain name.
+ * @param dname: domain name.
+ * @param pre:   log message.
+ * @param level: log level
+ *
+ */
+void dname_log(dname_type* dname, const char* pre, int level);
+
+/**
  * The total size (in bytes) allocated to store dname.
  * @param dname:       dname.
  * @return:            (size_t) total size in bytes of dname.
