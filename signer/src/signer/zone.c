@@ -285,6 +285,21 @@ zone_add_rr(zone_type* zone, rr_type* rr, int do_stats)
  * Clean up zone.
  *
  */
+ods_status
+zone_print(FILE* fd, zone_type* zone)
+{
+    ods_status status = ODS_STATUS_OK;
+    ods_log_assert(fd);
+    ods_log_assert(zone);
+    namedb_print(fd, zone->namedb, &status);
+    return status;
+}
+
+
+/**
+ * Clean up zone.
+ *
+ */
 void
 zone_cleanup(zone_type* zone)
 {

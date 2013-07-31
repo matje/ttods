@@ -140,6 +140,15 @@ ods_status zone_reschedule_task(zone_type* zone, schedule_type* s, int what);
 ods_status zone_add_rr(zone_type* zone, rr_type* rr, int do_stats);
 
 /**
+ * Print zone.
+ * @param fd:   file descriptor.
+ * @param zone: zone.
+ * @return:     (ods_status) status.
+ *
+ */
+ods_status zone_print(FILE* fd, zone_type* zone);
+
+/**
  * Clean up zone.
  * @param zone: zone.
  *
