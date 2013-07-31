@@ -51,9 +51,27 @@ union rdata_union {
 };
 
 /**
- * Print RDATA element.
+ * Get data from rdata element.
+ * @param rdata: rdata.
+ * @return:      (uint8_t*) data.
+ *
+ */
+uint8_t* rdata_get_data(rdata_type* rdata);
+
+
+/**
+ * Get domain name from rdata element.
+ * @param rdata: rdata.
+ * @return:      (dname_type*) domain name.
+ *
+ */
+dname_type* rdata_get_dname(rdata_type* rdata);
+
+
+/**
+ * Print rdta element.
  * @param fd:     file descriptor.
- * @param rdata:  RDATA element.
+ * @param rdata:  rdata.
  * @param rrtype: RRtype.
  * @param pos:    position of RDATA element in RR.
  *

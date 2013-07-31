@@ -43,10 +43,10 @@ static const char* logstr = "rdata";
 
 
 /**
- * Get data from RDATA element.
+ * Get data from rdata element.
  *
  */
-static uint8_t*
+uint8_t*
 rdata_get_data(rdata_type* rdata)
 {
     return (uint8_t*) (rdata->data + 1);
@@ -54,10 +54,10 @@ rdata_get_data(rdata_type* rdata)
 
 
 /**
- * Get dname from RDATA element.
+ * Get domain name from rdata element.
  *
  */
-static dname_type*
+dname_type*
 rdata_get_dname(rdata_type* rdata)
 {
     return rdata->dname;
