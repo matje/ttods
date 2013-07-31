@@ -39,6 +39,7 @@ ttods_signerd_SOURCES=		ods-signerd.c \
 				schedule/fifoq.c schedule/fifoq.h \
 				schedule/schedule.c schedule/schedule.h \
 				schedule/task.c schedule/task.h \
+				signer/domain.c signer/domain.h \
 				signer/namedb.c signer/namedb.h \
 				signer/signconf.c signer/signconf.h \
 				signer/tools.c signer/tools.h \
