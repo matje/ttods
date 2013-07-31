@@ -139,7 +139,7 @@ zparser_process_rr(zparser_type* parser)
 
     /* supported CLASS */
     if (parser->current_rr.klass != DNS_CLASS_IN) {
-        fprintf(stderr, "[%s] only class IN is supported\n", logstr);
+        ods_log_error("[%s] error: only class IN is supported", logstr);
         return 0;
     }
     /* if soa: update new serial */
@@ -147,7 +147,7 @@ zparser_process_rr(zparser_type* parser)
     /* add rr to zone */
     status = zone_add_rr(parser->zone, &parser->current_rr, 1);
     if (status != ODS_STATUS_OK) {
-        fprintf(stderr, "[%s] only class IN is supported\n", logstr);
+        ods_log_error("[%s] error: adding rr failed", logstr);
         return 0;
     }
 

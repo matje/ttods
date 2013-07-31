@@ -189,7 +189,6 @@ schedule_task(schedule_type* s, void* t, int log)
     if (!ins_node) {
         ods_log_error("[%s] rbtree insert failed", logstr,
             task_what2str(task->what), task_who2str(task));
-        free((void*)new_node);
         return ODS_STATUS_RBTREERR;
     }
     if (task->flush) {
@@ -219,7 +218,6 @@ unschedule_task(schedule_type* s, void* t)
     del_node = tree_delete(s->tasks, t);
     if (del_node) {
         del_task = (task_type*) del_node->data;
-        free((void*)del_node);
     } else {
         ods_log_warning("[%s] unable to unschedule task %s for zone %s: not "
             "scheduled", logstr, task_what2str(del_task->what),

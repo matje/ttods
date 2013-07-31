@@ -531,7 +531,6 @@ cmdhandler_accept_client(void* arg)
         shutdown(cmdc->client_fd, SHUT_RDWR);
         close(cmdc->client_fd);
     }
-    free(cmdc);
     count--;
     return NULL;
 }
