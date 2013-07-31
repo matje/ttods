@@ -36,6 +36,7 @@
 
 #include "adapter/adapter.h"
 #include "dns/dname.h"
+#include "dns/rr.h"
 #include "schedule/schedule.h"
 #include "schedule/task.h"
 #include "signer/namedb.h"
@@ -93,7 +94,7 @@ struct zone_struct {
  * @return:      (zone_type*) zone.
  *
  */
-zone_type* zone_create(char* name, ldns_rr_class klass);
+zone_type* zone_create(char* name, uint16_t klass);
 
 /**
  * Load signer configuration for zone.
@@ -120,13 +121,23 @@ void zone_merge(zone_type* z1, zone_type* z2);
 
 /**
  * Reschedule task for zone.
- * @param zone: d zone.
+ * @param zone: zone.
  * @param s:    schedule.
  * @param what: new task identifier.
  * @return:     (ods_status) status.
  *
  */
 ods_status zone_reschedule_task(zone_type* zone, schedule_type* s, int what);
+
+/**
+ * Add rr to zone.
+ * @param zone:     zone.
+ * @param rr:       rr.
+ * @param do_stats: do we need to maintain stats.
+ * @return:         (ods_status) status.
+ *
+ */
+ods_status zone_add_rr(zone_type* zone, rr_type* rr, int do_stats);
 
 /**
  * Clean up zone.

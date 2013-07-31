@@ -59,15 +59,59 @@ domain_compare(const void* a, const void* b)
  *
  */
 namedb_type*
-namedb_create(region_type* region)
+namedb_create(struct zone_struct* zone)
 {
     namedb_type* db = NULL;
     tree_type* domains = NULL;
-    ods_log_assert(region);
+    ods_log_assert(zone);
+    ods_log_assert(zone->region);
 
-    db = (namedb_type*) region_alloc(region, sizeof(namedb_type));
-    db->domains = tree_create(region, domain_compare);
+    db = (namedb_type*) region_alloc(zone->region, sizeof(namedb_type));
+    db->zone = zone;
+    db->domains = tree_create(zone->region, domain_compare);
     return db;
+}
+
+
+/**
+ * Convert a domain to a tree node.
+ *
+ */
+static tree_node*
+domain2node(domain_type* domain)
+{
+    tree_node* node = (tree_node*) region_alloc(domain->zone->region,
+        sizeof(tree_node));
+    node->key = domain->dname;
+    node->data = domain;
+    return node;
+}
+
+
+/**
+ * Create new domain and add it to namedb.
+ *
+ */
+domain_type*
+namedb_add_domain(namedb_type* db, dname_type* dname)
+{
+    domain_type* domain;
+    tree_node* node;
+    ods_log_assert(db);
+    ods_log_assert(dname);
+    domain = domain_create(db->zone, dname);
+    node = domain2node(domain);
+    if (!tree_insert(db->domains, node)) {
+        ods_log_error("[%s] add domain failed: already present", logstr);
+/*        dname_log(domain->dname, "ERR +DOMAIN", LOG_ERR); */
+        domain_cleanup(domain);
+        return NULL;
+    }
+    domain = (domain_type*) node->data;
+    domain->node = node;
+    domain->is_new = 1;
+/*    log_dname(domain->dname, "+DOMAIN", LOG_DEEEBUG); */
+    return domain;
 }
 
 

@@ -50,7 +50,7 @@ static void
 zone_init(zone_type* zone)
 {
     zone->signconf = signconf_create(zone->region);
-    zone->namedb = namedb_create(zone->region);
+    zone->namedb = namedb_create(zone);
     zone->default_ttl = DEFAULT_TTL;
     zone->policy_name = NULL;
     zone->signconf_filename = NULL;
@@ -67,7 +67,7 @@ zone_init(zone_type* zone)
  *
  */
 zone_type*
-zone_create(char* name, ldns_rr_class klass)
+zone_create(char* name, uint16_t klass)
 {
     region_type* region = NULL;
     zone_type* zone = NULL;
@@ -76,13 +76,9 @@ zone_create(char* name, ldns_rr_class klass)
     region = region_create();
     if (!region) {
         ods_log_crit("[%s] region create failed", logstr);
-        return NULL;
+        exit(1);
     }
     zone = (zone_type*) region_alloc(region,  sizeof(zone_type));
-    if (!zone) {
-        ods_log_crit("[%s] region alloc failed", logstr);
-        return NULL;
-    }
     zone->region = region;
     zone->klass = klass;
     /* [start] PS 9218653: Drop trailing dot in domain name */
@@ -229,6 +225,32 @@ zone_reschedule_task(zone_type* zone, schedule_type* s, int what)
      }
      lock_basic_unlock(&s->s_lock);
      return status;
+}
+
+
+/**
+ * Add rr to zone.
+ *
+ */
+ods_status
+zone_add_rr(zone_type* zone, rr_type* rr, int do_stats)
+{
+    domain_type* domain;
+/*    rrset_type* rrset; */
+    ods_log_assert(zone);
+    ods_log_assert(rr);
+/*    domain = namedb_lookup_domain(zone->db, rr->owner); */
+    if (!domain) {
+        /* add domain */
+    }
+/*    rrset = domain_lookup_rrset(domain, rr->type);
+    if (!rrset) {
+*/
+        /* add rrset */
+/*    } */
+    /* add rr */
+
+    return ODS_STATUS_OK;
 }
 
 

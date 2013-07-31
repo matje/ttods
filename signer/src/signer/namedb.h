@@ -35,8 +35,10 @@
 #define SIGNER_NAMEDB_H
 
 #include "config.h"
+#include "dns/dname.h"
 #include "util/tree.h"
 #include "util/region.h"
+#include "signer/domain.h"
 
 #include <ldns/ldns.h>
 
@@ -48,16 +50,26 @@ struct zone_struct;
  */
 typedef struct namedb_struct namedb_type;
 struct namedb_struct {
+    struct zone_struct* zone;
     tree_type* domains;
 };
 
 /**
  * Create a new namedb.
- * @param region: memory region.
- * @return:       (namedb_type*) namedb.
+ * @param zone: corresponding zone.
+ * @return:     (namedb_type*) namedb.
  *
  */
-namedb_type* namedb_create(region_type* region);
+namedb_type* namedb_create(struct zone_struct* zone);
+
+/**
+ * Create new domain and add it to namedb.
+ * @param db:    namedb.
+ * @param dname: domain name.
+ * @return:      (domain_type*) new domain.
+ *
+ */
+domain_type* namedb_add_domain(namedb_type* db, dname_type* dname);
 
 /**
  * Clean up namedb.
