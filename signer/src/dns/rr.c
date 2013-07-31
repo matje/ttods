@@ -38,40 +38,6 @@ static const char* logstr = "rr";
 
 
 /**
- * Print RRtype.
- *
- */
-void
-rr_print_rrtype(FILE* fd, uint16_t rrtype)
-{
-    rrstruct_type* rrstruct = dns_rrstruct_by_type(rrtype);
-    if (rrstruct->name) {
-        fprintf(fd, "%s", rrstruct->name);
-    } else {
-        fprintf(fd, "TYPE%d", (int) rrtype);
-    }
-    return;
-}
-
-
-/**
- * Print CLASS.
- *
- */
-void
-rr_print_class(FILE* fd, uint16_t klass)
-{
-    rrclass_type* rrclass = dns_rrclass_by_type(klass);
-    if (rrclass->name) {
-        fprintf(fd, "%s", rrclass->name);
-    } else {
-        fprintf(fd, "CLASS%d", (int) klass);
-    }
-    return;
-}
-
-
-/**
  * Compare records only on RDATA.
  *
  */
@@ -115,4 +81,63 @@ rr_compare_rdata(rr_type* rr1, rr_type* rr2)
         }
     }
     return 0;
+}
+
+
+/**
+ * Print RRtype.
+ *
+ */
+void
+rr_print_rrtype(FILE* fd, uint16_t rrtype)
+{
+    rrstruct_type* rrstruct = dns_rrstruct_by_type(rrtype);
+    if (rrstruct->name) {
+        fprintf(fd, "%s", rrstruct->name);
+    } else {
+        fprintf(fd, "TYPE%d", (int) rrtype);
+    }
+    return;
+}
+
+
+/**
+ * Print CLASS.
+ *
+ */
+void
+rr_print_class(FILE* fd, uint16_t klass)
+{
+    rrclass_type* rrclass = dns_rrclass_by_type(klass);
+    if (rrclass->name) {
+        fprintf(fd, "%s", rrclass->name);
+    } else {
+        fprintf(fd, "CLASS%d", (int) klass);
+    }
+    return;
+}
+
+
+/**
+ * Print rr.
+ *
+ */
+void
+rr_print(FILE* fd, rr_type* rr)
+{
+    uint16_t i;
+    ods_log_assert(fd);
+    ods_log_assert(rr);
+    dname_print(fd, rr->owner);
+    fprintf(fd, "\t");
+    fprintf(fd, "%u", rr->ttl);
+    fprintf(fd, "\t");
+    rr_print_class(fd, rr->klass);
+    fprintf(fd, " ");
+    rr_print_rrtype(fd, rr->type);
+    fprintf(fd, "\t");
+    for (i=0; i < rr->rdlen; i++) {
+        rdata_print(fd, &rr->rdata[i], rr->type, i);
+    }
+    return;
 }

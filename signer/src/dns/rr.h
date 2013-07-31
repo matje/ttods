@@ -51,26 +51,10 @@ struct rr_struct {
     dname_type* owner; /* TODO: pointer to domain node */
     rdata_type* rdata;
     uint32_t ttl;
-    uint16_t type;
     uint16_t klass;
+    uint16_t type;
     uint16_t rdlen;
 };
-
-/**
- * Print RRtype.
- * @param fd:     file descriptor.
- * @param rrtype: RRtype.
- *
- */
-void rr_print_rrtype(FILE* fd, uint16_t rrtype);
-
-/**
- * Print CLASS.
- * @param fd:    file descriptor.
- * @param klass: CLASS.
- *
- */
-void rr_print_class(FILE* fd, uint16_t klass);
 
 /**
  * Compare records.
@@ -80,6 +64,30 @@ void rr_print_class(FILE* fd, uint16_t klass);
  *
  */
 int rr_compare(rr_type* rr1, rr_type* rr2);
+
+/**
+ * Print rr type.
+ * @param fd:     file descriptor.
+ * @param rrtype: rr type.
+ *
+ */
+void rr_print_rrtype(FILE* fd, uint16_t rrtype);
+
+/**
+ * Print class.
+ * @param fd:    file descriptor.
+ * @param klass: class.
+ *
+ */
+void rr_print_class(FILE* fd, uint16_t klass);
+
+/**
+ * Print rr.
+ * @param fd:    file descriptor.
+ * @param rr:    rr.
+ *
+ */
+void rr_print(FILE* fd, rr_type* rr);
 
 #endif /* DNS_RR_H */
 
