@@ -54,5 +54,13 @@ ods_status tools_conf(zone_type* zone);
  */
 ods_status tools_read(zone_type* zone);
 
+/**
+ * Write zone.
+ * @param zone: zone.
+ * @return:     (ods_status) status.
+ *
+ */
+ods_status tools_write(zone_type* zone);
+
 #endif /* SIGNER_TOOLS_H */
 

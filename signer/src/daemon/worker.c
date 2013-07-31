@@ -189,11 +189,33 @@ worker_perform_task_read:
         case TASK_SIGN:
 
 worker_perform_task_sign:
-            /* perform 'load signconf' task */
-            worker_working_with(worker, TASK_SIGN, TASK_SIGN, "sign",
+            /* perform 'sign' task */
+            worker_working_with(worker, TASK_SIGN, TASK_WRITE, "sign",
                 task_who2str(worker->task), &what, &when);
+            goto worker_perform_task_write;
+
+            break;
+        case TASK_WRITE:
+
+worker_perform_task_write:
+            /* perform 'write' task */
+            worker_working_with(worker, TASK_WRITE, TASK_SIGN, "write",
+                task_who2str(worker->task), &what, &when);
+            status = tools_write(zone);
+            if (status == ODS_STATUS_OK) {
+                if (worker->task->interrupt > TASK_CONF) {
+                    worker->task->interrupt = TASK_NONE;
+                    worker->task->halted = TASK_NONE;
+                }
+            } else if (worker->task->halted == TASK_NONE) {
+                goto worker_perform_task_fail;
+            } else {
+                goto worker_perform_task_continue;
+            }
+
             when += 60;
             break;
+        case TASK_NONE:
         default:
             ods_log_warning("[%s[%i]] task %s not supported",
                 worker2str(worker->type), worker->thread_num,

@@ -80,11 +80,33 @@ tools_read(zone_type* zone)
     /* Denial of Existence Rollover? */
 
     /* Go to Input Adapter */
-    status = adapter_read((void*)zone);
+    status = adapter_read(zone);
     if (status != ODS_STATUS_OK) {
         ods_log_error("[%s] read zone %s failed: %s", logstr, zone->name,
             ods_status2str(status));
         /* rollback */
+    }
+    return status;
+}
+
+
+/**
+ * Write zone.
+ *
+ */
+ods_status
+tools_write(zone_type* zone)
+{
+    ods_status status;
+    ods_log_assert(zone->name);
+    ods_log_assert(zone->signconf);
+    ods_log_assert(zone->namedb);
+
+    /* Go to Output Adapter */
+    status = adapter_write(zone);
+    if (status != ODS_STATUS_OK) {
+        ods_log_error("[%s] write zone %s failed: %s", logstr, zone->name,
+            ods_status2str(status));
     }
     return status;
 }

@@ -32,6 +32,7 @@
  */
 
 #include "config.h"
+#include "dns/dname.h"
 #include "signer/signconf.h"
 #include "rzonec/zonec.h"
 #include "signer/zone.h"
