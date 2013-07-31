@@ -434,10 +434,8 @@ void dname_print(FILE* fd, dname_type* dname)
     size_t labels_to_convert;
     char* dst;
     const uint8_t* src;
-
-    if (!dname || !fd) {
-        return;
-    }
+    ods_log_assert(fd);
+    ods_log_assert(dname);
     assert(dname->label_count > 0);
     if (dname->label_count == 1) {
         fprintf(fd, ".");

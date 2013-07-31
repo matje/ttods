@@ -128,16 +128,21 @@ rr_print(FILE* fd, rr_type* rr)
     uint16_t i;
     ods_log_assert(fd);
     ods_log_assert(rr);
+    fprintf(fd, "owner:");
     dname_print(fd, rr->owner);
     fprintf(fd, "\t");
-    fprintf(fd, "%u", rr->ttl);
+    fprintf(fd, "ttl:%u", rr->ttl);
     fprintf(fd, "\t");
+    fprintf(fd, "class:");
     rr_print_class(fd, rr->klass);
     fprintf(fd, " ");
+    fprintf(fd, "type:");
     rr_print_rrtype(fd, rr->type);
     fprintf(fd, "\t");
+    fprintf(fd, "rdata:");
     for (i=0; i < rr->rdlen; i++) {
         rdata_print(fd, &rr->rdata[i], rr->type, i);
     }
+    fprintf(fd, "\n");
     return;
 }

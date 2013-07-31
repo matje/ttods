@@ -142,9 +142,9 @@ void
 rdata_print(FILE* fd, rdata_type* rdata, uint16_t rrtype, uint8_t pos)
 {
     rrstruct_type* rrstruct;
-    if (!fd || !rdata) {
-        return;
-    }
+    ods_log_assert(fd);
+    ods_log_assert(rdata);
+    fprintf(fd, "rdata:");
     rrstruct = dns_rrstruct_by_type(rrtype);
     switch (rrstruct->rdata[pos]) {
         case DNS_RDATA_IPV4:

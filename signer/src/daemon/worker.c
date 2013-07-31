@@ -201,7 +201,7 @@ worker_perform_task_write:
             /* perform 'write' task */
             worker_working_with(worker, TASK_WRITE, TASK_SIGN, "write",
                 task_who2str(worker->task), &what, &when);
-/*            status = tools_write(zone); */
+            status = tools_write(zone);
             if (status == ODS_STATUS_OK) {
                 if (worker->task->interrupt > TASK_CONF) {
                     worker->task->interrupt = TASK_NONE;
