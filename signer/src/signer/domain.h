@@ -51,7 +51,7 @@ struct zone_struct;
 typedef struct domain_struct domain_type;
 struct domain_struct {
     ldns_rdf* dname;
-    void* zone;
+    struct zone_struct* zone;
     tree_node* node;
     domain_type* parent;
     unsigned is_new : 1;
