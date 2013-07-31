@@ -237,7 +237,7 @@ zone_add_rr(zone_type* zone, rr_type* rr, int do_stats)
 {
     ods_status status;
     domain_type* domain;
-/*    rrset_type* rrset; */
+    rrset_type* rrset;
     ods_log_assert(zone);
     ods_log_assert(rr);
     domain = namedb_lookup_domain(zone->namedb, rr->owner);
@@ -257,11 +257,10 @@ zone_add_rr(zone_type* zone, rr_type* rr, int do_stats)
             }
         }
     }
-/*    rrset = domain_lookup_rrset(domain, rr->type);
+    rrset = domain_lookup_rrset(domain, rr->type);
     if (!rrset) {
-*/
         /* add rrset */
-/*    } */
+    }
     /* add rr */
 
     return ODS_STATUS_OK;

@@ -65,9 +65,8 @@ domain_create(struct zone_struct* zone, dname_type* dname)
  * Look up RRset at this domain.
  *
  */
-/*
 rrset_type*
-domain_lookup_rrset(domain_type* domain, ldns_rr_type rrtype)
+domain_lookup_rrset(domain_type* domain, uint16_t rrtype)
 {
     rrset_type* rrset = NULL;
     ods_log_assert(domain);
@@ -78,13 +77,12 @@ domain_lookup_rrset(domain_type* domain, ldns_rr_type rrtype)
     }
     return rrset;
 }
-*/
+
 
 /**
  * Add RRset to domain.
  *
  */
-/*
 void
 domain_add_rrset(domain_type* domain, rrset_type* rrset)
 {
@@ -101,12 +99,12 @@ domain_add_rrset(domain_type* domain, rrset_type* rrset)
         *p = rrset;
         rrset->next = NULL;
     }
-    log_rrset(domain->dname, rrset->rrtype, "+RRSET", LOG_DEEEBUG);
+    rrset_log(domain->dname, rrset->rrtype, "+RRSET", LOG_DEEEBUG);
     rrset->domain = (void*) domain;
-    TODO: update denial
+    /* TODO: update denial */
     return;
 }
-*/
+
 
 /**
  * Delete RRset from domain.

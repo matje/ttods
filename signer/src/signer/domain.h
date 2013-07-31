@@ -36,6 +36,7 @@
 
 #include "config.h"
 #include "dns/dname.h"
+#include "signer/rrset.h"
 #include "util/region.h"
 #include "util/status.h"
 #include "util/tree.h"
@@ -54,6 +55,7 @@ struct domain_struct {
     struct zone_struct* zone;
     tree_node* node;
     domain_type* parent;
+    rrset_type* rrsets;
     unsigned is_new : 1;
     unsigned is_apex : 1; /* apex */
 };
@@ -74,7 +76,7 @@ domain_type* domain_create(struct zone_struct* zone, dname_type* dname);
  * @return:       (rrset_type*) rrset, NULL if not found.
  *
  */
-/* rrset_type* domain_lookup_rrset(domain_type* domain, uint16_t rrtype); */
+rrset_type* domain_lookup_rrset(domain_type* domain, uint16_t rrtype);
 
 /**
  * Add rrset to domain.
@@ -82,7 +84,7 @@ domain_type* domain_create(struct zone_struct* zone, dname_type* dname);
  * @param rrset:  rrset.
  *
  */
-/* void domain_add_rrset(domain_type* domain, rrset_type* rrset); */
+void domain_add_rrset(domain_type* domain, rrset_type* rrset);
 
 /**
  * Delete RRset from domain.
