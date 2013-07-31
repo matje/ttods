@@ -226,4 +226,11 @@ void dname_str(dname_type* dname, char* buf);
  */
 void dname_log(dname_type* dname, const char* pre, int level);
 
+/**
+ * Clean up domain name.
+ * @param dname:       domain name.
+ *
+ */
+void dname_cleanup(dname_type* dname);
+
 #endif /* DNS_DNAME_H */

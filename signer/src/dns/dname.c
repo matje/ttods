@@ -551,3 +551,17 @@ dname_log(dname_type* dname, const char* pre, int level)
     }
     return;
 }
+
+
+/**
+ * Clean up domain name.
+ *
+ */
+void
+dname_cleanup(dname_type* dname)
+{
+    if (!dname) {
+        return;
+    }
+    return;
+}
