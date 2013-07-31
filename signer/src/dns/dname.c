@@ -183,26 +183,22 @@ dname_name(const dname_type *dname)
 }
 
 
+
 /**
- * Create new domain name.
+ * Create domain name from data.
  *
  */
-dname_type*
-dname_create(region_type* r, const char* str)
+static dname_type*
+dname_create_frm_data(region_type* region, const uint8_t* wire)
 {
-    uint8_t wire[DNAME_MAXLEN];
     uint8_t label_offsets[DNAME_MAXLEN];
     uint8_t label_count = 0;
     size_t size = 0;
     const uint8_t* label = wire;
     dname_type *dname;
     ssize_t i;
-    assert(r);
-    assert(str);
-    if (!dname_str2wire(wire, str)) {
-        ods_log_error("[%s] parse dname %s failed", logstr, str);
-        return NULL;
-    }
+    ods_log_assert(region);
+    ods_log_assert(wire);
     while (1) {
         if (label_is_pointer(label)) {
             return NULL;
@@ -220,14 +216,12 @@ dname_create(region_type* r, const char* str)
     }
     assert(label_count <= DNAME_MAXLEN / 2 + 1);
     /* reverse label offsets. */
-
-    /* reverse label offsets. */
     for (i = 0; i < label_count / 2; ++i) {
         uint8_t tmp = label_offsets[i];
         label_offsets[i] = label_offsets[label_count - i - 1];
         label_offsets[label_count - i - 1] = tmp;
     }
-    dname = (dname_type *) region_alloc(r, (sizeof(dname_type)
+    dname = (dname_type *) region_alloc(region, (sizeof(dname_type)
         + (label_count + size) * sizeof(uint8_t)));
     dname->size = size;
     dname->label_count = label_count;
@@ -235,6 +229,24 @@ dname_create(region_type* r, const char* str)
         label_count * sizeof(uint8_t));
     memcpy((uint8_t *) dname_name(dname), wire, size * sizeof(uint8_t));
     return dname;
+}
+
+
+/**
+ * Create new domain name.
+ *
+ */
+dname_type*
+dname_create(region_type* r, const char* str)
+{
+    uint8_t wire[DNAME_MAXLEN];
+    assert(r);
+    assert(str);
+    if (!dname_str2wire(wire, str)) {
+        ods_log_error("[%s] parse dname %s failed", logstr, str);
+        return NULL;
+    }
+    return dname_create_frm_data(r, wire);
 }
 
 
@@ -248,6 +260,26 @@ dname_clone(region_type* r, const dname_type* dname)
     assert(r);
     assert(dname);
     return (dname_type*) region_alloc_init(r, dname, dname_total_size(dname));
+}
+
+
+/**
+ * Check if left domain name is sub domain of right domain name.
+ *
+ */
+int
+dname_is_subdomain(const dname_type* left, const dname_type* right)
+{
+    uint8_t i;
+    if (left->label_count < right->label_count) {
+        return 0;
+    }
+    for (i = 1; i < right->label_count; i++) {
+        if (label_compare(dname_label(left, i), dname_label(right, i)) != 0) {
+            return 0;
+        }
+    }
+    return 1;
 }
 
 
@@ -378,6 +410,20 @@ dname_str2wire(uint8_t* wire, const char* str)
 
 
 /**
+ * Return partial .
+ *
+ */
+dname_type*
+dname_leftchop(region_type* region, dname_type* dname)
+{
+    ods_log_assert(dname);
+    ods_log_assert(dname->label_count);
+    return dname_create_frm_data(region, dname_label(dname,
+       dname->label_count - 1));
+}
+
+
+/**
  * Print domain name.
  *
  */
@@ -481,7 +527,7 @@ void
 dname_log(dname_type* dname, const char* pre, int level)
 {
     char str[DNAME_MAXLEN*5];
-    dname_str(dname, str);
+    dname_str(dname, &str[0]);
     if (level == LOG_EMERG) {
         ods_fatal_exit("%s: %s",  pre?pre:"", str);
     } else if (level == LOG_ALERT) {

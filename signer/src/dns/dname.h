@@ -115,6 +115,31 @@ const uint8_t* label_next(const uint8_t* label);
 int label_compare(const uint8_t* label1, const uint8_t* label2);
 
 /**
+ * The total size (in bytes) allocated to store dname.
+ * @param dname:       dname.
+ * @return:            (size_t) total size in bytes of dname.
+ *
+ */
+size_t dname_total_size(const dname_type* dname);
+
+/**
+ * Offsets into dname for each label starting with the most significant label.
+ * @param dname:       dname.
+ * @return:            (const uint8_t*) offsets.
+ *
+ */
+const uint8_t* dname_label_offsets(const dname_type* dname);
+
+/**
+ * The actual name in wire format (a sequence of label, each prefixed by a
+ * length byte, terminated by a zero length label).
+ * @param dname:       dname.
+ * @return:            (const uint8_t*) actual name in wire format.
+ *
+ */
+const uint8_t* dname_name(const dname_type* dname);
+
+/**
  * Create new domain name.
  * @param r:           memory region.
  * @param str:         presentation format.
@@ -131,6 +156,14 @@ dname_type* dname_create(region_type* r, const char* str);
  *
  */
 dname_type* dname_clone(region_type* r, const dname_type* dname);
+
+/**
+ * Check if left domain name is sub domain of right domain name.
+ * @param left:  possible sub domain.
+ * @param right: possible top domain.
+ *
+ */
+int dname_is_subdomain(const dname_type* left, const dname_type* right);
 
 /**
  * Compare domain names.
@@ -160,6 +193,15 @@ const uint8_t* dname_label(const dname_type* dname, uint8_t index);
 int dname_str2wire(uint8_t* wire, const char* name);
 
 /**
+ * Create domain name without most left label.
+ * @param region: region.
+ * @param dname:  domain name.
+ * @return:       (dname_type*) domain name without most left label.
+ *
+ */
+dname_type* dname_leftchop(region_type* region, dname_type* dname);
+
+/**
  * Print domain name.
  * @param fd:          file descriptor.
  * @param dname:       domain name.
@@ -183,30 +225,5 @@ void dname_str(dname_type* dname, char* buf);
  *
  */
 void dname_log(dname_type* dname, const char* pre, int level);
-
-/**
- * The total size (in bytes) allocated to store dname.
- * @param dname:       dname.
- * @return:            (size_t) total size in bytes of dname.
- *
- */
-size_t dname_total_size(const dname_type* dname);
-
-/**
- * Offsets into dname for each label starting with the most significant label.
- * @param dname:       dname.
- * @return:            (const uint8_t*) offsets.
- *
- */
-const uint8_t* dname_label_offsets(const dname_type* dname);
-
-/**
- * The actual name in wire format (a sequence of label, each prefixed by a
- * length byte, terminated by a zero length label).
- * @param dname:       dname.
- * @return:            (const uint8_t*) actual name in wire format.
- *
- */
-const uint8_t* dname_name(const dname_type *dname);
 
 #endif /* DNS_DNAME_H */
