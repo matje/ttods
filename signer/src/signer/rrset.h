@@ -75,7 +75,7 @@ struct rrset_struct {
  * @param level: log level.
  *
  */
-void log_rrset(dname_type* dname, uint16_t type, const char* pre, int level);
+void rrset_log(dname_type* dname, uint16_t type, const char* pre, int level);
 
 /**
  * Create rrset.
@@ -105,8 +105,18 @@ record_type* rrset_lookup_rr(rrset_type* rrset, rr_type* rr);
 record_type* rrset_add_rr(rrset_type* rrset, rr_type* rr);
 
 /**
+ * Print rrset.
+ * @param fd:       file descriptor.
+ * @param rrset:    rrset.
+ * @param skipsigs: skip signature records.
+ * @param status:   status.
+ *
+ */
+void rrset_print(FILE* fd, rrset_type* rrset, int skipsigs, ods_status* status);
+
+/**
  * Clean up rrset.
- * @param rrset: rrset to be cleaned up.
+ * @param rrset: rrset.
  *
  */
 void rrset_cleanup(rrset_type* rrset);

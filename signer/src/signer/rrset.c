@@ -36,7 +36,7 @@
 #include "signer/rrset.h"
 #include "signer/zone.h"
 
-static const char* rrset_str = "rrset";
+static const char* logstr = "rrset";
 
 
 /**
@@ -52,37 +52,36 @@ rrset_log(dname_type* dname, uint16_t type, const char* pre, int level)
     dname_str(dname, &str[0]);
     (void)snprintf(&rrtype[0], 10, "TYPE%u", (unsigned) type);
     if (level == LOG_EMERG) {
-        ods_fatal_exit("[%s] %s: <%s,%s>",  pre?pre:"", str,
+        ods_fatal_exit("%s: <%s,%s>",  pre?pre:"", str,
             rrstruct->name?rrstruct->name:rrtype);
     } else if (level == LOG_ALERT) {
-        ods_log_alert("[%s] %s: <%s,%s>",   pre?pre:"", str,
+        ods_log_alert("%s: <%s,%s>",   pre?pre:"", str,
             rrstruct->name?rrstruct->name:rrtype);
     } else if (level == LOG_CRIT) {
-        ods_log_crit("[%s] %s: <%s,%s>",    pre?pre:"", str,
+        ods_log_crit("%s: <%s,%s>",    pre?pre:"", str,
             rrstruct->name?rrstruct->name:rrtype);
     } else if (level == LOG_ERR) {
-        ods_log_error("[%s] %s: <%s,%s>",   pre?pre:"", str,
+        ods_log_error("%s: <%s,%s>",   pre?pre:"", str,
             rrstruct->name?rrstruct->name:rrtype);
     } else if (level == LOG_WARNING) {
-        ods_log_warning("[%s] %s: <%s,%s>", pre?pre:"", str,
+        ods_log_warning("%s: <%s,%s>", pre?pre:"", str,
             rrstruct->name?rrstruct->name:rrtype);
     } else if (level == LOG_NOTICE) {
-        ods_log_info("[%s] %s: <%s,%s>", pre?pre:"", str,
+        ods_log_info("%s: <%s,%s>", pre?pre:"", str,
             rrstruct->name?rrstruct->name:rrtype);
     } else if (level == LOG_INFO) {
-        ods_log_verbose("[%s] %s: <%s,%s>", pre?pre:"", str,
+        ods_log_verbose("%s: <%s,%s>", pre?pre:"", str,
             rrstruct->name?rrstruct->name:rrtype);
     } else if (level == LOG_DEBUG) {
-        ods_log_debug("[%s] %s: <%s,%s>", pre?pre:"", str,
+        ods_log_debug("%s: <%s,%s>", pre?pre:"", str,
             rrstruct->name?rrstruct->name:rrtype);
     } else if (level == LOG_DEEEBUG) {
-        ods_log_deeebug("[%s] %s: <%s,%s>", pre?pre:"", str,
+        ods_log_deeebug("%s: <%s,%s>", pre?pre:"", str,
             rrstruct->name?rrstruct->name:rrtype);
     } else {
-        ods_log_deeebug("[%s] %s: <%s,%s>", pre?pre:"", str,
+        ods_log_deeebug("%s: <%s,%s>", pre?pre:"", str,
             rrstruct->name?rrstruct->name:rrtype);
     }
-    free((void*)str);
     return;
 }
 
@@ -157,6 +156,25 @@ rrset_add_rr(rrset_type* rrset, rr_type* rr)
     rrset->rrs[rrset->rr_count - 1].is_removed = 0;
     rrset->needs_singing = 1;
     return &rrset->rrs[rrset->rr_count -1];
+}
+
+
+/**
+ * Print rrset.
+ *
+ */
+void
+rrset_print(FILE* fd, rrset_type* rrset, int skipsigs, ods_status* status)
+{
+    uint16_t i;
+    ods_log_assert(fd);
+    ods_log_assert(rrset);
+    ods_log_assert(status);
+    for (i=0; i < rrset->rr_count; i++) {
+        rr_print(fd, rrset->rrs[i].rr);
+    }
+    *status = ODS_STATUS_OK;
+    return;
 }
 
 
