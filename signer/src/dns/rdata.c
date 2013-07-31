@@ -43,6 +43,16 @@ static const char* logstr = "rdata";
 
 
 /**
+ * Get size of rdata element.
+ *
+ */
+uint16_t
+rdata_size(rdata_type* rdata)
+{
+    return *rdata->data;
+}
+
+/**
  * Get data from rdata element.
  *
  */

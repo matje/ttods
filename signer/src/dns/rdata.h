@@ -51,6 +51,14 @@ union rdata_union {
 };
 
 /**
+ * Get size of rdata element.
+ * @param rdata: rdata.
+ * @return:      (uint16_t) size.
+ *
+ */
+uint16_t rdata_size(rdata_type* rdata);
+
+/**
  * Get data from rdata element.
  * @param rdata: rdata.
  * @return:      (uint8_t*) data.
