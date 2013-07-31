@@ -194,20 +194,12 @@
         parser->current_rr.ttl = parser->number;
     }
     action zparser_rr_end {
-        int i;
-        zparser_process_rr(parser);
-        dname_print(stderr, parser->current_rr.owner);
-        fprintf(stderr, "\t%u", parser->current_rr.ttl);
-        fprintf(stderr, "\t");
-        rr_print_class(stderr, parser->current_rr.klass);
-        fprintf(stderr, "\t");
-        rr_print_rrtype(stderr, parser->current_rr.type);
-        for (i = 0; i < parser->current_rr.rdlen; i++) {
-            fprintf(stderr, " ");
-            rdata_print(stderr, &parser->current_rr.rdata[i],
-                parser->current_rr.type, i);
+        if (!zparser_process_rr(parser)) {
+            ods_log_error("[zparser] error: line %d: unable to process rr",
+                parser->line);
+            parser->totalerrors++;
+            fhold; fgoto line;
         }
-        fprintf(stderr, "\n");
     }
     action zparser_rdata_start {
         bzero(&parser->rdbuf[0], DNS_RDLEN_MAX);

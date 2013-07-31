@@ -135,6 +135,8 @@ zparser_read_zone(zparser_type* parser, const char* file)
 int
 zparser_process_rr(zparser_type* parser)
 {
+    ods_status status;
+
     /* supported CLASS */
     if (parser->current_rr.klass != DNS_CLASS_IN) {
         fprintf(stderr, "[%s] only class IN is supported\n", logstr);
@@ -142,7 +144,12 @@ zparser_process_rr(zparser_type* parser)
     }
     /* if soa: update new serial */
 
-    /* add rr to db */
+    /* add rr to zone */
+    status = zone_add_rr(parser->zone, &parser->current_rr, 1);
+    if (status != ODS_STATUS_OK) {
+        fprintf(stderr, "[%s] only class IN is supported\n", logstr);
+        return 0;
+    }
 
     /* all fine */
     parser->numrrs++;
