@@ -62,7 +62,6 @@ namedb_type*
 namedb_create(struct zone_struct* zone)
 {
     namedb_type* db = NULL;
-    tree_type* domains = NULL;
     ods_log_assert(zone);
     ods_log_assert(zone->region);
 
@@ -70,6 +69,79 @@ namedb_create(struct zone_struct* zone)
     db->zone = zone;
     db->domains = tree_create(zone->region, domain_compare);
     return db;
+}
+
+
+/**
+ * Add empty non-terminals for domain to the apex.
+ *
+ */
+ods_status
+namedb_entize(namedb_type* db, domain_type* domain, dname_type* apex)
+{
+    region_type* tmp_region = NULL;
+    dname_type* parent_dname = NULL;
+    domain_type* parent_domain = NULL;
+    ods_log_assert(db);
+    ods_log_assert(db->zone);
+    ods_log_assert(db->zone->region);
+    ods_log_assert(domain);
+    ods_log_assert(apex);
+    ods_log_assert(apex->label_count > 0);
+    if (domain->parent) {
+        /* already entized */
+        return ODS_STATUS_OK;
+    }
+    tmp_region = region_create();
+    if (!tmp_region) {
+        ods_log_crit("[%s] create region failed", logstr);
+        exit(1);
+    }
+    while (domain && dname_is_subdomain(domain->dname, apex) &&
+        dname_compare(domain->dname, apex) != 0) {
+        /**
+         * RFC5155:
+         * 4. If the difference in number of labels between the apex and
+         *    the original owner name is greater than 1, additional NSEC3
+         *    RRs need to be added for every empty non-terminal between
+         *     the apex and the original owner name.
+         */
+        ods_log_assert(domain->dname->label_count > apex->label_count);
+        parent_dname = dname_leftchop(tmp_region, domain->dname);
+        parent_domain = namedb_lookup_domain(db, parent_dname);
+        if (!parent_domain) {
+            dname_log(parent_dname, "[namedb] add empty non-terminal",
+                LOG_DEBUG);
+            parent_domain = namedb_add_domain(db, parent_dname);
+            ods_log_assert(parent_domain);
+            domain->parent = parent_domain;
+            domain = parent_domain;
+        } else {
+            domain->parent = parent_domain;
+            domain = NULL;
+        }
+    }
+    region_cleanup(tmp_region);
+    return ODS_STATUS_OK;
+}
+
+
+/**
+ * Lookup domain.
+ *
+ */
+domain_type*
+namedb_lookup_domain(namedb_type* db, dname_type* dname)
+{
+    tree_node* node;
+    if (!db || !dname) {
+        return NULL;
+    }
+    node = tree_search(db->domains, dname);
+    if (node && node != TREE_NULL) {
+        return (void*) node->data;
+    }
+    return NULL;
 }
 
 
@@ -102,15 +174,15 @@ namedb_add_domain(namedb_type* db, dname_type* dname)
     domain = domain_create(db->zone, dname);
     node = domain2node(domain);
     if (!tree_insert(db->domains, node)) {
-        ods_log_error("[%s] add domain failed: already present", logstr);
-        dname_log(domain->dname, "ERR +DOMAIN", LOG_ERR);
+        dname_log(domain->dname, "[namedb] add domain failed: already present",
+            LOG_WARNING);
         domain_cleanup(domain);
         return NULL;
     }
     domain = (domain_type*) node->data;
     domain->node = node;
     domain->is_new = 1;
-    dname_log(domain->dname, "+DOMAIN", LOG_DEEEBUG);
+    dname_log(domain->dname, "[namedb] +DOMAIN", LOG_DEEEBUG);
     return domain;
 }
 
@@ -123,7 +195,7 @@ void
 namedb_cleanup(namedb_type* db)
 {
     if (db) {
-        tree_cleanup(db);
+        tree_cleanup(db->domains);
     }
     return;
 }

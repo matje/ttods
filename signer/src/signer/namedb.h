@@ -38,6 +38,7 @@
 #include "dns/dname.h"
 #include "util/tree.h"
 #include "util/region.h"
+#include "util/status.h"
 #include "signer/domain.h"
 
 #include <ldns/ldns.h>
@@ -61,6 +62,26 @@ struct namedb_struct {
  *
  */
 namedb_type* namedb_create(struct zone_struct* zone);
+
+/**
+ * Add empty non-terminals for domain to the apex.
+ * @param db:     namedb.
+ * @param domain: start from this domain.
+ * @param apex:   zone apex domain name.
+ * @return:       (ods_status) status.
+ *
+ */
+ods_status namedb_entize(namedb_type* db, domain_type* domain,
+   dname_type* apex);
+
+/**
+ * Look up domain.
+ * @param db:    namedb.
+ * @param dname: domain name.
+ * @return:      (domain_type*) domain, NULL if not found.
+ *
+ */
+domain_type* namedb_lookup_domain(namedb_type* db, dname_type* dname);
 
 /**
  * Create new domain and add it to namedb.
