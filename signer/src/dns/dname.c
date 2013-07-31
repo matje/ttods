@@ -483,25 +483,25 @@ dname_log(dname_type* dname, const char* pre, int level)
     char str[DNAME_MAXLEN*5];
     dname_str(dname, str);
     if (level == LOG_EMERG) {
-        ods_fatal_exit("[%s] %s: %s",  logstr, pre?pre:"", str);
+        ods_fatal_exit("%s: %s",  pre?pre:"", str);
     } else if (level == LOG_ALERT) {
-        ods_log_alert("[%s] %s: %s",   logstr, pre?pre:"", str);
+        ods_log_alert("%s: %s",   pre?pre:"", str);
     } else if (level == LOG_CRIT) {
-        ods_log_crit("[%s] %s: %s",    logstr, pre?pre:"", str);
+        ods_log_crit("%s: %s",    pre?pre:"", str);
     } else if (level == LOG_ERR) {
-        ods_log_error("[%s] %s: %s",   logstr, pre?pre:"", str);
+        ods_log_error("%s: %s",   pre?pre:"", str);
     } else if (level == LOG_WARNING) {
-        ods_log_warning("[%s] %s: %s", logstr, pre?pre:"", str);
+        ods_log_warning("%s: %s", pre?pre:"", str);
     } else if (level == LOG_NOTICE) {
-        ods_log_info("[%s] %s: %s",    logstr, pre?pre:"", str);
+        ods_log_info("%s: %s",    pre?pre:"", str);
     } else if (level == LOG_INFO) {
-        ods_log_verbose("[%s] %s: %s", logstr, pre?pre:"", str);
+        ods_log_verbose("%s: %s", pre?pre:"", str);
     } else if (level == LOG_DEBUG) {
-        ods_log_debug("[%s] %s: %s",   logstr, pre?pre:"", str);
+        ods_log_debug("%s: %s",   pre?pre:"", str);
     } else if (level == LOG_DEEEBUG) {
-        ods_log_deeebug("[%s] %s: %s", logstr, pre?pre:"", str);
+        ods_log_deeebug("%s: %s", pre?pre:"", str);
     } else {
-        ods_log_deeebug("[%s] %s: %s", logstr, pre?pre:"", str);
+        ods_log_deeebug("%s: %s", pre?pre:"", str);
     }
     return;
 }
