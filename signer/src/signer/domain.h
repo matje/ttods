@@ -41,6 +41,7 @@
 #include "util/status.h"
 #include "util/tree.h"
 
+#include <stdio.h>
 #include <time.h>
 
 struct zone_struct;
@@ -96,8 +97,17 @@ void domain_add_rrset(domain_type* domain, rrset_type* rrset);
 /* rrset_type* domain_del_rrset(domain_type* domain, uint16_t rrtype); */
 
 /**
+ * Print domain.
+ * @param fd:     file descriptor.
+ * @param domain: domain.
+ * @param status: status.
+ *
+ */
+void domain_print(FILE* fd, domain_type* domain, ods_status* status);
+
+/**
  * Clean up domain.
- * @param domain: domain to clean up.
+ * @param domain: domain.
  *
  */
 void domain_cleanup(domain_type* domain);

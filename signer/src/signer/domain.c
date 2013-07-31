@@ -99,7 +99,7 @@ domain_add_rrset(domain_type* domain, rrset_type* rrset)
         *p = rrset;
         rrset->next = NULL;
     }
-    rrset_log(domain->dname, rrset->rrtype, "+RRSET", LOG_DEEEBUG);
+    rrset_log(domain->dname, rrset->rrtype, "[namedb] +RRSET", LOG_DEEEBUG);
     rrset->domain = (void*) domain;
     /* TODO: update denial */
     return;
@@ -160,11 +160,61 @@ domain_del_rrset(domain_type* domain, ldns_rr_type rrtype)
 
 
 /**
+ * Print domain.
+ *
+ */
+void
+domain_print(FILE* fd, domain_type* domain, ods_status* status)
+{
+    rrset_type* rrset;
+    rrset_type* cname_rrset = NULL;
+    ods_log_assert(fd);
+    ods_log_assert(domain);
+    ods_log_assert(status);
+    /* empty non-terminal? */
+    if (!domain->rrsets) {
+        fprintf(fd, ";;Empty non-terminal ");
+        dname_print(fd, domain->dname);
+        fprintf(fd, "\n");
+        return;
+    }
+    if (cname_rrset) {
+        rrset_print(fd, cname_rrset, 0, status);
+    } else {
+        if (domain->is_apex) {
+            rrset = domain_lookup_rrset(domain, DNS_TYPE_SOA);
+            if (rrset) {
+                rrset_print(fd, rrset, 0, status);
+                if (*status != ODS_STATUS_OK) {
+                    return;
+                }
+            }
+        }
+        rrset = domain->rrsets;
+        while (rrset) {
+            if (rrset->rrtype != LDNS_RR_TYPE_SOA) {
+                rrset_print(fd, rrset, 0, status);
+                if (*status != ODS_STATUS_OK) {
+                    return;
+                }
+            }
+            rrset = rrset->next;
+        }
+    }
+    /* denial of existence */
+    return;
+}
+
+
+/**
  * Clean up domain.
  *
  */
 void
 domain_cleanup(domain_type* domain)
 {
+    if (!domain) {
+        return;
+    }
     return;
 }
