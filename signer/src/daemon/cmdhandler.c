@@ -597,11 +597,6 @@ cmdhandler_create(region_type* r, const char* filename)
     }
     /* all ok */
     cmdh = (cmdhandler_type*) region_alloc(r, sizeof(cmdhandler_type));
-    if (!cmdh) {
-        ods_log_crit("[%s] region alloc failed", logstr);
-        close(listenfd);
-        return NULL;
-    }
     cmdh->listen_fd = listenfd;
     cmdh->listen_addr = servaddr;
     cmdh->need_to_exit = 0;
@@ -651,13 +646,8 @@ cmdhandler_start(cmdhandler_type* cmdhandler)
                 continue;
             }
             /* client accepted, create new thread */
-            cmdc = (cmdhandler_type*) malloc(sizeof(cmdhandler_type));
-            if (!cmdc) {
-                ods_log_crit("[%s] unable to create thread for client: "
-                    "malloc() failed", logstr);
-                cmdhandler->need_to_exit = 1;
-                break;
-            }
+            cmdc = (cmdhandler_type*) region_alloc(engine->region,
+                sizeof(cmdhandler_type));
             cmdc->listen_fd = cmdhandler->listen_fd;
             cmdc->client_fd = connfd;
             cmdc->listen_addr = cmdhandler->listen_addr;

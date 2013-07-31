@@ -56,10 +56,6 @@ adapter_create(region_type* r, const char* str, adapter_mode type, unsigned in)
         return NULL;
     }
     adapter = (adapter_type*) region_alloc(r, sizeof(adapter_type));
-    if (!adapter) {
-        ods_log_crit("[%s] region alloc failed", logstr);
-        return NULL;
-    }
     strlcpy(&(adapter->configstr[0]), str, strlen(str)+1);
     adapter->config_last_modified = 0;
     adapter->type = type;

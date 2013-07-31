@@ -51,10 +51,6 @@ fifoq_create(region_type* r)
     fifoq_type* fifoq;
     ods_log_assert(r);
     fifoq = (fifoq_type*) region_alloc(r, sizeof(fifoq_type));
-    if (!fifoq) {
-        ods_log_crit("[%s] region alloc failed", logstr);
-        return NULL;
-    }
     fifoq_wipe(fifoq);
     lock_basic_init(&fifoq->q_lock);
     lock_basic_set(&fifoq->q_threshold);

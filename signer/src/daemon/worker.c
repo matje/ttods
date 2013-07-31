@@ -69,11 +69,6 @@ worker_create(struct engine_struct* engine, int num, worker_id type)
     ods_log_assert(engine);
     ods_log_assert(engine->region);
     worker = (worker_type*) region_alloc(engine->region, sizeof(worker_type));
-    if (!worker) {
-        ods_log_crit("[%s[%i]] region alloc failed",
-            worker2str(type), num+1);
-        return NULL;
-    }
     ods_log_debug("[%s[%i]] create", worker2str(type), num+1);
     lock_basic_init(&worker->worker_lock);
     lock_basic_set(&worker->worker_alarm);

@@ -150,14 +150,10 @@ engine_create(void)
     engine_type* engine;
     region_type* region = region_create();
     if (!region) {
-        ods_log_crit("[%s] region create failed", logstr);
-        return NULL;
+        ods_log_crit("[%s] create region failed", logstr);
+        exit(1);
     }
     engine = (engine_type*) region_alloc(region, sizeof(engine_type));
-    if (!engine) {
-        ods_log_crit("[%s] region alloc failed", logstr);
-        return NULL;
-    }
     engine->region = region;
     engine_init(engine);
     return engine;

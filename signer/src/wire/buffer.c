@@ -72,15 +72,7 @@ buffer_create(region_type* r, size_t capacity)
         return NULL;
     }
     buffer = (buffer_type*) region_alloc(r, sizeof(buffer_type));
-    if (!buffer) {
-        ods_log_crit("[%s] region alloc failed", logstr);
-        return NULL;
-    }
     buffer->data = (uint8_t*) region_alloc(r, capacity * sizeof(uint8_t));
-    if (!buffer->data) {
-        ods_log_crit("[%s] region alloc failed", logstr);
-        return NULL;
-    }
     buffer->position = 0;
     buffer->limit = capacity;
     buffer->capacity = capacity;

@@ -51,10 +51,6 @@ task_create(task_id what, time_t when, struct zone_struct* zone)
     ods_log_assert(zone);
     ods_log_assert(zone->region);
     task = (task_type*) region_alloc(zone->region, sizeof(task_type));
-    if (!task) {
-        ods_log_crit("[%s] region alloc failed", logstr);
-        return NULL;
-    }
     task->what = what;
     task->when = when;
     task->interrupt = TASK_NONE;

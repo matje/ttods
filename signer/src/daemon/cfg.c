@@ -69,11 +69,6 @@ cfg_create(region_type* r, const char* cfgfile, int cmdline_verbosity)
     if (cfgfd) {
         ods_log_verbose("[%s] read cfgfile: %s", logstr, cfgfile);
         cfg = (cfg_type*) region_alloc(r, sizeof(cfg_type));
-        if (!cfg) {
-            ods_log_crit("[%s] region alloc failed", logstr);
-            ods_fclose(cfgfd);
-            return NULL;
-        }
         cfg->cfg_filename = region_strdup(r, cfgfile);
         cfg->log_filename = parser_conf_log_filename(r, cfgfile);
         cfg->zonelist_filename = parser_conf_zonelist_filename(r, cfgfile);
