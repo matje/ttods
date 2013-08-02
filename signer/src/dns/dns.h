@@ -46,20 +46,21 @@
 #define DNS_CLASS_ANY  255 	/* Class ANY */
 
 /** TYPE */
-#define DNS_TYPE_A          1	/* RFC 1035: an IPv4 host address */
-#define DNS_TYPE_NS         2	/* RFC 1035: an authoritative name server */
-#define DNS_TYPE_MD         3	/* RFC 1035: a mail destination (Obsolete - use MX) */
-#define DNS_TYPE_MF         4	/* RFC 1035: a mail forwarder (Obsolete - use MX) */
+#define DNS_TYPE_A          1	/* RFC 1035: IPv4 host address */
+#define DNS_TYPE_NS         2	/* RFC 1035: authoritative name server */
+#define DNS_TYPE_MD         3	/* RFC 1035: mail destination (Obsolete - use MX) */
+#define DNS_TYPE_MF         4	/* RFC 1035: mail forwarder (Obsolete - use MX) */
 #define DNS_TYPE_CNAME      5	/* RFC 1035: the canonical name for an alias */
 #define DNS_TYPE_SOA        6	/* RFC 1035: marks the start of authority of a zone */
-#define DNS_TYPE_MB         7   /* RFC 1035: a mail box domain name (Experimental) */
-#define DNS_TYPE_MG         8   /* RFC 1035: a mail group member (Experimental) */
-#define DNS_TYPE_MR         9   /* RFC 1035: a mail rename domain name (Experimental) */
-#define DNS_TYPE_NULL      10	/* RFC 1035: a null record (Experimental)
+#define DNS_TYPE_MB         7	/* RFC 1035: mail box domain name (Experimental) */
+#define DNS_TYPE_MG         8	/* RFC 1035: mail group member (Experimental) */
+#define DNS_TYPE_MR         9	/* RFC 1035: mail rename domain name (Experimental) */
+#define DNS_TYPE_NULL      10	/* RFC 1035: null record (Experimental) */
+#define DNS_TYPE_WKS       11	/* RFC 1035: well known service description */
 
 
 #define DNS_NUMRRCLASSES DNS_CLASS_HS+1 /* +1 for TYPE0 */
-#define DNS_NUMRRTYPES   DNS_TYPE_MR+1 /* +1 for TYPE0 */
+#define DNS_NUMRRTYPES   DNS_TYPE_WKS+1 /* +1 for TYPE0 */
 
 /** RDATA */
 /*

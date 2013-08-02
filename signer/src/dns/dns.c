@@ -59,6 +59,7 @@ static rrstruct_type dns_rrstructs[(DNS_NUMRRTYPES+1)] = {
 /*     8 */ { "MG", DNS_TYPE_MG, 1, 1, { DNS_RDATA_COMPRESSED_DNAME } },
 /*     9 */ { "MR", DNS_TYPE_MR, 1, 1, { DNS_RDATA_COMPRESSED_DNAME } },
 /*     10 */ { "NULL", DNS_TYPE_NULL, 1, 1, { DNS_RDATA_BINARY } },
+/*     11 */ { "WKS", DNS_TYPE_WKS, 2, 2, { DNS_RDATA_IPV4, DNS_RDATA_BINARY } },
 
 };
 

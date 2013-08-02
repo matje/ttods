@@ -418,6 +418,10 @@
                      >zparser_rdata_start $zparser_rdata_char
                      %zparser_rdata_timef  $!zerror_rdata_timef;
 
+    rd_binary       = "binarydata" # TODO
+                     >zparser_rdata_start $zparser_rdata_char
+                     %zparser_rdata_timef  $!zerror_rdata_timef;
+
     rdata_a          = delim . rd_ipv4;
     rdata_ns         = delim . rd_dname;
     rdata_md         = delim . rd_dname;
@@ -428,6 +432,8 @@
     rdata_mb         = delim . rd_dname;
     rdata_mg         = delim . rd_dname;
     rdata_mr         = delim . rd_dname;
+    # rdata_null     = delim . rd_binary;
+    rdata_wks        = delim . rd_ipv4 . delim . rd_binary;
 
 
     rrtype_and_rdata =
