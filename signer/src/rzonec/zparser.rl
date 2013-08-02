@@ -423,9 +423,11 @@
     rdata_md         = delim . rd_dname;
     rdata_mf         = delim . rd_dname;
     rdata_cname      = delim . rd_dname;
-
     rdata_soa        = ((delim . rd_dname){2}) . (delim . rd_int32) .
                        ((delim . rd_timef){4});
+    rdata_mb         = delim . rd_dname;
+    rdata_mg         = delim . rd_dname;
+    rdata_mr         = delim . rd_dname;
 
 
     rrtype_and_rdata =
@@ -435,6 +437,9 @@
         | "MF"         . rdata_mf        >{parser->current_rr.type = DNS_TYPE_MF;}
         | "CNAME"      . rdata_cname     >{parser->current_rr.type = DNS_TYPE_CNAME;}
         | "SOA"        . rdata_soa       >{parser->current_rr.type = DNS_TYPE_SOA;}
+        | "MB"         . rdata_mb        >{parser->current_rr.type = DNS_TYPE_MB;}
+        | "MG"         . rdata_mg        >{parser->current_rr.type = DNS_TYPE_MG;}
+        | "MR"         . rdata_mr        >{parser->current_rr.type = DNS_TYPE_MR;}
         )                                $!zerror_rr_typedata;
 
     # RFC 1035: <rr> contents take one of the following forms:

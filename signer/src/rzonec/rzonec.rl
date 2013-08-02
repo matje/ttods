@@ -155,10 +155,16 @@ zparser_process_rr(zparser_type* parser)
         return 0;
     }
     /* supported TYPE */
-    if (parser->current_rr.type == DNS_TYPE_MD ||
-        parser->current_rr.type == DNS_TYPE_MF) {
+    if (parser->current_rr.type == DNS_TYPE_MD
+     || parser->current_rr.type == DNS_TYPE_MF) {
         rrstruct_type* rrstruct = dns_rrstruct_by_type(parser->current_rr.type);
         ods_log_warning("[%s] warning: type %s in zone %s is obsoleted",
+            logstr, rrstruct->name, parser->zone->name);
+    } else if (parser->current_rr.type == DNS_TYPE_MB
+           ||  parser->current_rr.type == DNS_TYPE_MG
+           ||  parser->current_rr.type == DNS_TYPE_MR) {
+        rrstruct_type* rrstruct = dns_rrstruct_by_type(parser->current_rr.type);
+        ods_log_warning("[%s] warning: type %s in zone %s is experimental",
             logstr, rrstruct->name, parser->zone->name);
     }
     
