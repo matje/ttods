@@ -57,13 +57,21 @@ struct rr_struct {
 };
 
 /**
- * Compare records.
- * @param rr1: one record.
- * @param rr2: another record.
- * @return:    (int) 0 if equal, <0 if rr1 is smaller, >0 otherwise.
+ * Clone record.
+ * @param rr:     rr.
+ * @return:       (rr_type*) cloned rr.
  *
  */
-int rr_compare(rr_type* rr1, rr_type* rr2);
+rr_type* rr_clone(region_type* region, rr_type* rr);
+
+/**
+ * Compare records.
+ * @param rr1:    one record.
+ * @param rr2:    another record.
+ * @return:       (int) 0 if equal, <0 if rr1 is smaller, >0 otherwise.
+ *
+ */
+int rr_compare_rdata(rr_type* rr1, rr_type* rr2);
 
 /**
  * Print rr type.
@@ -75,19 +83,28 @@ void rr_print_rrtype(FILE* fd, uint16_t rrtype);
 
 /**
  * Print class.
- * @param fd:    file descriptor.
- * @param klass: class.
+ * @param fd:     file descriptor.
+ * @param klass:  class.
  *
  */
 void rr_print_class(FILE* fd, uint16_t klass);
 
 /**
  * Print rr.
- * @param fd:    file descriptor.
- * @param rr:    rr.
+ * @param fd:     file descriptor.
+ * @param rr:     rr.
  *
  */
 void rr_print(FILE* fd, rr_type* rr);
+
+/**
+ * Log rr.
+ * @param rr:     rr.
+ * @param pre:    log message.
+ * @param level:  log level.
+ *
+ */
+void rr_log(rr_type* rr, const char* pre, int level);
 
 #endif /* DNS_RR_H */
 

@@ -47,7 +47,7 @@ void
 rrset_log(dname_type* dname, uint16_t type, const char* pre, int level)
 {
     rrstruct_type* rrstruct = dns_rrstruct_by_type(type);
-    char str[DNAME_MAXLEN];
+    char str[DNAME_MAXLEN*5];
     char rrtype[10];
     dname_str(dname, &str[0]);
     (void)snprintf(&rrtype[0], 10, "TYPE%u", (unsigned) type);

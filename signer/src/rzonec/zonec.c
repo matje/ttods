@@ -8,6 +8,7 @@
  */
 
 #include "rzonec/zonec.h"
+#include "dns/rdata.h"
 #include "util/log.h"
 #include "util/util.h"
 
@@ -16,20 +17,6 @@
 #include <string.h>
 
 static const char* logstr = "zonec";
-
-
-/**
- * Allocate memory for RDATA element and initialize with data.
- *
- */
-static uint16_t*
-zonec_rdata_init(region_type *region, const void *data, size_t size)
-{
-    uint16_t *result = region_alloc(region, sizeof(uint16_t) + size);
-    *result = size;
-    memcpy(result + 1, data, size);
-    return result;
-}
 
 
 /**
@@ -45,7 +32,7 @@ zonec_rdata_ipv4(region_type* region, const char* buf)
         ods_log_error("[%s] error: invalid rdata IPv4 address '%s'", logstr,
             buf);
     } else {
-        r = zonec_rdata_init(region, &address, sizeof(address));
+        r = rdata_init_data(region, &address, sizeof(address));
     }
     return r;
 }
@@ -70,7 +57,7 @@ static uint16_t*
 zonec_rdata_int32(region_type* region, const char* buf)
 {
     uint32_t number = htonl(atoi(buf));
-    return zonec_rdata_init(region, &number, sizeof(number));
+    return rdata_init_data(region, &number, sizeof(number));
 }
 
 
@@ -90,7 +77,7 @@ zonec_rdata_timef(region_type* region, const char* buf)
             buf);
     } else {
         timef = htonl(timef);
-        r = zonec_rdata_init(region, &timef, sizeof(timef));
+        r = rdata_init_data(region, &timef, sizeof(timef));
     }
     return r;
 }
@@ -104,7 +91,6 @@ int
 zonec_rdata_add(region_type* region, rr_type* rr, dns_rdata_format rdformat,
    const char* rdbuf, size_t rdsize)
 {
-    char str[DNAME_MAXLEN*5];
     uint16_t* d = NULL;
     dname_type* dname = NULL;
     if (rr->rdlen > DNS_RDATA_MAX) {
@@ -122,7 +108,6 @@ zonec_rdata_add(region_type* region, rr_type* rr, dns_rdata_format rdformat,
             break;
         case DNS_RDATA_COMPRESSED_DNAME:
             dname = zonec_rdata_dname(region, rdbuf);
-            dname_str(dname, &str[0]);
             break;
         case DNS_RDATA_INT32:
             d = zonec_rdata_int32(region, rdbuf);

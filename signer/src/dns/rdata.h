@@ -51,30 +51,37 @@ union rdata_union {
 };
 
 /**
+ * Initialize rdata with data.
+ * @param region: memory region.
+ * @param data:   data.
+ * @param size:   size of data.
+ *
+ */
+uint16_t* rdata_init_data(region_type* region, const void* data, size_t size);
+
+/**
  * Get size of rdata element.
- * @param rdata: rdata.
- * @return:      (uint16_t) size.
+ * @param rdata:  rdata.
+ * @return:       (uint16_t) size.
  *
  */
 uint16_t rdata_size(rdata_type* rdata);
 
 /**
  * Get data from rdata element.
- * @param rdata: rdata.
- * @return:      (uint8_t*) data.
+ * @param rdata:  rdata.
+ * @return:       (uint8_t*) data.
  *
  */
 uint8_t* rdata_get_data(rdata_type* rdata);
 
-
 /**
  * Get domain name from rdata element.
- * @param rdata: rdata.
- * @return:      (dname_type*) domain name.
+ * @param rdata:  rdata.
+ * @return:       (dname_type*) domain name.
  *
  */
 dname_type* rdata_get_dname(rdata_type* rdata);
-
 
 /**
  * Print rdta element.

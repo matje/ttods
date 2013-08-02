@@ -43,6 +43,20 @@ static const char* logstr = "rdata";
 
 
 /**
+ * Initialize rdata with data.
+ *
+ */
+uint16_t*
+rdata_init_data(region_type *region, const void *data, size_t size)
+{
+    uint16_t *result = region_alloc(region, sizeof(uint16_t) + size);
+    *result = size;
+    memcpy(result + 1, data, size);
+    return result;
+}
+
+
+/**
  * Get size of rdata element.
  *
  */
@@ -51,6 +65,7 @@ rdata_size(rdata_type* rdata)
 {
     return *rdata->data;
 }
+
 
 /**
  * Get data from rdata element.
@@ -144,7 +159,6 @@ rdata_print(FILE* fd, rdata_type* rdata, uint16_t rrtype, uint8_t pos)
     rrstruct_type* rrstruct;
     ods_log_assert(fd);
     ods_log_assert(rdata);
-    fprintf(fd, "rdata:");
     rrstruct = dns_rrstruct_by_type(rrtype);
     switch (rrstruct->rdata[pos]) {
         case DNS_RDATA_IPV4:
