@@ -60,10 +60,12 @@
 #define DNS_TYPE_PTR       12	/* RFC 1035: domain name pointer */
 #define DNS_TYPE_HINFO     13	/* RFC 1035: host information */
 #define DNS_TYPE_MINFO     14	/* RFC 1035: mailbox or mail list information */
+#define DNS_TYPE_MX        15	/* RFC 1035: mail exchange */
+#define DNS_TYPE_TXT       16	/* RFC 1035: text strings */
 
 
 #define DNS_NUMRRCLASSES DNS_CLASS_HS+1 /* +1 for TYPE0 */
-#define DNS_NUMRRTYPES   DNS_TYPE_MINFO+1 /* +1 for TYPE0 */
+#define DNS_NUMRRTYPES   DNS_TYPE_TXT+1 /* +1 for TYPE0 */
 
 /** RDATA */
 /*
@@ -73,8 +75,10 @@ enum dns_rdata_format_enum {
     DNS_RDATA_IPV4,               /* 32-bit IPv4 address. */
     DNS_RDATA_COMPRESSED_DNAME,   /* Possibly compressed domain name. */
     DNS_RDATA_UNCOMPRESSED_DNAME, /* Uncompressed domain name. */
+    DNS_RDATA_INT16,              /* 16-bit integer. */
     DNS_RDATA_INT32,              /* 32-bit integer. */
     DNS_RDATA_TIMEF,              /* 32-bit integer representing time. */
+    DNS_RDATA_TEXT,               /* Text strings. */
     DNS_RDATA_BINARY              /* Binary data (unknown length). */
 };
 typedef enum dns_rdata_format_enum dns_rdata_format;

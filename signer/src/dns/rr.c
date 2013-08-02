@@ -96,6 +96,7 @@ rr_compare_rdata(rr_type* rr1, rr_type* rr2)
                     rdata_get_dname(&rr2->rdata[i]));
                 break;
             case DNS_RDATA_IPV4:
+            case DNS_RDATA_INT16:
             case DNS_RDATA_INT32:
             case DNS_RDATA_TIMEF:
             case DNS_RDATA_BINARY:
@@ -172,6 +173,7 @@ rr_print(FILE* fd, rr_type* rr)
     fprintf(fd, "\t");
     for (i=0; i < rr->rdlen; i++) {
         rdata_print(fd, &rr->rdata[i], rr->type, i);
+        fprintf(fd, " ");
     }
     fprintf(fd, "\n");
     return;

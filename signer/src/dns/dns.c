@@ -65,6 +65,9 @@ static rrstruct_type dns_rrstructs[(DNS_NUMRRTYPES+1)] = {
               { DNS_RDATA_TEXT, DNS_RDATA_TEXT } },
 /*    14 */ { "MINFO", DNS_TYPE_HINFO, 2, 2,
               { DNS_RDATA_COMPRESSED_DNAME, DNS_RDATA_COMPRESSED_DNAME } },
+/*    15 */ { "MX", DNS_TYPE_MX, 2, 2,
+              { DNS_RDATA_INT16, DNS_RDATA_COMPRESSED_DNAME } } ,
+/*    16 */ { "TXT", DNS_TYPE_TXT, 1, 1, { DNS_RDATA_TEXT } },
 
 };
 

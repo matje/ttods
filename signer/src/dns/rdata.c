@@ -124,6 +124,19 @@ rdata_print_dname(FILE* fd, rdata_type* rdata)
 
 
 /**
+ * Print int16 RDATA element.
+ *
+ */
+static void
+rdata_print_int16(FILE* fd, rdata_type* rdata)
+{
+    uint16_t data = wf_read_uint16(rdata_get_data(rdata));
+    fprintf(fd, "%lu", (unsigned long) data);
+    return;
+}
+
+
+/**
  * Print int32 RDATA element.
  *
  */
@@ -166,6 +179,9 @@ rdata_print(FILE* fd, rdata_type* rdata, uint16_t rrtype, uint8_t pos)
             break;
         case DNS_RDATA_COMPRESSED_DNAME:
             rdata_print_dname(fd, rdata);
+            break;
+        case DNS_RDATA_INT16:
+            rdata_print_int16(fd, rdata);
             break;
         case DNS_RDATA_INT32:
             rdata_print_int32(fd, rdata);

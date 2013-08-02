@@ -225,6 +225,14 @@
             fhold; fgoto line;
         }
     }
+    action zparser_rdata_int16 {
+        parser->rdbuf[parser->rdsize] = '\0';
+        if (!zonec_rdata_add(parser->region, &parser->current_rr,
+            DNS_RDATA_INT16, parser->rdbuf, parser->rdsize)) {
+            parser->totalerrors++;
+            fhold; fgoto line;
+        }
+    }
     action zparser_rdata_int32 {
         parser->rdbuf[parser->rdsize] = '\0';
         if (!zonec_rdata_add(parser->region, &parser->current_rr,
@@ -311,6 +319,12 @@
     }
     action zerror_rdata_dname {
         ods_log_error("[zparser] error: line %d: bad dname rdata format",
+            parser->line);
+        parser->totalerrors++;
+        fhold; fgoto line;
+    }
+    action zerror_rdata_int16 {
+        ods_log_error("[zparser] error: line %d: bad int16 rdata format",
             parser->line);
         parser->totalerrors++;
         fhold; fgoto line;
@@ -410,6 +424,10 @@
                      >zparser_rdata_start $zparser_rdata_char
                      %zparser_rdata_compressed_dname $!zerror_rdata_dname;
 
+    rd_int16        = digit+
+                     >zparser_rdata_start $zparser_rdata_char
+                     %zparser_rdata_int16  $!zerror_rdata_int16;
+
     rd_int32        = digit+
                      >zparser_rdata_start $zparser_rdata_char
                      %zparser_rdata_int32  $!zerror_rdata_int32;
@@ -441,6 +459,8 @@
     rdata_ptr        = delim . rd_dname;
     rdata_hinfo      = delim . rd_text . delim . rd_text;
     rdata_minfo      = delim . rd_dname . delim . rd_dname;
+    rdata_mx         = delim . rd_int16 . delim . rd_dname;
+    rdata_txt        = delim . rd_text;
 
     rrtype_and_rdata =
         ( "A"          . rdata_a         >{parser->current_rr.type = DNS_TYPE_A;}
@@ -457,6 +477,8 @@
         | "PTR"        . rdata_ptr       >{parser->current_rr.type = DNS_TYPE_PTR;}
         | "HINFO"      . rdata_hinfo     >{parser->current_rr.type = DNS_TYPE_HINFO;}
         | "MINFO"      . rdata_minfo     >{parser->current_rr.type = DNS_TYPE_MINFO;}
+        | "MX"         . rdata_mx        >{parser->current_rr.type = DNS_TYPE_MX;}
+        | "TXT"        . rdata_txt       >{parser->current_rr.type = DNS_TYPE_TXT;}
         )                                $!zerror_rr_typedata;
 
     # RFC 1035: <rr> contents take one of the following forms:

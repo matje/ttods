@@ -50,7 +50,19 @@ zonec_rdata_dname(region_type* region, const char* buf)
 
 
 /**
- * Convert serial into RDATA element.
+ * Convert int16 into RDATA element.
+ *
+ */
+static uint16_t*
+zonec_rdata_int16(region_type* region, const char* buf)
+{
+    uint16_t number = htons(atoi(buf));
+    return rdata_init_data(region, &number, sizeof(number));
+}
+
+
+/**
+ * Convert int32 into RDATA element.
  *
  */
 static uint16_t*
