@@ -57,6 +57,7 @@
 #define DNS_TYPE_MR         9	/* RFC 1035: mail rename domain name (Experimental) */
 #define DNS_TYPE_NULL      10	/* RFC 1035: null record (Experimental) */
 #define DNS_TYPE_WKS       11	/* RFC 1035: well known service description */
+#define DNS_TYPE_PTR       12	/* RFC 1035: domain name pointer */
 
 
 #define DNS_NUMRRCLASSES DNS_CLASS_HS+1 /* +1 for TYPE0 */

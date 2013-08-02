@@ -434,7 +434,7 @@
     rdata_mr         = delim . rd_dname;
     # rdata_null     = delim . rd_binary;
     rdata_wks        = delim . rd_ipv4 . delim . rd_binary;
-
+    rdata_ptr        = delim . rd_dname;
 
     rrtype_and_rdata =
         ( "A"          . rdata_a         >{parser->current_rr.type = DNS_TYPE_A;}
@@ -447,6 +447,8 @@
         | "MG"         . rdata_mg        >{parser->current_rr.type = DNS_TYPE_MG;}
         | "MR"         . rdata_mr        >{parser->current_rr.type = DNS_TYPE_MR;}
         # "NULL"       . rdata_null      >{parser->current_rr.type = DNS_TYPE_NULL;}
+        | "WKS"        . rdata_wks       >{parser->current_rr.type = DNS_TYPE_WKS;}
+        | "PTR"        . rdata_ptr       >{parser->current_rr.type = DNS_TYPE_PTR;}
         )                                $!zerror_rr_typedata;
 
     # RFC 1035: <rr> contents take one of the following forms:
