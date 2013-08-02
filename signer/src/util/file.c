@@ -333,7 +333,9 @@ ods_chown(const char* file, uid_t uid, gid_t gid, int getdir)
     }
     if (!getdir) {
         ods_log_debug("[%s] create and chown %s with user=%ld group=%ld",
-           logstr, file, (signed long) uid, (signed long) gid);
+           logstr, file,
+           (uid == (uid_t)-1)?-1:(signed long) uid,
+           (gid == (gid_t)-1)?-1:(signed long) gid);
         if (chown(file, uid, gid) != 0) {
             ods_log_error("[%s] chown() %s failed: %s", logstr, file,
                 strerror(errno));
