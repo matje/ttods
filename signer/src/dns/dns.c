@@ -45,19 +45,20 @@ static rrclass_type dns_rrclasses[DNS_NUMRRCLASSES+1] = {
 };
 
 static rrstruct_type dns_rrstructs[(DNS_NUMRRTYPES+1)] = {
-/* 0 */ { NULL, 0, 1, 1, { DNS_RDATA_BINARY } },
-/* 1 */ { "A", DNS_TYPE_A, 1, 1, { DNS_RDATA_IPV4 } },
-/* 2 */ { "NS", DNS_TYPE_NS, 1, 1, { DNS_RDATA_COMPRESSED_DNAME } },
-/* 3 */ { "MD", DNS_TYPE_MD, 1, 1, { DNS_RDATA_UNCOMPRESSED_DNAME } },
-/* 4 */ { "MF", DNS_TYPE_MF, 1, 1, { DNS_RDATA_UNCOMPRESSED_DNAME } },
-/* 5 */ { "CNAME", DNS_TYPE_CNAME, 1, 1, { DNS_RDATA_COMPRESSED_DNAME } },
-/* 6 */ { "SOA", DNS_TYPE_SOA, 7, 7,
+/*     0 */ { NULL, 0, 1, 1, { DNS_RDATA_BINARY } },
+/*     1 */ { "A", DNS_TYPE_A, 1, 1, { DNS_RDATA_IPV4 } },
+/*     2 */ { "NS", DNS_TYPE_NS, 1, 1, { DNS_RDATA_COMPRESSED_DNAME } },
+/*     3 */ { "MD", DNS_TYPE_MD, 1, 1, { DNS_RDATA_UNCOMPRESSED_DNAME } },
+/*     4 */ { "MF", DNS_TYPE_MF, 1, 1, { DNS_RDATA_UNCOMPRESSED_DNAME } },
+/*     5 */ { "CNAME", DNS_TYPE_CNAME, 1, 1, { DNS_RDATA_COMPRESSED_DNAME } },
+/*     6 */ { "SOA", DNS_TYPE_SOA, 7, 7,
           { DNS_RDATA_COMPRESSED_DNAME, DNS_RDATA_COMPRESSED_DNAME,
             DNS_RDATA_INT32, DNS_RDATA_TIMEF, DNS_RDATA_TIMEF,
             DNS_RDATA_TIMEF, DNS_RDATA_TIMEF } },
-/* 7 */ { "MB", DNS_TYPE_MB, 1, 1, { DNS_RDATA_COMPRESSED_DNAME } },
-/* 8 */ { "MG", DNS_TYPE_MG, 1, 1, { DNS_RDATA_COMPRESSED_DNAME } },
-/* 9 */ { "MR", DNS_TYPE_MR, 1, 1, { DNS_RDATA_COMPRESSED_DNAME } },
+/*     7 */ { "MB", DNS_TYPE_MB, 1, 1, { DNS_RDATA_COMPRESSED_DNAME } },
+/*     8 */ { "MG", DNS_TYPE_MG, 1, 1, { DNS_RDATA_COMPRESSED_DNAME } },
+/*     9 */ { "MR", DNS_TYPE_MR, 1, 1, { DNS_RDATA_COMPRESSED_DNAME } },
+/*     10 */ { "NULL", DNS_TYPE_NULL, 1, 1, { DNS_RDATA_BINARY } },
 
 };
 

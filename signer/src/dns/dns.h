@@ -55,6 +55,7 @@
 #define DNS_TYPE_MB         7   /* RFC 1035: a mail box domain name (Experimental) */
 #define DNS_TYPE_MG         8   /* RFC 1035: a mail group member (Experimental) */
 #define DNS_TYPE_MR         9   /* RFC 1035: a mail rename domain name (Experimental) */
+#define DNS_TYPE_NULL      10	/* RFC 1035: a null record (Experimental)
 
 
 #define DNS_NUMRRCLASSES DNS_CLASS_HS+1 /* +1 for TYPE0 */

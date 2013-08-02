@@ -440,6 +440,7 @@
         | "MB"         . rdata_mb        >{parser->current_rr.type = DNS_TYPE_MB;}
         | "MG"         . rdata_mg        >{parser->current_rr.type = DNS_TYPE_MG;}
         | "MR"         . rdata_mr        >{parser->current_rr.type = DNS_TYPE_MR;}
+        # "NULL"       . rdata_null      >{parser->current_rr.type = DNS_TYPE_NULL;}
         )                                $!zerror_rr_typedata;
 
     # RFC 1035: <rr> contents take one of the following forms:
