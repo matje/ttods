@@ -9,6 +9,7 @@
 
 #include "adapter/adfile.h"
 #include "dns/dname.h"
+#include "dns/dns.h"
 #include "rzonec/rzonec.h"
 #include "util/log.h"
 #include "util/status.h"
@@ -153,6 +154,14 @@ zparser_process_rr(zparser_type* parser)
         ods_log_error("[%s] error: only class IN is supported", logstr);
         return 0;
     }
+    /* supported TYPE */
+    if (parser->current_rr.type == DNS_TYPE_MD ||
+        parser->current_rr.type == DNS_TYPE_MF) {
+        rrstruct_type* rrstruct = dns_rrstruct_by_type(parser->current_rr.type);
+        ods_log_warning("[%s] warning: type %s in zone %s is obsoleted",
+            logstr, rrstruct->name, parser->zone->name);
+    }
+    
     /* if soa: update new serial */
 
     /* add rr to zone */

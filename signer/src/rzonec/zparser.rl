@@ -419,11 +419,10 @@
                      %zparser_rdata_timef  $!zerror_rdata_timef;
 
     rdata_a          = delim . rd_ipv4;
-
-    rdata_ns         = delim . "RDATA_NS";
-    rdata_md         = delim . "RDATA_MD";
-    rdata_mf         = delim . "RDATA_MF";
-    rdata_cname      = delim . "RDATA_CNAME";
+    rdata_ns         = delim . rd_dname;
+    rdata_md         = delim . rd_dname;
+    rdata_mf         = delim . rd_dname;
+    rdata_cname      = delim . rd_dname;
 
     rdata_soa        = ((delim . rd_dname){2}) . (delim . rd_int32) .
                        ((delim . rd_timef){4});
@@ -431,10 +430,10 @@
 
     rrtype_and_rdata =
         ( "A"          . rdata_a         >{parser->current_rr.type = DNS_TYPE_A;}
-#        | "NS"         . rdata_ns        >{parser->current_rr.type = DNS_TYPE_NS;}
-#        | "MD"         . rdata_md        >{parser->current_rr.type = DNS_TYPE_MD;}
-#        | "MF"         . rdata_mf        >{parser->current_rr.type = DNS_TYPE_MF;}
-#        | "CNAME"      . rdata_cname     >{parser->current_rr.type = DNS_TYPE_CNAME;}
+        | "NS"         . rdata_ns        >{parser->current_rr.type = DNS_TYPE_NS;}
+        | "MD"         . rdata_md        >{parser->current_rr.type = DNS_TYPE_MD;}
+        | "MF"         . rdata_mf        >{parser->current_rr.type = DNS_TYPE_MF;}
+        | "CNAME"      . rdata_cname     >{parser->current_rr.type = DNS_TYPE_CNAME;}
         | "SOA"        . rdata_soa       >{parser->current_rr.type = DNS_TYPE_SOA;}
         )                                $!zerror_rr_typedata;
 
