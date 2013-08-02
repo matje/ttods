@@ -58,10 +58,12 @@
 #define DNS_TYPE_NULL      10	/* RFC 1035: null record (Experimental) */
 #define DNS_TYPE_WKS       11	/* RFC 1035: well known service description */
 #define DNS_TYPE_PTR       12	/* RFC 1035: domain name pointer */
+#define DNS_TYPE_HINFO     13	/* RFC 1035: host information */
+#define DNS_TYPE_MINFO     14	/* RFC 1035: mailbox or mail list information */
 
 
 #define DNS_NUMRRCLASSES DNS_CLASS_HS+1 /* +1 for TYPE0 */
-#define DNS_NUMRRTYPES   DNS_TYPE_WKS+1 /* +1 for TYPE0 */
+#define DNS_NUMRRTYPES   DNS_TYPE_MINFO+1 /* +1 for TYPE0 */
 
 /** RDATA */
 /*

@@ -422,6 +422,10 @@
                      >zparser_rdata_start $zparser_rdata_char
                      %zparser_rdata_timef  $!zerror_rdata_timef;
 
+    rd_text        = "textdata" # TODO
+                     >zparser_rdata_start $zparser_rdata_char
+                     %zparser_rdata_timef  $!zerror_rdata_timef;
+
     rdata_a          = delim . rd_ipv4;
     rdata_ns         = delim . rd_dname;
     rdata_md         = delim . rd_dname;
@@ -435,6 +439,8 @@
     # rdata_null     = delim . rd_binary;
     rdata_wks        = delim . rd_ipv4 . delim . rd_binary;
     rdata_ptr        = delim . rd_dname;
+    rdata_hinfo      = delim . rd_text . delim . rd_text;
+    rdata_minfo      = delim . rd_dname . delim . rd_dname;
 
     rrtype_and_rdata =
         ( "A"          . rdata_a         >{parser->current_rr.type = DNS_TYPE_A;}
@@ -449,6 +455,8 @@
         # "NULL"       . rdata_null      >{parser->current_rr.type = DNS_TYPE_NULL;}
         | "WKS"        . rdata_wks       >{parser->current_rr.type = DNS_TYPE_WKS;}
         | "PTR"        . rdata_ptr       >{parser->current_rr.type = DNS_TYPE_PTR;}
+        | "HINFO"      . rdata_hinfo     >{parser->current_rr.type = DNS_TYPE_HINFO;}
+        | "MINFO"      . rdata_minfo     >{parser->current_rr.type = DNS_TYPE_MINFO;}
         )                                $!zerror_rr_typedata;
 
     # RFC 1035: <rr> contents take one of the following forms:
