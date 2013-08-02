@@ -37,6 +37,14 @@
 #include <stdint.h>
 
 /**
+ * Read 16 bits of wire format data.
+ * @param data: wire format data.
+ * @return:     (uint16_t) 16 bits of data.
+ *
+ */
+uint16_t wf_read_uint16(const void* data);
+
+/**
  * Read 32 bits of wire format data.
  * @param data: wire format data.
  * @return:     (uint32_t) 32 bits of data.

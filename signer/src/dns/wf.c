@@ -37,6 +37,16 @@
 
 
 /**
+ * Read 16 bits of wireformat.
+ *
+ */
+uint16_t
+wf_read_uint16(const void* data)
+{
+    return ntohs(* (uint16_t *) data);
+}
+
+/**
  * Read 32 bits of wireformat.
  *
  */
