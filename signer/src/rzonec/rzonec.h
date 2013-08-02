@@ -29,6 +29,9 @@ struct zparser {
     uint64_t ttl;             /* current ttl */
     uint32_t klass;           /* zone class */
 
+    /* Ragel variables */
+    int cs;
+
     unsigned int line;        /* number of lines */
     unsigned int line_update; /* for debug printing */
     unsigned int comments;    /* number of comments */
