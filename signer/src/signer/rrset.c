@@ -166,7 +166,14 @@ rrset_add_rr(rrset_type* rrset, rr_type* rr)
 void
 rrset_diff(rrset_type* rrset, unsigned incremental, unsigned more_coming)
 {
+    uint16_t i;
     ods_log_assert(rrset);
+    for (i=0; i < rrset->rr_count; i++) {
+        if (rrset->rrs[i].is_added) {
+            rrset->rrs[i].exists = 1;
+            rrset->rrs[i].is_added = 0;
+        }
+    }
     return;
 }
 
