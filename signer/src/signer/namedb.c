@@ -188,6 +188,27 @@ namedb_add_domain(namedb_type* db, dname_type* dname)
 
 
 /**
+ * Apply differences in namedb.
+ *
+ */
+void
+namedb_diff(namedb_type* db, unsigned incremental, unsigned more_coming)
+{
+    return;
+}
+
+
+/**
+ * Nsecify namedb.
+ *
+ */
+uint32_t namedb_nsecify(namedb_type* db)
+{
+    return 0;
+}
+
+
+/**
  * Print namedb.
  *
  */

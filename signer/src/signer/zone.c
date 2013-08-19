@@ -291,6 +291,14 @@ zone_add_rr(zone_type* zone, rr_type* rr, int do_stats)
 void
 zone_commit_diff(zone_type* zone, unsigned incremental, unsigned more_coming)
 {
+    uint32_t num_added = 0;
+    ods_log_assert(zone);
+    ods_log_assert(zone->name);
+    ods_log_assert(zone->namedb);
+    namedb_diff(zone->namedb, incremental, more_coming);
+    num_added = namedb_nsecify(zone->namedb);
+    ods_log_debug("[%s] added %u NSEC[3] rrs to zone %s", logstr, num_added,
+        zone->name);
     return;
 }
 

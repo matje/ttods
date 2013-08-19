@@ -94,6 +94,23 @@ domain_type* namedb_lookup_domain(namedb_type* db, dname_type* dname);
 domain_type* namedb_add_domain(namedb_type* db, dname_type* dname);
 
 /**
+ * Apply differences in namedb.
+ * @param db:          namedb.
+ * @param incremental: full (0) or incremental (1) differences.
+ * @param more_coming: can we expect more parts?
+ *
+ */
+void namedb_diff(namedb_type* db, unsigned incremental, unsigned more_coming);
+
+/**
+ * Nsecify namedb.
+ * @param db: namedb.
+ * @return:   (uint32_t) number of NSEC/NSEC3 rrs added.
+ *
+ */
+uint32_t namedb_nsecify(namedb_type* db);
+
+/**
  * Print namedb.
  * @param fd:     file descriptor.
  * @param namedb: namedb.
