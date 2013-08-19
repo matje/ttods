@@ -48,11 +48,11 @@
  */
 typedef struct rr_struct rr_type;
 struct rr_struct {
-    dname_type* owner; /* TODO: pointer to domain node */
+    dname_type* owner; /* redundant: already in rrset */
     rdata_type* rdata;
     uint32_t ttl;
-    uint16_t klass;
-    uint16_t type;
+    uint16_t klass; /* redundant: all rrs in zone is same class */
+    uint16_t type;  /* redundant: already in rrset */
     uint16_t rdlen;
 };
 
