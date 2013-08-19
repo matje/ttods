@@ -194,6 +194,29 @@ namedb_add_domain(namedb_type* db, dname_type* dname)
 void
 namedb_diff(namedb_type* db, unsigned incremental, unsigned more_coming)
 {
+    tree_node* node;
+    domain_type* domain;
+    ods_log_assert(db);
+    if (!db->domains) {
+        return;
+    }
+    node = tree_first(db->domains);
+    if (!node || node == TREE_NULL) {
+        return;
+    }
+    while (node && node != TREE_NULL) {
+        domain = (domain_type*) node->data;
+        node = tree_next(node);
+        domain_diff(domain, incremental, more_coming);
+    }
+    if (!node || node == TREE_NULL) {
+        return;
+    }
+    while (node && node != TREE_NULL) {
+        domain = (domain_type*) node->data;
+        node = tree_next(node);
+        /* TODO: del_denial_trigger, add_denial_trigger */
+    }
     return;
 }
 

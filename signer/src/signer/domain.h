@@ -97,6 +97,16 @@ void domain_add_rrset(domain_type* domain, rrset_type* rrset);
 /* rrset_type* domain_del_rrset(domain_type* domain, uint16_t rrtype); */
 
 /**
+ * Apply differences in domain.
+ * @param domain:      domain.
+ * @param incremental: full (0) or incremental (1) differences.
+ * @param more_coming: can we expect more parts?
+ *
+ */
+void domain_diff(domain_type* domain, unsigned incremental,
+    unsigned more_coming);
+
+/**
  * Print domain.
  * @param fd:     file descriptor.
  * @param domain: domain.

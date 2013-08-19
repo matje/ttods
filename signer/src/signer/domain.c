@@ -160,6 +160,18 @@ domain_del_rrset(domain_type* domain, ldns_rr_type rrtype)
 
 
 /**
+ * Apply differences in domain.
+ *
+ */
+void
+domain_diff(domain_type* domain, unsigned incremental, unsigned more_coming)
+{
+    ods_log_assert(domain);
+    return;
+}
+
+
+/**
  * Print domain.
  *
  */
