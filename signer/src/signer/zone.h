@@ -140,6 +140,16 @@ ods_status zone_reschedule_task(zone_type* zone, schedule_type* s, int what);
 ods_status zone_add_rr(zone_type* zone, rr_type* rr, int do_stats);
 
 /**
+ * Commit differences in zone as a result of reading an unsigned zone.
+ * @param zone:        zone.
+ * @param incremental: full (0) or incremental (1) differences.
+ * @param more_coming: can we expect more parts?
+ *
+ */
+void zone_commit_diff(zone_type* zone, unsigned incremental,
+     unsigned more_coming);
+
+/**
  * Print zone.
  * @param fd:   file descriptor.
  * @param zone: zone.

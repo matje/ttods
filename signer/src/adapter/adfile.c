@@ -70,7 +70,7 @@ adfile_read(struct zone_struct* zone)
 /*        status = ODS_STATUS_ZPARSERERR; */
     }
     if (status == ODS_STATUS_OK) {
-        /* commit transaction */
+        zone_commit_diff(zone, 0, 0);
     }
     return status;
 }

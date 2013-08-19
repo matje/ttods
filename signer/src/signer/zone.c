@@ -285,6 +285,17 @@ zone_add_rr(zone_type* zone, rr_type* rr, int do_stats)
 
 
 /**
+ * Commit differences in zone as a result of reading an unsigned zone.
+ *
+ */
+void
+zone_commit_diff(zone_type* zone, unsigned incremental, unsigned more_coming)
+{
+    return;
+}
+
+
+/**
  * Clean up zone.
  *
  */
