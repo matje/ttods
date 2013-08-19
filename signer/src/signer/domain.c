@@ -166,7 +166,13 @@ domain_del_rrset(domain_type* domain, ldns_rr_type rrtype)
 void
 domain_diff(domain_type* domain, unsigned incremental, unsigned more_coming)
 {
+    rrset_type* rrset;
     ods_log_assert(domain);
+    rrset = domain->rrsets;
+    while (rrset) {
+        rrset_diff(rrset, incremental, more_coming);
+        rrset = rrset->next;
+    }
     return;
 }
 

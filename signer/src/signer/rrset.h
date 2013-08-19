@@ -105,6 +105,15 @@ record_type* rrset_lookup_rr(rrset_type* rrset, rr_type* rr);
 record_type* rrset_add_rr(rrset_type* rrset, rr_type* rr);
 
 /**
+ * Apply differences in rrset.
+ * @param rrset:       rrset.
+ * @param incremental: full (0) or incremental (1) differences.
+ * @param more_coming: can we expect more parts?
+ *
+ */
+void rrset_diff(rrset_type* rrset, unsigned incremental, unsigned more_coming);
+
+/**
  * Print rrset.
  * @param fd:       file descriptor.
  * @param rrset:    rrset.

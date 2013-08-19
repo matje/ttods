@@ -160,6 +160,18 @@ rrset_add_rr(rrset_type* rrset, rr_type* rr)
 
 
 /**
+ * Apply differences in rrset.
+ *
+ */
+void
+rrset_diff(rrset_type* rrset, unsigned incremental, unsigned more_coming)
+{
+    ods_log_assert(rrset);
+    return;
+}
+
+
+/**
  * Print rrset.
  *
  */
