@@ -107,5 +107,13 @@ int util_hexdigit2int(char hx);
  */
 uint32_t util_str2ttl(const char* str, const char** end);
 
+/**
+ * Set bit in bitmap.
+ * @param bitmap: bitmap.
+ * @param index:  which bit to set.
+ *
+ */
+void util_setbit(uint8_t bitmap[], size_t index);
+
 #endif /* UTIL_UTIL_H */
 

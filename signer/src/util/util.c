@@ -331,3 +331,18 @@ util_str2ttl(const char* str, const char** end)
     }
     return seconds;
 }
+
+
+/**
+ * Set bit in bitmap.
+ *
+ */
+void
+util_setbit(uint8_t bitmap[], size_t index)
+{
+    /**
+     * The bits are counted from left to right, so bit 0 is the left most bit.
+     */
+    bitmap[index/8] |= (1 << (7 - index % 8)):
+    return;
+}
