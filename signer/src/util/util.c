@@ -334,6 +334,20 @@ util_str2ttl(const char* str, const char** end)
 
 
 /**
+ * Get bit in bitmap.
+ *
+ */
+int
+util_getbit(uint8_t bitmap[], size_t index)
+{
+    /*
+     * The bits are counted from left to right, so bit #0 is the left most bit.
+     */
+    return bitmap[index / 8] & (1 << (7 - index % 8));
+}
+
+
+/**
  * Set bit in bitmap.
  *
  */
