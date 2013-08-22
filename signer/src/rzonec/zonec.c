@@ -13,7 +13,9 @@
 #include "util/util.h"
 
 #include <arpa/inet.h>
+#include <netdb.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 static const char* logstr = "zonec";
@@ -85,11 +87,87 @@ zonec_rdata_timef(region_type* region, const char* buf)
     const char* end;
     timef = util_str2ttl(buf, &end);
     if (*end != '\0') {
-        ods_log_error("[%s] error: invalid rdata time '%s'", logstr,
-            buf);
+        ods_log_error("[%s] error: invalid rdata time '%s'", logstr, buf);
     } else {
         timef = htonl(timef);
         r = rdata_init_data(region, &timef, sizeof(timef));
+    }
+    return r;
+}
+
+
+/**
+ * Convert protocol and services into RDATA element.
+ *
+ */
+static uint16_t*
+zonec_rdata_wks(region_type* region, char* buf)
+{
+    uint16_t* r = NULL;
+    uint8_t* protocol;
+    uint8_t bitmap[65536/8];
+    struct protoent* proto;
+    char* service = buf;
+    char* next = NULL;
+    char* delim = strchr(buf, ' ');
+    int max_port = 0;
+    size_t size = 0;
+
+    /* PROTOCOL */
+    if (delim) {
+       next = delim+1;
+       *delim = '\0';
+    }
+    proto = getprotobyname(buf);
+    if (!proto) {
+        getprotobynumber(atoi(buf));
+    }
+    if (!proto) {
+        ods_log_error("[%s] error: invalid protocol '%s'", logstr, buf);
+    } else {
+        /* BITMAP */
+        while (next) {
+            struct servent* serv;
+            int port;
+            service = next;
+            next = NULL;
+            delim = strchr(service, ' ');
+            if (delim) {
+                next = delim + 1;
+                *delim = '\0';
+            }
+            /* convert service to bit */
+            ods_log_error("[%s] wks service: %s", logstr, service);
+            serv = getservbyname(service, proto->p_name);
+            if (serv) {
+                port = ntohs((uint16_t) serv->s_port);
+            } else {
+                char* end;
+                port = strtol(service, &end, 10);
+                if (*end != '\0') {
+                    ods_log_error("[%s] error: unknown service '%s'", logstr,
+                        service);
+                    return NULL;
+                }
+            }
+            if (port < 0 || port > 65535) {
+                ods_log_error("[%s] error: invalid port '%u'", logstr,
+                    (unsigned) port);
+                return NULL;
+            } else {
+                util_setbit(bitmap, port);
+                if (port > max_port) {
+                    max_port = port;
+                }
+            }
+        }
+        /* variant of rdata_init_data */
+        size = sizeof(uint8_t) + (max_port/8) + 1;
+        r = region_alloc(region, sizeof(uint16_t) + size);
+        *r = size;
+        protocol = (uint8_t*) (r+1);
+        *protocol = proto->p_proto;
+        memcpy(protocol+1, bitmap, *r);
     }
     return r;
 }
@@ -121,13 +199,20 @@ zonec_rdata_add(region_type* region, rr_type* rr, dns_rdata_format rdformat,
         case DNS_RDATA_COMPRESSED_DNAME:
             dname = zonec_rdata_dname(region, rdbuf);
             break;
+        case DNS_RDATA_INT16:
+            d = zonec_rdata_int16(region, rdbuf);
+            break;
         case DNS_RDATA_INT32:
             d = zonec_rdata_int32(region, rdbuf);
             break;
         case DNS_RDATA_TIMEF:
             d = zonec_rdata_timef(region, rdbuf);
             break;
+        case DNS_RDATA_WKS:
+            d = zonec_rdata_wks(region, (char*) rdbuf);
+            break;
         case DNS_RDATA_UNCOMPRESSED_DNAME:
+        case DNS_RDATA_TEXT:
         case DNS_RDATA_BINARY:
             d = NULL;
             dname = NULL;

@@ -176,31 +176,6 @@
             str);
     }
     # Actions: resource records.
-    action zparser_rr_start {
-        parser->current_rr.owner = NULL;
-        parser->current_rr.ttl = parser->ttl;
-        parser->current_rr.klass = parser->klass;
-        parser->current_rr.type = 0;
-        parser->current_rr.rdlen = 0;
-        parser->current_rr.rdata = parser->tmp_rdata;
-    }
-    action zparser_rr_owner {
-        parser->current_rr.owner = parser->dname;
-    }
-    action zparser_rr_class {
-        parser->current_rr.klass = DNS_CLASS_IN;
-    }
-    action zparser_rr_ttl {
-        parser->current_rr.ttl = parser->number;
-    }
-    action zparser_rr_end {
-        if (!zparser_process_rr(parser)) {
-            ods_log_error("[zparser] error: line %d: unable to process rr",
-                parser->line);
-            parser->totalerrors++;
-            fhold; fgoto line;
-        }
-    }
     action zparser_rdata_start {
         bzero(&parser->rdbuf[0], DNS_RDLEN_MAX);
         parser->rdsize = 0;
@@ -248,6 +223,59 @@
             parser->totalerrors++;
             fhold; fgoto line;
         }
+    }
+    action zparser_rdata_wks {
+        parser->rdbuf[parser->rdsize] = '\0';
+        ods_log_info("[zparser] wks rdata: %s", parser->rdbuf);
+        if (!zonec_rdata_add(parser->region, &parser->current_rr,
+            DNS_RDATA_WKS, parser->rdbuf, parser->rdsize)) {
+            parser->totalerrors++;
+            fhold; fgoto line;
+        }
+    }
+    action zparser_rr_start {
+        parser->current_rr.owner = NULL;
+        parser->current_rr.ttl = parser->ttl;
+        parser->current_rr.klass = parser->klass;
+        parser->current_rr.type = 0;
+        parser->current_rr.rdlen = 0;
+        parser->current_rr.rdata = parser->tmp_rdata;
+    }
+    action zparser_rr_owner {
+        parser->current_rr.owner = parser->dname;
+    }
+    action zparser_rr_class {
+        parser->current_rr.klass = DNS_CLASS_IN;
+    }
+    action zparser_rr_ttl {
+        parser->current_rr.ttl = parser->number;
+    }
+    action zparser_rr_end {
+        ods_log_info("[zparser] process RR at line %i", parser->line);
+        if (parser->current_rr.type == DNS_TYPE_WKS) {
+            parser->rdbuf[parser->rdsize] = '\0';
+            ods_log_info("[zparser] wks rdata: %s", parser->rdbuf);
+            if (!zonec_rdata_add(parser->region, &parser->current_rr,
+                DNS_RDATA_WKS, parser->rdbuf, parser->rdsize)) {
+                parser->totalerrors++;
+                fhold; fgoto line;
+            }
+        }
+        if (!zparser_process_rr(parser)) {
+            ods_log_error("[zparser] error: line %d: unable to process rr",
+                parser->line);
+            parser->totalerrors++;
+            fhold; fgoto line;
+        }
+    }
+
+    action zparser_service_mnemonic {
+        ods_log_error("[zparser] service: line %d: mnemonic: %s",
+            parser->line, parser->rdbuf);
+    }
+    action zparser_service_number {
+        ods_log_error("[zparser] service: line %d: number: %s",
+            parser->line, parser->rdbuf);
     }
 
 
@@ -341,7 +369,12 @@
         parser->totalerrors++;
         fhold; fgoto line;
     }
-
+    action zerror_rdata_wks {
+        ods_log_error("[zparser] error: line %d: bad wks rdata format",
+            parser->line);
+        parser->totalerrors++;
+        fhold; fgoto line;
+    }
 
 
     ## Utility parsing, newline, comments, delimeters, numbers, time values.
@@ -356,12 +389,19 @@
     # line is ignored.
     comment = ';' . (^newline)* >zparser_comment;
 
+    endline = delim? . comment? . newline;
+
     # http://www.zytrax.com/books/dns/apa/time.html
     timeformat = ( 's'i | 'm'i | 'h'i | 'd'i | 'w'i )
                                      $zparser_timeformat
                                      $!zerror_timeformat;
     decimal_number = digit+          $zparser_decimal_digit;
     time_value     = (decimal_number . timeformat)+ . decimal_number?;
+
+    # mnemonic: for example "TCP", "UDP", "DNS", ...
+    mnemonic = alpha+;
+
+    service = (mnemonic %zparser_service_mnemonic) | (decimal_number %zparser_service_number);
     
     ## Domain name parsing, absolute dnames, relative dnames, labels.
 
@@ -434,15 +474,15 @@
 
     rd_timef        = ttl
                      >zparser_rdata_start $zparser_rdata_char
-                     %zparser_rdata_timef  $!zerror_rdata_timef;
+                     %zparser_rdata_timef $!zerror_rdata_timef;
 
-    rd_binary       = "binarydata" # TODO
+    rd_wks         = ((service . delim)* . service)
                      >zparser_rdata_start $zparser_rdata_char
-                     %zparser_rdata_timef  $!zerror_rdata_timef;
+                     $!zerror_rdata_wks;
 
     rd_text        = "textdata" # TODO
                      >zparser_rdata_start $zparser_rdata_char
-                     %zparser_rdata_timef  $!zerror_rdata_timef;
+                     %zparser_rdata_timef $!zerror_rdata_timef;
 
     rdata_a          = delim . rd_ipv4;
     rdata_ns         = delim . rd_dname;
@@ -455,12 +495,12 @@
     rdata_mg         = delim . rd_dname;
     rdata_mr         = delim . rd_dname;
     # rdata_null     = delim . rd_binary;
-    rdata_wks        = delim . rd_ipv4 . delim . rd_binary;
+    rdata_wks        = delim . rd_ipv4 . delim . rd_wks;
     rdata_ptr        = delim . rd_dname;
     rdata_hinfo      = delim . rd_text . delim . rd_text;
     rdata_minfo      = delim . rd_dname . delim . rd_dname;
     rdata_mx         = delim . rd_int16 . delim . rd_dname;
-    rdata_txt        = delim . rd_text;
+    rdata_txt        = (delim . rd_text)+;
 
     rrtype_and_rdata =
         ( "A"          . rdata_a         >{parser->current_rr.type = DNS_TYPE_A;}
@@ -491,27 +531,27 @@
          | delim
            )
          . rrtype_and_rdata
+         . endline
          )                               >zparser_rr_start
                                          %zparser_rr_end
                                          $!zerror_rr;
 
     ## Main line parsing, entries, directives, records.
 
-    dollar_origin = "$ORIGIN" . delim . abs_dname %zparser_dollar_origin
-                                                  $!zerror_dollar_origin;
-    dollar_ttl    = "$TTL"    . delim . ttl       %zparser_dollar_ttl
-                                                  $!zerror_dollar_ttl;
+    dollar_origin = "$ORIGIN" . delim . abs_dname . endline
+                  %zparser_dollar_origin
+                  $!zerror_dollar_origin;
+    dollar_ttl    = "$TTL"    . delim . ttl . endline
+                  %zparser_dollar_ttl
+                  $!zerror_dollar_ttl;
 
     # RFC 1035: The following entries are defined:
-    # delim?:        <blank>[<comment>]
+    # endline:        <blank>[<comment>]
     # dollar_origin: $ORIGIN <domain-name> [<comment>]
     # rr:            <domain-name><rr> [<comment>]
     # RFC 2038: The Master File format is extended to include the following...
     # dollar_ttl:    $TTL <TTL> [comment]
-    entry = (
-            delim? | rr | dollar_origin | dollar_ttl
-            )
-            . delim? . comment? . newline $!zerror_entry;
+    entry = (endline | rr | dollar_origin | dollar_ttl) $!zerror_entry;
 
     line := [^\n]* newline @{ fgoto main; };
 
