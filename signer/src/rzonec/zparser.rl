@@ -226,7 +226,6 @@
     }
     action zparser_rdata_wks {
         parser->rdbuf[parser->rdsize] = '\0';
-        ods_log_info("[zparser] wks rdata: %s", parser->rdbuf);
         if (!zonec_rdata_add(parser->region, &parser->current_rr,
             DNS_RDATA_WKS, parser->rdbuf, parser->rdsize)) {
             parser->totalerrors++;
@@ -251,10 +250,8 @@
         parser->current_rr.ttl = parser->number;
     }
     action zparser_rr_end {
-        ods_log_info("[zparser] process RR at line %i", parser->line);
         if (parser->current_rr.type == DNS_TYPE_WKS) {
             parser->rdbuf[parser->rdsize] = '\0';
-            ods_log_info("[zparser] wks rdata: %s", parser->rdbuf);
             if (!zonec_rdata_add(parser->region, &parser->current_rr,
                 DNS_RDATA_WKS, parser->rdbuf, parser->rdsize)) {
                 parser->totalerrors++;

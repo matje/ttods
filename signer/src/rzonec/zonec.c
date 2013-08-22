@@ -137,7 +137,6 @@ zonec_rdata_wks(region_type* region, char* buf)
                 *delim = '\0';
             }
             /* convert service to bit */
-            ods_log_error("[%s] wks service: %s", logstr, service);
             serv = getservbyname(service, proto->p_name);
             if (serv) {
                 port = ntohs((uint16_t) serv->s_port);
