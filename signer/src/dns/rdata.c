@@ -34,9 +34,11 @@
 #include "dns/dns.h"
 #include "dns/rdata.h"
 #include "dns/wf.h"
+#include "wire/buffer.h"
 
 #include <arpa/inet.h>
 #include <errno.h>
+#include <netdb.h>
 #include <string.h>
 
 static const char* logstr = "rdata";
@@ -163,6 +165,40 @@ rdata_print_timef(FILE* fd, rdata_type* rdata)
 
 
 /**
+ * Print wks RDATA element.
+ *
+ */
+static void
+rdata_print_wks(FILE* fd, rdata_type* rdata)
+{
+    buffer_type data;
+    buffer_create_from(&data, rdata_get_data(rdata), rdata_size(rdata));
+    if (buffer_available(&data, 1)) {
+        uint8_t protocol = buffer_read_u8(&data);
+        ssize_t bitmap_size = buffer_remaining(&data);
+        uint8_t* bitmap = buffer_current(&data);
+        struct protoent* proto = getprotobynumber(protocol);
+        if (proto) {
+            int i;
+            fprintf(fd, "%s", proto->p_name);
+            for (i=0; i < bitmap_size * 8; i++) {
+                if (util_getbit(bitmap, i)) {
+                    struct servent* serv = getservbyport((int)htons(i),
+                        proto->p_name);
+                    if (serv) {
+                        fprintf(fd, " %s", serv->s_name);
+                    } else {
+                        fprintf(fd, " %d", i);
+                    }
+                }
+            }
+        }
+    }
+    return;
+}
+
+
+/**
  * Print RDATA element.
  *
  */
@@ -189,7 +225,11 @@ rdata_print(FILE* fd, rdata_type* rdata, uint16_t rrtype, uint8_t pos)
         case DNS_RDATA_TIMEF:
             rdata_print_timef(fd, rdata);
             break;
+        case DNS_RDATA_WKS:
+            rdata_print_wks(fd, rdata);
+            break;
         case DNS_RDATA_UNCOMPRESSED_DNAME:
+        case DNS_RDATA_TEXT:
         case DNS_RDATA_BINARY:
         default:
             fprintf(fd, "<unknown>");
