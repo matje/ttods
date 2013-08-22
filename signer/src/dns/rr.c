@@ -79,6 +79,7 @@ int
 rr_compare_rdata(rr_type* rr1, rr_type* rr2)
 {
     size_t i;
+    size_t rdlen;
     int res;
     rrstruct_type* rrstruct;
     ods_log_assert(rr1);
@@ -86,9 +87,10 @@ rr_compare_rdata(rr_type* rr1, rr_type* rr2)
     ods_log_assert(!dname_compare(rr1->owner, rr2->owner));
     ods_log_assert(rr1->type == rr2->type);
     ods_log_assert(rr1->klass == rr2->klass);
-    ods_log_assert(rr1->rdlen == rr2->rdlen);
     rrstruct = dns_rrstruct_by_type(rr1->type);
-    for (i=0; i < rr1->rdlen; i++) {
+    rdlen = rr1->rdlen < rr2->rdlen ? rr1->rdlen : rr2->rdlen;
+
+    for (i=0; i < rdlen; i++) {
         switch (rrstruct->rdata[i]) {
             case DNS_RDATA_COMPRESSED_DNAME:
             case DNS_RDATA_UNCOMPRESSED_DNAME:
@@ -96,6 +98,7 @@ rr_compare_rdata(rr_type* rr1, rr_type* rr2)
                     rdata_get_dname(&rr2->rdata[i]));
                 break;
             case DNS_RDATA_IPV4:
+            case DNS_RDATA_WKS:
             case DNS_RDATA_INT16:
             case DNS_RDATA_INT32:
             case DNS_RDATA_TIMEF:
@@ -115,7 +118,14 @@ rr_compare_rdata(rr_type* rr1, rr_type* rr2)
             return res;
         }
     }
-    return 0;
+    if (rr1->rdlen < rr2->rdlen) {
+        res = 1;
+    } else if (rr1->rdlen > rr2->rdlen) {
+        res = -1;
+    } else {
+        res = 0;
+    }
+    return res;
 }
 
 
