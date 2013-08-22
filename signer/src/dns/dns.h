@@ -78,6 +78,7 @@ enum dns_rdata_format_enum {
     DNS_RDATA_INT16,              /* 16-bit integer. */
     DNS_RDATA_INT32,              /* 32-bit integer. */
     DNS_RDATA_TIMEF,              /* 32-bit integer representing time. */
+    DNS_RDATA_WKS,                /* WKS PROTOCOL + <BITMAP>. */
     DNS_RDATA_TEXT,               /* Text strings. */
     DNS_RDATA_BINARY              /* Binary data (unknown length). */
 };
