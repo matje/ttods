@@ -180,7 +180,22 @@ ods_strchr_and_fwd(const char* s, int c, size_t* offset)
             (*offset)++;
         }
     }
-    ods_log_info("strchrfwd: offset=%u", (unsigned) *offset);
     return delim;
+}
+
+
+/**
+ * Replace all characters c with the character n in string s.
+ *
+ */
+void
+ods_strreplace(char* s, int c, int n)
+{
+    char* delim = strchr(s, c);
+    while (delim) {
+        delim[0] = n;
+        delim = strchr(delim, c);
+    }
+    return;
 }
 

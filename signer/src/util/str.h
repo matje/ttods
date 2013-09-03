@@ -94,11 +94,20 @@ int ods_is_whitespace_line(char* line, int len);
 /**
  * Do strchr and forward to the next character != c.
  * @param s:      string.
- * @param c:      charachter.
+ * @param c:      character.
  * @param offset: how many characters forwarded.
  * @return:       (char*) pointer to the matched character or NULL if not found.
  *
  */
 char* ods_strchr_and_fwd(const char* s, int c, size_t* offset);
+
+/**
+ * Replace all characters c with the character n in string s.
+ * @param s:      string.
+ * @param c:      character to be replaced.
+ * @param n:      new character.
+ *
+ */
+void ods_strreplace(char* s, int c, int n);
 
 #endif /* UTIL_STR_H */
