@@ -176,10 +176,11 @@ ods_strchr_and_fwd(const char* s, int c, size_t* offset)
     char* delim = strchr(s, c);
     *offset = 0;
     if (delim) {
-        while (delim+*offset == c) {
+        while (delim[*offset] == c) {
             (*offset)++;
         }
     }
+    ods_log_info("strchrfwd: offset=%u", (unsigned) *offset);
     return delim;
 }
 
