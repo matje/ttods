@@ -210,7 +210,7 @@ domain_print(FILE* fd, domain_type* domain, ods_status* status)
         }
         rrset = domain->rrsets;
         while (rrset) {
-            if (rrset->rrtype != LDNS_RR_TYPE_SOA) {
+            if (rrset->rrtype != DNS_TYPE_SOA) {
                 rrset_print(fd, rrset, 0, status);
                 if (*status != ODS_STATUS_OK) {
                     return;
