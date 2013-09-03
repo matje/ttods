@@ -91,4 +91,14 @@ size_t ods_strtrim(char* str);
  */
 int ods_is_whitespace_line(char* line, int len);
 
+/**
+ * Do strchr and forward to the next character != c.
+ * @param s:      string.
+ * @param c:      charachter.
+ * @param offset: how many characters forwarded.
+ * @return:       (char*) pointer to the matched character or NULL if not found.
+ *
+ */
+char* ods_strchr_and_fwd(const char* s, int c, size_t* offset);
+
 #endif /* UTIL_STR_H */

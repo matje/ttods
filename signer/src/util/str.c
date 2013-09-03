@@ -164,3 +164,22 @@ ods_is_whitespace_line(char* line, int len)
     }
     return 1;
 }
+
+
+/**
+ * Do strchr and forward to the next character != c.
+ *
+ */
+char*
+ods_strchr_and_fwd(const char* s, int c, size_t* offset)
+{
+    char* delim = strchr(s, c);
+    *offset = 0;
+    if (delim) {
+        while (delim+*offset == c) {
+            (*offset)++;
+        }
+    }
+    return delim;
+}
+
