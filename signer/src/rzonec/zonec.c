@@ -10,6 +10,7 @@
 #include "rzonec/zonec.h"
 #include "dns/rdata.h"
 #include "util/log.h"
+#include "util/str.h"
 #include "util/util.h"
 
 #include <arpa/inet.h>
@@ -101,42 +102,52 @@ zonec_rdata_timef(region_type* region, const char* buf)
  *
  */
 static uint16_t*
-zonec_rdata_wks(region_type* region, char* buf)
+zonec_rdata_wks(region_type* region, const char* buf)
 {
+    char rdata[DNS_RDLEN_MAX];
+    char sep = ' ';
     uint16_t* r = NULL;
     uint8_t* protocol;
     uint8_t bitmap[65536/8];
     struct protoent* proto;
-    char* service = buf;
+    char* service;
     char* next = NULL;
-    char* delim = strchr(buf, ' ');
+    char* delim;
     int max_port = 0;
     size_t size = 0;
+    size_t offset = 0;
+
+    (void) memcpy(&rdata[0], buf, strlen(buf));
+    ods_strreplace(&rdata[0], '\t', sep);
+    service = rdata;
+    ods_log_info("[%s] wks rdata: %s", logstr, rdata);
 
     /* PROTOCOL */
+    delim = ods_strchr_and_fwd(rdata, sep, &offset);
     if (delim) {
-       next = delim+1;
+       next = delim+offset;
        *delim = '\0';
     }
-    proto = getprotobyname(buf);
+    proto = getprotobyname(rdata);
     if (!proto) {
-        getprotobynumber(atoi(buf));
+        getprotobynumber(atoi(rdata));
     }
     if (!proto) {
-        ods_log_error("[%s] error: invalid protocol '%s'", logstr, buf);
+        ods_log_error("[%s] error: invalid protocol '%s'", logstr, rdata);
     } else {
         /* BITMAP */
-        while (next) {
+        while (next && *next) {
             struct servent* serv;
             int port;
             service = next;
             next = NULL;
-            delim = strchr(service, ' ');
+            delim = ods_strchr_and_fwd(service, sep, &offset);
             if (delim) {
-                next = delim + 1;
+                next = delim+offset;
                 *delim = '\0';
             }
             /* convert service to bit */
+            ods_log_error("[%s] info: wks service '%s'", logstr, service);
             serv = getservbyname(service, proto->p_name);
             if (serv) {
                 port = ntohs((uint16_t) serv->s_port);
@@ -208,7 +219,7 @@ zonec_rdata_add(region_type* region, rr_type* rr, dns_rdata_format rdformat,
             d = zonec_rdata_timef(region, rdbuf);
             break;
         case DNS_RDATA_WKS:
-            d = zonec_rdata_wks(region, (char*) rdbuf);
+            d = zonec_rdata_wks(region, rdbuf);
             break;
         case DNS_RDATA_UNCOMPRESSED_DNAME:
         case DNS_RDATA_TEXT:
