@@ -120,7 +120,6 @@ zonec_rdata_wks(region_type* region, const char* buf)
     (void) memcpy(&rdata[0], buf, strlen(buf));
     ods_strreplace(&rdata[0], '\t', sep);
     service = rdata;
-    ods_log_info("[%s] wks rdata: %s", logstr, rdata);
 
     /* PROTOCOL */
     delim = ods_strchr_and_fwd(rdata, sep, &offset);
@@ -147,7 +146,6 @@ zonec_rdata_wks(region_type* region, const char* buf)
                 *delim = '\0';
             }
             /* convert service to bit */
-            ods_log_error("[%s] info: wks service '%s'", logstr, service);
             serv = getservbyname(service, proto->p_name);
             if (serv) {
                 port = ntohs((uint16_t) serv->s_port);
