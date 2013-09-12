@@ -70,6 +70,18 @@
             (unsigned int) parser->ttl);
     }
 
+    # Actions: character strings.
+    action zparser_character_string_start {
+    }
+    action zparser_text_char2wire {
+    }
+    action zparser_text_octet2wire_init {
+    }
+    action zparser_text_octet2wire {
+    }
+    action zparser_character_string_end {
+    }
+
     # Actions: labels and domain names.
     action zparser_label_start {
         parser->label_head = parser->dname_size;
@@ -232,6 +244,14 @@
             fhold; fgoto line;
         }
     }
+    action zparser_rdata_text {
+        parser->rdbuf[parser->rdsize] = '\0';
+        if (!zonec_rdata_add(parser->region, &parser->current_rr,
+            DNS_RDATA_TEXT, parser->rdbuf, parser->rdsize)) {
+            parser->totalerrors++;
+            fhold; fgoto line;
+        }
+    }
     action zparser_rr_start {
         parser->current_rr.owner = NULL;
         parser->current_rr.ttl = parser->ttl;
@@ -266,11 +286,11 @@
         }
     }
 
-    action zparser_service_mnemonic {
+    action zparser_service_mnemonic_debug {
         ods_log_error("[zparser] service: line %d: mnemonic: %s",
             parser->line, parser->rdbuf);
     }
-    action zparser_service_number {
+    action zparser_service_number_debug {
         ods_log_error("[zparser] service: line %d: number: %s",
             parser->line, parser->rdbuf);
     }
@@ -296,6 +316,24 @@
     }
     action zerror_dollar_ttl {
         ods_log_error("[zparser] error: line %d: bad ttl directive",
+            parser->line);
+        parser->totalerrors++;
+        fhold; fgoto line;
+    }
+    action zerror_character_string {
+        ods_log_error("[zparser] error: line %d: bad character string",
+            parser->line);
+        parser->totalerrors++;
+        fhold; fgoto line;
+    }
+    action zerror_text_ddd {
+        ods_log_error("[zparser] error: line %d: bad octet in text",
+            parser->line);
+        parser->totalerrors++;
+        fhold; fgoto line;
+    }
+    action zerror_text_x {
+        ods_log_error("[zparser] error: line %d: bad escape in text",
             parser->line);
         parser->totalerrors++;
         fhold; fgoto line;
@@ -372,6 +410,12 @@
         parser->totalerrors++;
         fhold; fgoto line;
     }
+    action zerror_rdata_text {
+        ods_log_error("[zparser] error: line %d: bad text rdata format",
+            parser->line);
+        parser->totalerrors++;
+        fhold; fgoto line;
+    }
 
 
     ## Utility parsing, newline, comments, delimeters, numbers, time values.
@@ -398,9 +442,10 @@
     # mnemonic: for example "TCP", "UDP", "DNS", ...
     mnemonic = alpha+;
 
-    service = (mnemonic %zparser_service_mnemonic) | (decimal_number %zparser_service_number);
+    service = (mnemonic | decimal_number);
     
-    ## Domain name parsing, absolute dnames, relative dnames, labels.
+    ## Domain name parsing, absolute dnames, relative dnames, labels,
+    ## character strings.
 
     # RFC 1035: \DDD where each D is a digit is the octet corresponding to
     #                the decimal number described by DDD.  The resulting
@@ -409,6 +454,10 @@
     label_ddd = [0-7] {3}                >zparser_label_octet2wire_init
                                          $zparser_label_octet2wire
                                          $!zerror_label_ddd;
+    text_ddd  = [0-7] {3}                >zparser_text_octet2wire_init
+                                         $zparser_text_octet2wire
+                                         $!zerror_text_ddd;
+    
 
     # RFC 1035: \X where X is any character other than a digit (0-9), is
     #              used to quote that character so that its special meaning
@@ -416,12 +465,22 @@
     #              a dot character in a label.
     label_x = ^digit                     $zparser_label_char2wire
                                          $!zerror_label_x;
+    text_x  = ^digit                     $zparser_text_char2wire
+                                         $!zerror_text_x;
 
     label_escape = '\\' . (label_x | label_ddd);
-
     label_char = ([^@().\"\$\\] -- space -- comment) $zparser_label_char2wire;
-
     label_character = (label_char | label_escape);
+
+    text_escape = '\\' . (text_x | text_ddd);
+    text_char = ([^@().\"\$\\] -- space -- comment) $zparser_text_char2wire;
+    text_delim = ([@().\$\\] | space | comment)   $zparser_text_char2wire;
+    text_character = (text_char | text_escape);
+    text_character_delim = (text_character | text_delim);
+
+    rd_str = ('\"' . (text_character_delim*
+            - (text_character_delim* '\"' text_character_delim*)) . '\"')
+            | text_character*;
 
     # RFC 1035: The labels in the domain name are expressed as character
     # strings. MM: But requires different processing then for non-labels.
@@ -461,25 +520,25 @@
                      >zparser_rdata_start $zparser_rdata_char
                      %zparser_rdata_compressed_dname $!zerror_rdata_dname;
 
-    rd_int16        = digit+
+    rd_int16         = digit+
                      >zparser_rdata_start $zparser_rdata_char
                      %zparser_rdata_int16  $!zerror_rdata_int16;
 
-    rd_int32        = digit+
+    rd_int32         = digit+
                      >zparser_rdata_start $zparser_rdata_char
                      %zparser_rdata_int32  $!zerror_rdata_int32;
 
-    rd_timef        = ttl
+    rd_timef         = ttl
                      >zparser_rdata_start $zparser_rdata_char
                      %zparser_rdata_timef $!zerror_rdata_timef;
 
-    rd_wks         = ((service . delim)* . service)
+    rd_wks           = ((service . delim)* . service)
                      >zparser_rdata_start $zparser_rdata_char
                      $!zerror_rdata_wks;
 
-    rd_text        = "textdata" # TODO
+    rd_text          = ((rd_str . delim)* . rd_str)
                      >zparser_rdata_start $zparser_rdata_char
-                     %zparser_rdata_timef $!zerror_rdata_timef;
+                     %zparser_rdata_text $!zerror_rdata_text;
 
     rdata_a          = delim . rd_ipv4;
     rdata_ns         = delim . rd_dname;
@@ -494,10 +553,10 @@
     # rdata_null     = delim . rd_binary;
     rdata_wks        = delim . rd_ipv4 . delim . rd_wks;
     rdata_ptr        = delim . rd_dname;
-    rdata_hinfo      = delim . rd_text . delim . rd_text;
+    rdata_hinfo      = delim . rd_str . delim . rd_str;
     rdata_minfo      = delim . rd_dname . delim . rd_dname;
     rdata_mx         = delim . rd_int16 . delim . rd_dname;
-    rdata_txt        = (delim . rd_text)+;
+    rdata_txt        = delim . rd_text;
 
     rrtype_and_rdata =
         ( "A"          . rdata_a         >{parser->current_rr.type = DNS_TYPE_A;}
