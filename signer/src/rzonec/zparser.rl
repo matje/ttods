@@ -381,6 +381,12 @@
         parser->totalerrors++;
         fhold; fgoto line;
     }
+    action zerror_label_char {
+        ods_log_error("[zparser] error: line %d: bad char %c in label",
+            parser->line, fc);
+        parser->totalerrors++;
+        fhold; fgoto line;
+    }
     action zerror_label_overflow {
         ods_log_error("[zparser] error: line %d: label overflow",
             parser->line);
@@ -505,7 +511,8 @@
                                          $!zerror_text_x;
 
     label_escape = '\\' . (label_x | label_ddd);
-    label_char = ([^@().\"\$\\] -- space -- comment) $zparser_label_char2wire;
+    label_char = ([^@().\"\$\\] -- space -- comment) $zparser_label_char2wire
+                                                     $!zerror_label_char;
     label_character = (label_char | label_escape);
 
     text_escape = '\\' . (text_x | text_ddd);
