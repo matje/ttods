@@ -71,15 +71,31 @@
     }
 
     # Actions: character strings.
-    action zparser_character_string_start {
-    }
     action zparser_text_char2wire {
+        if (parser->rdsize <= DNS_RDLEN_MAX) {
+            parser->rdbuf[parser->rdsize] = fc;
+            parser->rdsize++;
+        } else {
+            ods_log_error("[zparser] error: line %d: character string overflow",
+                parser->line);
+            parser->totalerrors++;
+            fhold; fgoto line;
+        }
     }
     action zparser_text_octet2wire_init {
+        if (parser->rdsize <= DNS_RDLEN_MAX) {
+            parser->rdbuf[parser->dname_size] = 0;
+            parser->rdsize++;
+        } else {
+            ods_log_error("[zparser] error: line %d: character string overflow",
+                parser->line);
+            parser->totalerrors++;
+            fhold; fgoto line;
+        }
     }
     action zparser_text_octet2wire {
-    }
-    action zparser_character_string_end {
+        parser->rdbuf[parser->rdsize-1] *= 10;
+        parser->rdbuf[parser->rdsize-1] += (fc - '0');
     }
 
     # Actions: labels and domain names.
@@ -88,7 +104,7 @@
         parser->dname_size++;
     }
     action zparser_label_char2wire {
-        if (parser->dname_size < DNAME_MAXLEN) {
+        if (parser->dname_size <= DNAME_MAXLEN) {
             parser->dname_wire[parser->dname_size] = fc;
             parser->dname_size++;
         } else {
@@ -99,7 +115,7 @@
         }
     }
     action zparser_label_octet2wire_init {
-        if (parser->dname_size < DNAME_MAXLEN) {
+        if (parser->dname_size <= DNAME_MAXLEN) {
             parser->dname_wire[parser->dname_size] = 0;
             parser->dname_size++;
         } else {
@@ -193,8 +209,15 @@
         parser->rdsize = 0;
     }
     action zparser_rdata_char {
-        parser->rdbuf[parser->rdsize] = fc;
-        parser->rdsize++;
+        if (parser->rdsize <= DNS_RDLEN_MAX) {
+            parser->rdbuf[parser->rdsize] = fc;
+            parser->rdsize++;
+        } else {
+            ods_log_error("[zparser] error: line %d: rdata overflow",
+                parser->line);
+            parser->totalerrors++;
+            fhold; fgoto line;
+        }
     }
     action zparser_rdata_ipv4 {
         parser->rdbuf[parser->rdsize] = '\0';
@@ -240,6 +263,14 @@
         parser->rdbuf[parser->rdsize] = '\0';
         if (!zonec_rdata_add(parser->region, &parser->current_rr,
             DNS_RDATA_WKS, parser->rdbuf, parser->rdsize)) {
+            parser->totalerrors++;
+            fhold; fgoto line;
+        }
+    }
+    action zparser_rdata_str {
+        parser->rdbuf[parser->rdsize] = '\0';
+        if (!zonec_rdata_add(parser->region, &parser->current_rr,
+            DNS_RDATA_TEXT, parser->rdbuf, parser->rdsize)) {
             parser->totalerrors++;
             fhold; fgoto line;
         }
@@ -410,6 +441,12 @@
         parser->totalerrors++;
         fhold; fgoto line;
     }
+    action zerror_rdata_str {
+        ods_log_error("[zparser] error: line %d: bad string rdata format",
+            parser->line);
+        parser->totalerrors++;
+        fhold; fgoto line;
+    }
     action zerror_rdata_text {
         ods_log_error("[zparser] error: line %d: bad text rdata format",
             parser->line);
@@ -457,7 +494,6 @@
     text_ddd  = [0-7] {3}                >zparser_text_octet2wire_init
                                          $zparser_text_octet2wire
                                          $!zerror_text_ddd;
-    
 
     # RFC 1035: \X where X is any character other than a digit (0-9), is
     #              used to quote that character so that its special meaning
@@ -478,9 +514,9 @@
     text_character = (text_char | text_escape);
     text_character_delim = (text_character | text_delim);
 
-    rd_str = ('\"' . (text_character_delim*
+    str_seq = ('\"' . (text_character_delim*
             - (text_character_delim* '\"' text_character_delim*)) . '\"')
-            | text_character*;
+            | text_character+;
 
     # RFC 1035: The labels in the domain name are expressed as character
     # strings. MM: But requires different processing then for non-labels.
@@ -536,8 +572,12 @@
                      >zparser_rdata_start $zparser_rdata_char
                      $!zerror_rdata_wks;
 
-    rd_text          = ((rd_str . delim)* . rd_str)
-                     >zparser_rdata_start $zparser_rdata_char
+    rd_str           = str_seq
+                     >zparser_rdata_start
+                     %zparser_rdata_str $!zerror_rdata_str;
+
+    rd_text          = ((str_seq . delim)* . str_seq)
+                     >zparser_rdata_start
                      %zparser_rdata_text $!zerror_rdata_text;
 
     rdata_a          = delim . rd_ipv4;

@@ -182,6 +182,24 @@ zonec_rdata_wks(region_type* region, const char* buf)
 
 
 /**
+ * Convert text format into RDATA element.
+ *
+ */
+static uint16_t*
+zonec_rdata_text(region_type* region, const char* buf, size_t buflen)
+{
+    size_t size = buflen+1;
+    uint16_t* r = region_alloc(region, sizeof(uint16_t) + size);
+    uint8_t* p;
+    *r = size;
+    p = (uint8_t*) (r+1);
+    *p = buflen;
+    memcpy(p+1, buf, buflen);
+    return r;
+}
+
+
+/**
  * Add parsed RDATA element into currently parsed resource record.
  *
  */
@@ -219,8 +237,10 @@ zonec_rdata_add(region_type* region, rr_type* rr, dns_rdata_format rdformat,
         case DNS_RDATA_WKS:
             d = zonec_rdata_wks(region, rdbuf);
             break;
-        case DNS_RDATA_UNCOMPRESSED_DNAME:
         case DNS_RDATA_TEXT:
+            d = zonec_rdata_text(region, rdbuf, rdsize);
+            break;
+        case DNS_RDATA_UNCOMPRESSED_DNAME:
         case DNS_RDATA_BINARY:
             d = NULL;
             dname = NULL;
