@@ -152,6 +152,33 @@ rdata_print_int32(FILE* fd, rdata_type* rdata)
 
 
 /**
+ * Print text format RDATA element.
+ *
+ */
+static void
+rdata_print_text(FILE* fd, rdata_type* rdata)
+{
+    const uint8_t* d = rdata_get_data(rdata);
+    uint8_t l = d[0];
+    size_t i;
+    fprintf(fd, "\"");
+    for (i = 1; i <= l; ++i) {
+        char c = (char) d[i];
+        if (isprint((int)c)) {
+            if (c == '"' || c == '\\') {
+                fprintf(fd, "\\");
+            }
+            fprintf(fd, "%c", c);
+        } else {
+            fprintf(fd, "\\%03u", (unsigned) d[i]);
+        }
+    }
+    fprintf(fd, "\"");
+    return;
+}
+
+
+/**
  * Print time format RDATA element.
  *
  */
@@ -222,6 +249,9 @@ rdata_print(FILE* fd, rdata_type* rdata, uint16_t rrtype, uint8_t pos)
         case DNS_RDATA_INT32:
             rdata_print_int32(fd, rdata);
             break;
+        case DNS_RDATA_TEXT:
+            rdata_print_text(fd, rdata);
+            break;
         case DNS_RDATA_TIMEF:
             rdata_print_timef(fd, rdata);
             break;
@@ -229,7 +259,6 @@ rdata_print(FILE* fd, rdata_type* rdata, uint16_t rrtype, uint8_t pos)
             rdata_print_wks(fd, rdata);
             break;
         case DNS_RDATA_UNCOMPRESSED_DNAME:
-        case DNS_RDATA_TEXT:
         case DNS_RDATA_BINARY:
         default:
             fprintf(fd, "<unknown>");

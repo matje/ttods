@@ -77,6 +77,24 @@ zonec_rdata_int32(region_type* region, const char* buf)
 
 
 /**
+ * Convert text format into RDATA element.
+ *
+ */
+static uint16_t*
+zonec_rdata_text(region_type* region, const char* buf, size_t buflen)
+{
+    size_t size = buflen+1;
+    uint16_t* r = region_alloc(region, sizeof(uint16_t) + size);
+    uint8_t* p;
+    *r = size;
+    p = (uint8_t*) (r+1);
+    *p = buflen;
+    memcpy(p+1, buf, buflen);
+    return r;
+}
+
+
+/**
  * Convert time format into RDATA element.
  *
  */
@@ -177,24 +195,6 @@ zonec_rdata_wks(region_type* region, const char* buf)
         *protocol = proto->p_proto;
         memcpy(protocol+1, bitmap, *r);
     }
-    return r;
-}
-
-
-/**
- * Convert text format into RDATA element.
- *
- */
-static uint16_t*
-zonec_rdata_text(region_type* region, const char* buf, size_t buflen)
-{
-    size_t size = buflen+1;
-    uint16_t* r = region_alloc(region, sizeof(uint16_t) + size);
-    uint8_t* p;
-    *r = size;
-    p = (uint8_t*) (r+1);
-    *p = buflen;
-    memcpy(p+1, buf, buflen);
     return r;
 }
 
