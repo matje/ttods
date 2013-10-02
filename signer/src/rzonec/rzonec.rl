@@ -107,7 +107,6 @@ zparser_read_zone(zparser_type* parser, const char* file)
 {
     char buf[MAX_BUFSIZE];
     ssize_t r1;
-    ssize_t r2;
     int have = 0;
     int fd = open(file, O_RDONLY);
     if (fd == -1) {
@@ -124,7 +123,7 @@ zparser_read_zone(zparser_type* parser, const char* file)
             ods_log_crit("[%s] error: zparser buffer out of space", logstr);
             return -1;
         }
-        r1 = read(fd, buf, space);
+        r1 = read(fd, data, space);
         if (!r1) {
             break;
         }
@@ -138,7 +137,6 @@ zparser_read_zone(zparser_type* parser, const char* file)
         %% write exec;
 
         parser->cs = cs;
-
         have = data + r1 - pe;
         if (have > 0) {
             (void)memmove(buf, pe, have);
