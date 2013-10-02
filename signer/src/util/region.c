@@ -347,7 +347,7 @@ region_log(region_type* r, const char* str)
     chunks = count_chunks(r);
     large = count_large(r);
     ods_log_info("[%s] %s: small %lu, chunks %lu, large %lu, cleanup %lu, "
-        "recycle %lu, size %lu", logstr, str?str:"-",
+        "recycle %lu, size %lu", logstr, str,
         r->small_objects,
         r->chunk_count,
         r->large_objects,
