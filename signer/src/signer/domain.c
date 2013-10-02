@@ -55,6 +55,7 @@ domain_create(struct zone_struct* zone, dname_type* dname)
     domain->zone = zone;
     domain->node = NULL; /* not in db yet */
     domain->parent = NULL;
+    domain->rrsets = NULL;
     domain->is_apex = 0;
     domain->is_new = 0;
     return domain;

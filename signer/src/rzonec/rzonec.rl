@@ -64,6 +64,7 @@ zparser_create(zone_type* zone)
     parser->klass = zone->klass;
     parser->cs = zparser_start;
     parser->line = 1;
+    parser->line_update = 10000;
     parser->comments = 0;
     parser->numrrs = 0;
     parser->totalerrors = 0;
@@ -105,34 +106,43 @@ int
 zparser_read_zone(zparser_type* parser, const char* file)
 {
     char buf[MAX_BUFSIZE];
-    char last[MAX_BUFSIZE];
     ssize_t r1;
     ssize_t r2;
+    int have = 0;
     int fd = open(file, O_RDONLY);
     if (fd == -1) {
         return ODS_STATUS_FOPENERR;
     }
-    r1 = read(fd, buf, MAX_BUFSIZE);
-    r2 = read(fd, last, MAX_BUFSIZE);
-    while (r1 > 0) {
+    while (1) {
         int cs = parser->cs;
-        char* p = &buf[0];
-        char* pe = p + r1 + 1;
+        char* p;
+        char* pe;
         char* eof = NULL;
-        if (!r2) {
-           eof = pe;
+        char* data = buf + have;
+        int space = MAX_BUFSIZE - have;
+        if (space <= 0) {
+            ods_log_crit("[%s] error: zparser buffer out of space", logstr);
+            return -1;
         }
+        r1 = read(fd, buf, space);
+        if (!r1) {
+            break;
+        }
+        p = buf;
+        pe = data + r1 - 1;
+        while (*pe != '\n' && pe >= buf) {
+            pe--;
+        }
+        pe += 1;
 
-        %% write init;
         %% write exec;
-
-        ods_log_debug("[%s] read %lu bytes.\n", logstr, r1);
 
         parser->cs = cs;
 
-        r1 = r2;
-        (void) memcpy(&buf[0], &last[0], r1);
-        r2 = read(fd, last, MAX_BUFSIZE);
+        have = data + r1 - pe;
+        if (have > 0) {
+            (void)memmove(buf, pe, have);
+        }
     }
     close(fd);
     fflush(stdout);

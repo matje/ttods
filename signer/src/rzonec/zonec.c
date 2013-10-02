@@ -122,7 +122,7 @@ zonec_rdata_timef(region_type* region, const char* buf)
 static uint16_t*
 zonec_rdata_wks(region_type* region, const char* buf)
 {
-    char rdata[DNS_RDLEN_MAX];
+    static char rdata[DNS_RDLEN_MAX];
     char sep = ' ';
     uint16_t* r = NULL;
     uint8_t* protocol;
@@ -135,8 +135,8 @@ zonec_rdata_wks(region_type* region, const char* buf)
     size_t size = 0;
     size_t offset = 0;
 
-    (void) memcpy(&rdata[0], buf, strlen(buf));
-    ods_strreplace(&rdata[0], '\t', sep);
+    (void)memcpy(rdata, buf, strlen(buf));
+    ods_strreplace(rdata, '\t', sep);
     service = rdata;
 
     /* PROTOCOL */

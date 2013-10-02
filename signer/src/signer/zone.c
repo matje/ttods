@@ -52,6 +52,7 @@ zone_init(zone_type* zone)
 {
     zone->signconf = signconf_create(zone->region);
     zone->namedb = namedb_create(zone);
+    zone->notify_ns = NULL;
     zone->default_ttl = DEFAULT_TTL;
     zone->policy_name = NULL;
     zone->signconf_filename = NULL;

@@ -190,9 +190,11 @@ worker_perform_task_read:
 
 worker_perform_task_sign:
             /* perform 'sign' task */
+/*
             worker_working_with(worker, TASK_SIGN, TASK_WRITE, "sign",
                 task_who2str(worker->task), &what, &when);
             goto worker_perform_task_write;
+*/
 
             break;
         case TASK_WRITE:
