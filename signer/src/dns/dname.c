@@ -145,6 +145,18 @@ label_compare(const uint8_t* label1, const uint8_t* label2)
 
 
 /**
+ * The domain name length.
+ *
+ */
+size_t
+dname_len(const dname_type* dname)
+{
+    assert(dname);
+    return dname->size;
+}
+
+
+/**
  * The total size (in bytes) allocated to store dname.
  *
  */
@@ -175,7 +187,7 @@ dname_label_offsets(const dname_type* dname)
  *
  */
 const uint8_t*
-dname_name(const dname_type *dname)
+dname_name(const dname_type* dname)
 {
     assert(dname);
     return (const uint8_t*) ((const char *) dname + sizeof(dname_type)

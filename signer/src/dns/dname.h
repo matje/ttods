@@ -115,6 +115,14 @@ const uint8_t* label_next(const uint8_t* label);
 int label_compare(const uint8_t* label1, const uint8_t* label2);
 
 /**
+ * The domain name length.
+ * @param dname:       dname.
+ * @return:            (size_t) length in bytes of dname.
+ *
+ */
+size_t dname_len(const dname_type* dname);
+
+/**
  * The total size (in bytes) allocated to store dname.
  * @param dname:       dname.
  * @return:            (size_t) total size in bytes of dname.
