@@ -54,6 +54,7 @@ struct zparser {
     uint8_t dname_wire[DNAME_MAXLEN];
     uint8_t label_offsets[DNAME_MAXLEN];
     uint8_t label_count;
+    uint8_t dname_is_relative;
 
     /* Temporary storage: resource records */
     rr_type current_rr;
