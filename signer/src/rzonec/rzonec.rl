@@ -74,7 +74,7 @@ zparser_create(zone_type* zone)
     parser->dname = NULL;
     parser->label = NULL;
     parser->dname_size = 0;
-    parser->dname_is_relative = 0;
+    parser->dname_is_absolute = 0;
     parser->label_head = 0;
     parser->label_count = 0;
     /* resource records */

@@ -66,7 +66,7 @@
     }
     action zparser_dollar_ttl {
         parser->ttl = parser->number;
-        ods_log_debug("[zparser] line %d: $TTL set to %u", parser->line,
+        ods_log_verbose("[zparser] line %d: $TTL set to %u", parser->line,
             (unsigned int) parser->ttl);
     }
 
@@ -139,14 +139,15 @@
         parser->dname_size = 0;
         parser->label_count = 0;
         parser->label = parser->dname_wire;
+        parser->dname_is_absolute = 0;
+    }
+    action zparser_abs_dname_end {
+        parser->dname_is_absolute = 1;
     }
     action zparser_dname_origin {
         parser->dname = parser->origin;
     }
-    action zparser_rel_dname_end {
-        fprintf(stdout, "relative dname: parsed\n");
-    }
-    action zparser_abs_dname_end {
+    action zparser_dname_end {
         int i;
         parser->dname_size++;
         if (parser->dname_size < DNAME_MAXLEN) {
@@ -156,6 +157,21 @@
                 parser->line);
             parser->totalerrors++;
             fhold; fgoto line;
+        }
+        if (!parser->dname_is_absolute) {
+            if ((parser->dname_size + dname_len(parser->origin))
+                <= DNAME_MAXLEN) {
+                ods_log_verbose("[zparser] line %d: concatenate relative "
+                "domain name with $ORIGIN", parser->line);
+                memcpy(parser->dname_wire + parser->dname_size - 1,
+                    dname_name(parser->origin), dname_len(parser->origin));
+                parser->dname_size += (dname_len(parser->origin) - 1);
+            } else{
+                ods_log_error("[zparser] line %d: domain name overflow",
+                    parser->line);
+                parser->totalerrors++;
+                fhold; fgoto line;
+            }
         }
         while (1) {
             if (label_is_pointer(parser->label)) {
@@ -200,7 +216,7 @@
         char str[DNAME_MAXLEN*5]; /* all \DDD */
         parser->origin = parser->dname;
         dname_str(parser->origin, &str[0]);
-        ods_log_debug("[zparser] line %d: $ORIGIN set to %s", parser->line,
+        ods_log_verbose("[zparser] line %d: $ORIGIN set to %s", parser->line,
             str);
     }
     # Actions: resource records.
@@ -535,11 +551,12 @@
 
     # RFC 1035: Domain names which do not end in a dot are called relative.
     rel_dname = labels                   >zparser_dname_start
-                                         %zparser_abs_dname_end;
+                                         %zparser_dname_end;
 
     # RFC 1035: Domain names that end in a dot are called absolute.
-    abs_dname = (labels? . '.')          >zparser_dname_start
-                                         %zparser_abs_dname_end;
+    abs_dname = (labels? . ('.' $zparser_abs_dname_end))
+                                         >zparser_dname_start
+                                         %zparser_dname_end;
 
     owner = abs_dname | rel_dname | ('@' $zparser_dname_origin);
 
@@ -641,10 +658,10 @@
 
     ## Main line parsing, entries, directives, records.
 
-    dollar_origin = "$ORIGIN" . delim . abs_dname . endline
+    dollar_origin = ("$ORIGIN" . delim . abs_dname . endline)
                   %zparser_dollar_origin
                   $!zerror_dollar_origin;
-    dollar_ttl    = "$TTL"    . delim . ttl . endline
+    dollar_ttl    = ("$TTL"    . delim . ttl . endline)
                   %zparser_dollar_ttl
                   $!zerror_dollar_ttl;
 
