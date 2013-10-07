@@ -161,8 +161,6 @@
         if (!parser->dname_is_absolute) {
             if ((parser->dname_size + dname_len(parser->origin))
                 <= DNAME_MAXLEN) {
-                ods_log_verbose("[zparser] line %d: concatenate relative "
-                "domain name with $ORIGIN", parser->line);
                 memcpy(parser->dname_wire + parser->dname_size - 1,
                     dname_name(parser->origin), dname_len(parser->origin));
                 parser->dname_size += (dname_len(parser->origin) - 1);
