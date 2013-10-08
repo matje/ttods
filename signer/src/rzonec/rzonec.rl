@@ -65,6 +65,7 @@ zparser_create(zone_type* zone)
     parser->cs = zparser_start;
     parser->line = 1;
     parser->line_update = 10000;
+    parser->group_lines = 0;
     parser->comments = 0;
     parser->numrrs = 0;
     parser->totalerrors = 0;

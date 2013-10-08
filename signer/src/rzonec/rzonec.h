@@ -34,6 +34,7 @@ struct zparser {
 
     unsigned int line;        /* number of lines */
     unsigned int line_update; /* for debug printing */
+    unsigned int group_lines; /* whether we are in parentheses */
     unsigned int comments;    /* number of comments */
     unsigned int numrrs;      /* number of rrs */
     unsigned int totalerrors; /* number of errors */
