@@ -91,7 +91,7 @@ dname_type* rdata_get_dname(rdata_type* rdata);
  * @param pos:    position of RDATA element in RR.
  *
  */
-void rdata_print(FILE* fd, rdata_type* rdata, uint16_t rrtype, uint8_t pos);
+void rdata_print(FILE* fd, rdata_type* rdata, uint16_t rrtype, uint16_t pos);
 
 #endif /* DNS_RDATA_H */
 

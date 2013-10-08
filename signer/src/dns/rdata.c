@@ -34,6 +34,7 @@
 #include "dns/dns.h"
 #include "dns/rdata.h"
 #include "dns/wf.h"
+#include "util/util.h"
 #include "wire/buffer.h"
 
 #include <arpa/inet.h>
@@ -230,13 +231,17 @@ rdata_print_wks(FILE* fd, rdata_type* rdata)
  *
  */
 void
-rdata_print(FILE* fd, rdata_type* rdata, uint16_t rrtype, uint8_t pos)
+rdata_print(FILE* fd, rdata_type* rdata, uint16_t rrtype, uint16_t pos)
 {
     rrstruct_type* rrstruct;
+    uint16_t p = pos;
     ods_log_assert(fd);
     ods_log_assert(rdata);
     rrstruct = dns_rrstruct_by_type(rrtype);
-    switch (rrstruct->rdata[pos]) {
+    if (rrstruct->rdata[0] == DNS_RDATA_TEXTS) {
+        p = 0;
+    }
+    switch (rrstruct->rdata[p]) {
         case DNS_RDATA_IPV4:
             rdata_print_ipv4(fd, rdata);
             break;
@@ -250,6 +255,7 @@ rdata_print(FILE* fd, rdata_type* rdata, uint16_t rrtype, uint8_t pos)
             rdata_print_int32(fd, rdata);
             break;
         case DNS_RDATA_TEXT:
+        case DNS_RDATA_TEXTS:
             rdata_print_text(fd, rdata);
             break;
         case DNS_RDATA_TIMEF:
