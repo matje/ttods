@@ -238,6 +238,7 @@ zonec_rdata_add(region_type* region, rr_type* rr, dns_rdata_format rdformat,
             d = zonec_rdata_wks(region, rdbuf);
             break;
         case DNS_RDATA_TEXT:
+        case DNS_RDATA_TEXTS:
             d = zonec_rdata_text(region, rdbuf, rdsize);
             break;
         case DNS_RDATA_UNCOMPRESSED_DNAME:

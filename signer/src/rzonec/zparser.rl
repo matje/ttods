@@ -296,6 +296,8 @@
             parser->totalerrors++;
             fhold; fgoto line;
         }
+        bzero(&parser->rdbuf[0], DNS_RDLEN_MAX);
+        parser->rdsize = 0;
     }
     action zparser_rr_start {
         parser->current_rr.owner = NULL;
@@ -380,6 +382,12 @@
     action zerror_text_x {
         ods_log_error("[zparser] error: line %d: bad escape in text",
             parser->line);
+        parser->totalerrors++;
+        fhold; fgoto line;
+    }
+    action zerror_text_overflow {
+        ods_log_error("[zparser] error: line %d: text overflow, try splitting"
+            " over multiple strings", parser->line);
         parser->totalerrors++;
         fhold; fgoto line;
     }
@@ -530,14 +538,17 @@
     label_character = (label_char | label_escape);
 
     text_escape = '\\' . (text_x | text_ddd);
-    text_char = ([^@().\"\$\\] -- space -- comment) $zparser_text_char2wire;
-    text_delim = ([@().\$\\] | space | comment)   $zparser_text_char2wire;
+    text_char = ([^@().\"\$\\] -- space -- comment)  $zparser_text_char2wire;
+    text_delim = ([@().\$\\] | space | comment)      $zparser_text_char2wire;
     text_character = (text_char | text_escape);
     text_character_delim = (text_character | text_delim);
 
-    str_seq = ('\"' . (text_character_delim*
-            - (text_character_delim* '\"' text_character_delim*)) . '\"')
-            | text_character+;
+    str_seq =
+            ( ('\"' . (text_character_delim*
+              - (text_character_delim* '\"'
+                 text_character_delim*)) . '\"')
+              | text_character+
+            ) $!zerror_text_overflow;
 
     # RFC 1035: The labels in the domain name are expressed as character
     # strings. MM: But requires different processing then for non-labels.
