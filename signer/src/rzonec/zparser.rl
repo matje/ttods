@@ -14,6 +14,9 @@
     # Actions.
 
     # Actions: line parsing.
+    action zparser_reinitialize {
+        parser->group_lines = 0;
+    }
     action zparser_newline {
         if (parser->line > parser->line_update) {
             ods_log_debug("[zparser] ...at line %i", parser->line);
@@ -556,14 +559,14 @@
                                          $!zerror_text_x;
 
     label_escape = '\\' . (label_x | label_ddd);
-    label_char = ([^@().\"\$\\] -- space -- comment) $zparser_label_char2wire
-                                                     $!zerror_label_char;
+    label_char = ([^@().\"\$\\; \t\n])   $zparser_label_char2wire
+                                         $!zerror_label_char;
     label_character = (label_char | label_escape);
 
     text_escape = '\\' . (text_x | text_ddd);
-    text_char = ([^@().\"\$\\] -- space -- comment)  $zparser_text_char2wire;
-    text_delim = ([@().\$\\] | space | comment | newline)
-                                                     $zparser_text_char2wire;
+    text_char = ([^@().\"\$\\; \t\n])
+                                         $zparser_text_char2wire;
+    text_delim = ([@().\$\\; \t\n])      $zparser_text_char2wire;
     text_character = (text_char | text_escape);
     text_character_delim = (text_character | text_delim);
 
@@ -676,8 +679,8 @@
     rr = ( owner                         %zparser_rr_owner
          . delim 
          . ( (rrclass? . (rrttl %zparser_rr_ttl)?)
-         |   ((rrttl %zparser_rr_ttl)? . rrclass?)
-         | delim
+           | ((rrttl %zparser_rr_ttl)? . rrclass?)
+           | zlen
            )
          . rrtype_and_rdata
          . endline
@@ -704,7 +707,7 @@
     # blank:         $TTL <TTL> [comment]
     entry = (blank | rr | dollar_origin | dollar_ttl) $!zerror_entry;
 
-    line := [^\n]* newline @{ fgoto main; };
+    line := [^\n]* @zparser_reinitialize . newline @{ fgoto main; };
 
     # RFC 1035: The format of these files is a sequence of entries.
     main := entry*;
