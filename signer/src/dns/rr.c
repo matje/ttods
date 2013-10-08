@@ -183,7 +183,7 @@ rr_print(FILE* fd, rr_type* rr)
     fprintf(fd, "\t");
     for (i=0; i < rr->rdlen; i++) {
         rdata_print(fd, &rr->rdata[i], rr->type, i);
-        fprintf(fd, " ");
+        if (i < rr->rdlen) fprintf(fd, " ");
     }
     fprintf(fd, "\n");
     return;
