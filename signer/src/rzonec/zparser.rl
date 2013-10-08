@@ -24,6 +24,24 @@
     action zparser_comment {
         parser->comments++;
     }
+    action zparser_parentheses_open {
+        if (parser->group_lines) {
+            ods_log_error("[zparser] line %d: nested parentheses",
+                parser->line);
+            parser->totalerrors++;
+            fhold; fgoto line;
+        }
+        parser->group_lines = 1;
+    }
+    action zparser_parentheses_close {
+        if (!parser->group_lines) {
+            ods_log_error("[zparser] line %d: closing parentheses without "
+                "opening parentheses", parser->line);
+            parser->totalerrors++;
+            fhold; fgoto line;
+        }
+        parser->group_lines = 0;
+    }
 
     # Actions: numbers and time values.
     action zparser_decimal_digit {
@@ -487,15 +505,20 @@
 
     newline = '\n' $zparser_newline;
 
-    # RFC 1035: Any combination of tabs and spaces act as a
-    # delimiter between the separate items that make up an entry.
-    delim = [ \t]+;
-
     # RFC 1035: Semicolon is used to start a comment; the remainder of the
     # line is ignored.
     comment = ';' . (^newline)* >zparser_comment;
 
-    endline = delim? . comment? . newline;
+    # RFC 1035: Any combination of tabs and spaces act as a
+    # delimiter between the separate items that make up an entry.
+    delim =
+          ( [ \t]
+          | (comment? . newline) when { parser->group_lines }
+          | '(' $zparser_parentheses_open
+          | ')' $zparser_parentheses_close
+          )+;
+
+    endline = (delim? :> comment?) . newline;
 
     # http://www.zytrax.com/books/dns/apa/time.html
     timeformat = ( 's'i | 'm'i | 'h'i | 'd'i | 'w'i )
@@ -539,16 +562,13 @@
 
     text_escape = '\\' . (text_x | text_ddd);
     text_char = ([^@().\"\$\\] -- space -- comment)  $zparser_text_char2wire;
-    text_delim = ([@().\$\\] | space | comment)      $zparser_text_char2wire;
+    text_delim = ([@().\$\\] | space | comment | newline)
+                                                     $zparser_text_char2wire;
     text_character = (text_char | text_escape);
     text_character_delim = (text_character | text_delim);
 
-    str_seq =
-            ( ('\"' . (text_character_delim*
-              - (text_character_delim* '\"'
-                 text_character_delim*)) . '\"')
-              | text_character+
-            ) $!zerror_text_overflow;
+    str_seq = ('\"' . (text_character_delim* :>> '\"') | text_character+)
+                                                     $!zerror_text_overflow;
 
     # RFC 1035: The labels in the domain name are expressed as character
     # strings. MM: But requires different processing then for non-labels.
@@ -674,13 +694,15 @@
                   %zparser_dollar_ttl
                   $!zerror_dollar_ttl;
 
+    blank = endline;
+
     # RFC 1035: The following entries are defined:
     # endline:        <blank>[<comment>]
     # dollar_origin: $ORIGIN <domain-name> [<comment>]
     # rr:            <domain-name><rr> [<comment>]
     # RFC 2038: The Master File format is extended to include the following...
-    # dollar_ttl:    $TTL <TTL> [comment]
-    entry = (endline | rr | dollar_origin | dollar_ttl) $!zerror_entry;
+    # blank:         $TTL <TTL> [comment]
+    entry = (blank | rr | dollar_origin | dollar_ttl) $!zerror_entry;
 
     line := [^\n]* newline @{ fgoto main; };
 
