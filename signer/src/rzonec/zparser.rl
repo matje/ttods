@@ -32,8 +32,9 @@
             ods_log_error("[zparser] line %d: nested parentheses",
                 parser->line);
             parser->totalerrors++;
-            fhold; fgoto line;
+            fhold; fgoto line_error;
         }
+        ods_log_debug("[zparser] line %d: open parentheses %c", parser->line, fc);
         parser->group_lines = 1;
     }
     action zparser_parentheses_close {
@@ -41,12 +42,15 @@
             ods_log_error("[zparser] line %d: closing parentheses without "
                 "opening parentheses", parser->line);
             parser->totalerrors++;
-            fhold; fgoto line;
+            fhold; fgoto line_error;
         }
+        ods_log_debug("[zparser] line %d: close parentheses %c", parser->line, fc);
         parser->group_lines = 0;
     }
+    action zparser_single_line { parser->group_lines == 0 }
+    action zparser_group_lines { parser->group_lines == 1 }
 
-    # Actions: numbers and time values.
+    # Actions: numbers.
     action zparser_decimal_digit {
         parser->number *= 10;
         parser->number += (fc - '0');
@@ -87,42 +91,15 @@
     }
     action zparser_dollar_ttl {
         parser->ttl = parser->number;
-        ods_log_verbose("[zparser] line %d: $TTL set to %u", parser->line,
+        ods_log_verbose("[zparser] line %d: $TTL set to %u", parser->line-1,
             (unsigned int) parser->ttl);
-    }
-
-    # Actions: character strings.
-    action zparser_text_char2wire {
-        if (parser->rdsize <= DNS_RDLEN_MAX) {
-            parser->rdbuf[parser->rdsize] = fc;
-            parser->rdsize++;
-        } else {
-            ods_log_error("[zparser] error: line %d: character string overflow",
-                parser->line);
-            parser->totalerrors++;
-            fhold; fgoto line;
-        }
-    }
-    action zparser_text_octet2wire_init {
-        if (parser->rdsize <= DNS_RDLEN_MAX) {
-            parser->rdbuf[parser->dname_size] = 0;
-            parser->rdsize++;
-        } else {
-            ods_log_error("[zparser] error: line %d: character string overflow",
-                parser->line);
-            parser->totalerrors++;
-            fhold; fgoto line;
-        }
-    }
-    action zparser_text_octet2wire {
-        parser->rdbuf[parser->rdsize-1] *= 10;
-        parser->rdbuf[parser->rdsize-1] += (fc - '0');
     }
 
     # Actions: labels and domain names.
     action zparser_label_start {
         parser->label_head = parser->dname_size;
         parser->dname_size++;
+        parser->dname_is_absolute = 0;
     }
     action zparser_label_char2wire {
         if (parser->dname_size <= DNAME_MAXLEN) {
@@ -132,7 +109,7 @@
             ods_log_error("[zparser] error: line %d: domain name overflow",
                 parser->line);
             parser->totalerrors++;
-            fhold; fgoto line;
+            fhold; fgoto line_error;
         }
     }
     action zparser_label_octet2wire_init {
@@ -143,7 +120,7 @@
             ods_log_error("[zparser] error: line %d: domain name overflow",
                 parser->line);
             parser->totalerrors++;
-            fhold; fgoto line;
+            fhold; fgoto line_error;
         }
     }
     action zparser_label_octet2wire {
@@ -154,6 +131,14 @@
         parser->dname_wire[parser->label_head] =
             (parser->dname_size - parser->label_head - 1);
     }
+    action zparser_dname_origin {
+        ods_log_debug("[zparser] line %d: dname = $ORIGIN %c", parser->line, fc);
+        parser->dname = parser->origin;
+    }
+    action zparser_dname_previous {
+        ods_log_debug("[zparser] line %d: dname = prev %c", parser->line, fc);
+        parser->dname = parser->previous;
+    }
     action zparser_dname_start {
         bzero(&parser->dname_wire[0], DNAME_MAXLEN);
         bzero(&parser->label_offsets[0], DNAME_MAXLEN);
@@ -162,11 +147,8 @@
         parser->label = parser->dname_wire;
         parser->dname_is_absolute = 0;
     }
-    action zparser_abs_dname_end {
+    action zparser_dname_absolute {
         parser->dname_is_absolute = 1;
-    }
-    action zparser_dname_origin {
-        parser->dname = parser->origin;
     }
     action zparser_dname_end {
         int i;
@@ -177,7 +159,7 @@
             ods_log_error("[zparser] line %d: domain name overflow",
                 parser->line);
             parser->totalerrors++;
-            fhold; fgoto line;
+            fhold; fgoto line_error;
         }
         if (!parser->dname_is_absolute) {
             if ((parser->dname_size + dname_len(parser->origin))
@@ -189,7 +171,7 @@
                 ods_log_error("[zparser] line %d: domain name overflow",
                     parser->line);
                 parser->totalerrors++;
-                fhold; fgoto line;
+                fhold; fgoto line_error;
             }
         }
         while (1) {
@@ -197,7 +179,7 @@
                 ods_log_error("[zparser] line %d: domain has pointer label",
                     parser->line);
                 parser->totalerrors++;
-                fhold; fgoto line;
+                fhold; fgoto line_error;
             }
             parser->label_offsets[parser->label_count] =
                 (uint8_t)(parser->label - parser->dname_wire);
@@ -222,7 +204,7 @@
             ods_log_error("[zparser] line %d: domain create failed",
                 parser->line);
             parser->totalerrors++;
-            fhold; fgoto line;
+            fhold; fgoto line_error;
         }
         parser->dname->size = parser->dname_size;
         parser->dname->label_count = parser->label_count;
@@ -233,12 +215,25 @@
     }
     action zparser_dollar_origin {
         char str[DNAME_MAXLEN*5]; /* all \DDD */
-        parser->origin = parser->dname;
+        parser->origin = dname_clone(parser->region, parser->dname);
         dname_str(parser->origin, &str[0]);
-        ods_log_verbose("[zparser] line %d: $ORIGIN set to %s", parser->line,
+        ods_log_verbose("[zparser] line %d: $ORIGIN set to %s", parser->line-1,
             str);
     }
-    # Actions: resource records.
+
+    # Actions: rdata.
+    action zparser_rdata_call {
+        fhold;
+        switch (parser->current_rr.type) {
+           case DNS_TYPE_A:          fcall rdata_a;
+           case DNS_TYPE_NS:         fcall rdata_ns;
+           default:
+                ods_log_error("[zparser] line %d: rrtype %d not supported",
+                    parser->line, parser->current_rr.type);
+                parser->totalerrors++;
+                fgoto line_error;
+       }
+    }
     action zparser_rdata_start {
         bzero(&parser->rdbuf[0], DNS_RDLEN_MAX);
         parser->rdsize = 0;
@@ -251,82 +246,29 @@
             ods_log_error("[zparser] error: line %d: rdata overflow",
                 parser->line);
             parser->totalerrors++;
-            fhold; fgoto line;
+            fhold; fgoto line_error;
         }
     }
-    action zparser_rdata_ipv4 {
+    action zparser_rdata_end {
+        rrstruct_type* rs = dns_rrstruct_by_type(parser->current_rr.type);
         parser->rdbuf[parser->rdsize] = '\0';
         if (!zonec_rdata_add(parser->region, &parser->current_rr,
-            DNS_RDATA_IPV4, parser->rdbuf, parser->rdsize)) {
+            rs->rdata[parser->current_rr.rdlen],
+            parser->rdbuf, parser->rdsize)) {
             parser->totalerrors++;
-            fhold; fgoto line;
+            fhold; fgoto line_error;
         }
     }
-    action zparser_rdata_compressed_dname {
-        parser->rdbuf[parser->rdsize] = '\0';
-        if (!zonec_rdata_add(parser->region, &parser->current_rr,
-            DNS_RDATA_COMPRESSED_DNAME, parser->rdbuf, parser->rdsize)) {
-            parser->totalerrors++;
-            fhold; fgoto line;
-        }
-    }
-    action zparser_rdata_int16 {
-        parser->rdbuf[parser->rdsize] = '\0';
-        if (!zonec_rdata_add(parser->region, &parser->current_rr,
-            DNS_RDATA_INT16, parser->rdbuf, parser->rdsize)) {
-            parser->totalerrors++;
-            fhold; fgoto line;
-        }
-    }
-    action zparser_rdata_int32 {
-        parser->rdbuf[parser->rdsize] = '\0';
-        if (!zonec_rdata_add(parser->region, &parser->current_rr,
-            DNS_RDATA_INT32, parser->rdbuf, parser->rdsize)) {
-            parser->totalerrors++;
-            fhold; fgoto line;
-        }
-    }
-    action zparser_rdata_timef {
-        parser->rdbuf[parser->rdsize] = '\0';
-        if (!zonec_rdata_add(parser->region, &parser->current_rr,
-            DNS_RDATA_TIMEF, parser->rdbuf, parser->rdsize)) {
-            parser->totalerrors++;
-            fhold; fgoto line;
-        }
-    }
-    action zparser_rdata_wks {
-        parser->rdbuf[parser->rdsize] = '\0';
-        if (!zonec_rdata_add(parser->region, &parser->current_rr,
-            DNS_RDATA_WKS, parser->rdbuf, parser->rdsize)) {
-            parser->totalerrors++;
-            fhold; fgoto line;
-        }
-    }
-    action zparser_rdata_str {
-        parser->rdbuf[parser->rdsize] = '\0';
-        if (!zonec_rdata_add(parser->region, &parser->current_rr,
-            DNS_RDATA_TEXT, parser->rdbuf, parser->rdsize)) {
-            parser->totalerrors++;
-            fhold; fgoto line;
-        }
-    }
-    action zparser_rdata_text {
-        parser->rdbuf[parser->rdsize] = '\0';
-        if (!zonec_rdata_add(parser->region, &parser->current_rr,
-            DNS_RDATA_TEXT, parser->rdbuf, parser->rdsize)) {
-            parser->totalerrors++;
-            fhold; fgoto line;
-        }
-        bzero(&parser->rdbuf[0], DNS_RDLEN_MAX);
-        parser->rdsize = 0;
-    }
+
+    # Actions: resource records.
     action zparser_rr_start {
-        parser->current_rr.owner = NULL;
-        parser->current_rr.ttl = parser->ttl;
-        parser->current_rr.klass = parser->klass;
-        parser->current_rr.type = 0;
-        parser->current_rr.rdlen = 0;
-        parser->current_rr.rdata = parser->tmp_rdata;
+        if (!parser->group_lines) {
+            parser->current_rr.ttl = parser->ttl;
+            parser->current_rr.klass = parser->klass;
+            parser->current_rr.type = 0;
+            parser->current_rr.rdlen = 0;
+            parser->current_rr.rdata = parser->tmp_rdata;
+        }
     }
     action zparser_rr_owner {
         parser->current_rr.owner = parser->dname;
@@ -338,203 +280,128 @@
         parser->current_rr.ttl = parser->number;
     }
     action zparser_rr_end {
-        if (parser->current_rr.type == DNS_TYPE_WKS) {
-            parser->rdbuf[parser->rdsize] = '\0';
-            if (!zonec_rdata_add(parser->region, &parser->current_rr,
-                DNS_RDATA_WKS, parser->rdbuf, parser->rdsize)) {
+        if (!parser->group_lines) {
+            if (!zparser_process_rr(parser)) {
+                ods_log_error("[zparser] error: line %d: unable to process rr",
+                    parser->line);
                 parser->totalerrors++;
-                fhold; fgoto line;
+                fhold; fgoto line_error;
             }
-        }
-        if (!zparser_process_rr(parser)) {
-            ods_log_error("[zparser] error: line %d: unable to process rr",
-                parser->line);
-            parser->totalerrors++;
-            fhold; fgoto line;
+            parser->previous = parser->current_rr.owner;
         }
     }
-
-    action zparser_service_mnemonic_debug {
-        ods_log_error("[zparser] service: line %d: mnemonic: %s",
-            parser->line, parser->rdbuf);
-    }
-    action zparser_service_number_debug {
-        ods_log_error("[zparser] service: line %d: number: %s",
-            parser->line, parser->rdbuf);
-    }
-
-
-    # Errors.
-    action zerror_digit {
-        ods_log_error("[zparser] error: line %d: not a digit: %c",
-            parser->line, fc);
-        parser->number = 0;
-        fhold; fgoto line;
-    }
+    # Actions: errors.
     action zerror_entry {
-        ods_log_error("[zparser] error: line %d: bad entry", parser->line);
+        ods_log_error("[zparser] error: line %d: bad entry (fc=%c)", 
+            parser->line, fc);
         parser->totalerrors++;
-        fhold; fgoto line;
+        fhold; fgoto line_error;
     }
     action zerror_dollar_origin {
-        ods_log_error("[zparser] error: line %d: bad origin directive",
-            parser->line);
-        parser->totalerrors++;
-        fhold; fgoto line;
-    }
-    action zerror_dollar_ttl {
-        ods_log_error("[zparser] error: line %d: bad ttl directive",
-            parser->line);
-        parser->totalerrors++;
-        fhold; fgoto line;
-    }
-    action zerror_character_string {
-        ods_log_error("[zparser] error: line %d: bad character string",
-            parser->line);
-        parser->totalerrors++;
-        fhold; fgoto line;
-    }
-    action zerror_text_ddd {
-        ods_log_error("[zparser] error: line %d: bad octet in text",
-            parser->line);
-        parser->totalerrors++;
-        fhold; fgoto line;
-    }
-    action zerror_text_x {
-        ods_log_error("[zparser] error: line %d: bad escape in text",
-            parser->line);
-        parser->totalerrors++;
-        fhold; fgoto line;
-    }
-    action zerror_text_overflow {
-        ods_log_error("[zparser] error: line %d: text overflow, try splitting"
-            " over multiple strings", parser->line);
-        parser->totalerrors++;
-        fhold; fgoto line;
-    }
-    action zerror_label_ddd {
-        ods_log_error("[zparser] error: line %d: bad octet in label",
-            parser->line);
-        parser->totalerrors++;
-        fhold; fgoto line;
-    }
-    action zerror_label_x {
-        ods_log_error("[zparser] error: line %d: bad escape in label",
-            parser->line);
-        parser->totalerrors++;
-        fhold; fgoto line;
-    }
-    action zerror_label_char {
-        ods_log_error("[zparser] error: line %d: bad char %c in label",
+        ods_log_error("[zparser] error: line %d: bad $origin directive (fc=%c)",
             parser->line, fc);
         parser->totalerrors++;
-        fhold; fgoto line;
+        fhold; fgoto line_error;
     }
-    action zerror_label_overflow {
-        ods_log_error("[zparser] error: line %d: label overflow",
-            parser->line);
+    action zerror_dollar_ttl {
+        ods_log_error("[zparser] error: line %d: bad $ttl directive (fc=%c)",
+            parser->line, fc);
         parser->totalerrors++;
-        fhold; fgoto line;
+        fhold; fgoto line_error;
     }
     action zerror_timeformat {
-        ods_log_error("[zparser] error: line %d: ttl time format error",
-            parser->line);
+        ods_log_error("[zparser] error: line %d: ttl time format error (fc=%c)",
+            parser->line, fc);
         parser->totalerrors++;
-        fhold; fgoto line;
+        fhold; fgoto line_error;
+    }
+    action zerror_label_ddd {
+        ods_log_error("[zparser] error: line %d: bad octet in label (fc=%c)",
+            parser->line, fc);
+        parser->totalerrors++;
+        fhold; fgoto line_error;
+    }
+    action zerror_label_x {
+        ods_log_error("[zparser] error: line %d: bad escape in label (fc=%c)",
+            parser->line, fc);
+        parser->totalerrors++;
+        fhold; fgoto line_error;
+    }
+    action zerror_label_char {
+        ods_log_error("[zparser] error: line %d: bad char in label (fc=%c)",
+            parser->line, fc);
+        parser->totalerrors++;
+        fhold; fgoto line_error;
+    }
+    action zerror_label_overflow {
+        ods_log_error("[zparser] error: line %d: label overflow (fc=%c)",
+            parser->line, fc);
+        parser->totalerrors++;
+        fhold; fgoto line_error;
     }
     action zerror_rr {
-        ods_log_error("[zparser] error: line %d: bad rr format",
-            parser->line);
+        ods_log_error("[zparser] error: line %d: bad rr format (fc=%c)",
+            parser->line, fc);
         parser->totalerrors++;
-        fhold; fgoto line;
+        fhold; fgoto line_error;
     }
     action zerror_rr_typedata {
-        ods_log_error("[zparser] error: line %d: bad rr typedata",
-            parser->line);
+        ods_log_error("[zparser] error: line %d: bad rr typedata (fc=%c)",
+            parser->line, fc);
         parser->totalerrors++;
-        fhold; fgoto line;
+        fhold; fgoto line_error;
     }
-    action zerror_rdata_ipv4 {
-        ods_log_error("[zparser] error: line %d: bad IPv4 address rdata format",
-            parser->line);
+    action zerror_rdata {
+        ods_log_error("[zparser] error: line %d: bad rdata (fc=%c)",
+            parser->line, fc);
         parser->totalerrors++;
-        fhold; fgoto line;
+        fhold; fgoto line_error;
     }
-    action zerror_rdata_dname {
-        ods_log_error("[zparser] error: line %d: bad dname rdata format",
-            parser->line);
+    action zerror_rdata_err {
+        rrstruct_type* rs = dns_rrstruct_by_type(parser->current_rr.type);
+        ods_log_error("[zparser] error: line %d: bad %s rdata (fc=%c)",
+            parser->line, rs[parser->current_rr.rdlen]);
         parser->totalerrors++;
-        fhold; fgoto line;
+        fhold; fgoto line_error;
     }
-    action zerror_rdata_int16 {
-        ods_log_error("[zparser] error: line %d: bad int16 rdata format",
-            parser->line);
-        parser->totalerrors++;
-        fhold; fgoto line;
-    }
-    action zerror_rdata_int32 {
-        ods_log_error("[zparser] error: line %d: bad int32 rdata format",
-            parser->line);
-        parser->totalerrors++;
-        fhold; fgoto line;
-    }
-    action zerror_rdata_timef {
-        ods_log_error("[zparser] error: line %d: bad time rdata format",
-            parser->line);
-        parser->totalerrors++;
-        fhold; fgoto line;
-    }
-    action zerror_rdata_wks {
-        ods_log_error("[zparser] error: line %d: bad wks rdata format",
-            parser->line);
-        parser->totalerrors++;
-        fhold; fgoto line;
-    }
-    action zerror_rdata_str {
-        ods_log_error("[zparser] error: line %d: bad string rdata format",
-            parser->line);
-        parser->totalerrors++;
-        fhold; fgoto line;
-    }
-    action zerror_rdata_text {
-        ods_log_error("[zparser] error: line %d: bad text rdata format",
-            parser->line);
-        parser->totalerrors++;
-        fhold; fgoto line;
-    }
-
 
     ## Utility parsing, newline, comments, delimeters, numbers, time values.
 
-    newline = '\n' $zparser_newline;
+    special_char     = [$;() \t\n\\];
+
+    newline          = '\n' $zparser_newline;
 
     # RFC 1035: Semicolon is used to start a comment; the remainder of the
     # line is ignored.
-    comment = ';' . (^newline)* >zparser_comment;
+    comment          = (';' . (^newline)*) >zparser_comment;
 
-    # RFC 1035: Any combination of tabs and spaces act as a
-    # delimiter between the separate items that make up an entry.
-    delim =
-          ( [ \t]
-          | (comment? . newline) when { parser->group_lines }
-          | '(' $zparser_parentheses_open
-          | ')' $zparser_parentheses_close
-          )+;
+    sp               = [ \t];
 
-    endline = (delim? :> comment?) . newline;
+    delim            =
+                     ( sp
+                     | (comment? . newline) when zparser_group_lines
+                     | '(' $zparser_parentheses_open
+                     | ')' $zparser_parentheses_close
+                     )+;
+
+    endline          = (delim? :> (comment? when zparser_single_line))
+                     . newline;
 
     # http://www.zytrax.com/books/dns/apa/time.html
-    timeformat = ( 's'i | 'm'i | 'h'i | 'd'i | 'w'i )
-                                     $zparser_timeformat
-                                     $!zerror_timeformat;
-    decimal_number = digit+          $zparser_decimal_digit;
-    time_value     = (decimal_number . timeformat)+ . decimal_number?;
+    timeformat       = ( 's'i | 'm'i | 'h'i | 'd'i | 'w'i )
+                     $zparser_timeformat
+                     $!zerror_timeformat;
 
-    # mnemonic: for example "TCP", "UDP", "DNS", ...
-    mnemonic = alpha+;
+    decimal_number   = digit+ $zparser_decimal_digit;
 
-    service = (mnemonic | decimal_number);
-    
+    time_value       = (decimal_number . timeformat)+ . decimal_number?;
+
+    # RFC 1035: TTL is a decimal integer
+    # The $TTL field may take any time value.
+    ttl              = (decimal_number | time_value)
+                     >zparser_ttl_start
+                     %zparser_ttl_end;
+
     ## Domain name parsing, absolute dnames, relative dnames, labels,
     ## character strings.
 
@@ -542,182 +409,131 @@
     #                the decimal number described by DDD.  The resulting
     #                octet is assumed to be text and is not checked for
     #                special meaning.
-    label_ddd = [0-7] {3}                >zparser_label_octet2wire_init
-                                         $zparser_label_octet2wire
-                                         $!zerror_label_ddd;
-    text_ddd  = [0-7] {3}                >zparser_text_octet2wire_init
-                                         $zparser_text_octet2wire
-                                         $!zerror_text_ddd;
+    label_ddd        = [0-7] {3}
+                     >zparser_label_octet2wire_init
+                     $zparser_label_octet2wire
+                     $!zerror_label_ddd;
 
-    # RFC 1035: \X where X is any character other than a digit (0-9), is
-    #              used to quote that character so that its special meaning
-    #              does not apply.  For example, "\." can be used to place
-    #              a dot character in a label.
-    label_x = ^digit                     $zparser_label_char2wire
-                                         $!zerror_label_x;
-    text_x  = ^digit                     $zparser_text_char2wire
-                                         $!zerror_text_x;
+    # RFC 1035: \X   where X is any character other than a digit (0-9), is
+    #                used to quote that character so that its special meaning
+    #                does not apply.  For example, "\." can be used to place
+    #                a dot character in a label.
+    label_x          = ^digit
+                     $zparser_label_char2wire
+                     $!zerror_label_x;
 
-    label_escape = '\\' . (label_x | label_ddd);
-    label_char = ([^@().\"\$\\; \t\n])   $zparser_label_char2wire
-                                         $!zerror_label_char;
-    label_character = (label_char | label_escape);
+    label_escape     = '\\' . (label_x | label_ddd);
+    label_char       = ([^@().\"\$\\; \t\n])
+                     $zparser_label_char2wire
+                     $!zerror_label_char;
 
-    text_escape = '\\' . (text_x | text_ddd);
-    text_char = ([^@().\"\$\\; \t\n])
-                                         $zparser_text_char2wire;
-    text_delim = ([@().\$\\; \t\n])      $zparser_text_char2wire;
-    text_character = (text_char | text_escape);
-    text_character_delim = (text_character | text_delim);
-
-    str_seq = ('\"' . (text_character_delim* :>> '\"') | text_character+)
-                                                     $!zerror_text_overflow;
+    label_character  = (label_char | label_escape);
 
     # RFC 1035: The labels in the domain name are expressed as character
     # strings. MM: But requires different processing then for non-labels.
-    label = label_character{1,63}        >zparser_label_start
-                                         %zparser_label_end
-                                         $!zerror_label_overflow;
+    label            = label_character{1,63}
+                     >zparser_label_start
+                     %zparser_label_end
+                     $!zerror_label_overflow;
 
-    labels = (label . '.')* . label;
+    labels           = (label . '.')* . label;
 
     # RFC 1035: Domain names which do not end in a dot are called relative.
-    rel_dname = labels                   >zparser_dname_start
-                                         %zparser_dname_end;
+    rel_dname       = labels
+                    >zparser_dname_start
+                    %zparser_dname_end;
 
     # RFC 1035: Domain names that end in a dot are called absolute.
-    abs_dname = (labels? . ('.' $zparser_abs_dname_end))
-                                         >zparser_dname_start
-                                         %zparser_dname_end;
+    abs_dname        = (labels? . ('.' $zparser_dname_absolute))
+                     >zparser_dname_start
+                     %zparser_dname_end;
 
-    owner = abs_dname | rel_dname | ('@' $zparser_dname_origin);
+    owner            = abs_dname
+                     | rel_dname
+                     | '@' >zparser_dname_origin
+                     | zlen %zparser_dname_previous;
 
-    # RFC 1035: TTL is a decimal integer
-    # The $TTL field may take any time value.
-    ttl = (decimal_number | time_value)  >zparser_ttl_start
-                                         %zparser_ttl_end;
-
-    rrttl = ttl . delim                  %zparser_rr_ttl;
-
-    rrclass = "IN" . delim               %zparser_rr_class;
-    # We could parse CS, CH, HS, NONE, ANY and CLASS<%d>
-
-    # RDATAs
+    ## RDATA parsing.
     rd_ipv4          = ((digit {1,3}) . '.' . (digit {1,3}) . '.'
                      .  (digit {1,3}) . '.' . (digit {1,3}))
                      >zparser_rdata_start $zparser_rdata_char
-                     %zparser_rdata_ipv4  $!zerror_rdata_ipv4;
+                     %zparser_rdata_end   $!zerror_rdata_err;
 
     rd_dname         = (abs_dname | rel_dname)
                      >zparser_rdata_start $zparser_rdata_char
-                     %zparser_rdata_compressed_dname $!zerror_rdata_dname;
+                     %zparser_rdata_end   $!zerror_rdata_err;
 
-    rd_int16         = digit+
-                     >zparser_rdata_start $zparser_rdata_char
-                     %zparser_rdata_int16  $!zerror_rdata_int16;
+    ## Resource records parsing.
+    rdata_a         := rd_ipv4  %{ fhold; fret; } . special_char;
+    rdata_ns        := rd_dname %{ fhold; fret; } . special_char;
 
-    rd_int32         = digit+
-                     >zparser_rdata_start $zparser_rdata_char
-                     %zparser_rdata_int32  $!zerror_rdata_int32;
+    rdata            = (delim . ^special_char) @zparser_rdata_call;
 
-    rd_timef         = ttl
-                     >zparser_rdata_start $zparser_rdata_char
-                     %zparser_rdata_timef $!zerror_rdata_timef;
+    rrtype           =
+                     ( "A"          >{parser->current_rr.type = DNS_TYPE_A;}
+                     | "NS"         >{parser->current_rr.type = DNS_TYPE_NS;}
+                     | "MD"         >{parser->current_rr.type = DNS_TYPE_MD;}
+                     | "MF"         >{parser->current_rr.type = DNS_TYPE_MF;}
+                     | "CNAME"      >{parser->current_rr.type = DNS_TYPE_CNAME;}
+                     | "SOA"        >{parser->current_rr.type = DNS_TYPE_SOA;}
+                     | "MB"         >{parser->current_rr.type = DNS_TYPE_MB;}
+                     | "MG"         >{parser->current_rr.type = DNS_TYPE_MG;}
+                     | "MR"         >{parser->current_rr.type = DNS_TYPE_MR;}
+                     # "NULL"       >{parser->current_rr.type = DNS_TYPE_NULL;}
+                     | "WKS"        >{parser->current_rr.type = DNS_TYPE_WKS;}
+                     | "PTR"        >{parser->current_rr.type = DNS_TYPE_PTR;}
+                     | "HINFO"      >{parser->current_rr.type = DNS_TYPE_HINFO;}
+                     | "MINFO"      >{parser->current_rr.type = DNS_TYPE_MINFO;}
+                     | "MX"         >{parser->current_rr.type = DNS_TYPE_MX;}
+                     | "TXT"        >{parser->current_rr.type = DNS_TYPE_TXT;}
+                     )
+                     $!zerror_rr_typedata;
 
-    rd_wks           = ((service . delim)* . service)
-                     >zparser_rdata_start $zparser_rdata_char
-                     $!zerror_rdata_wks;
-
-    rd_str           = str_seq
-                     >zparser_rdata_start
-                     %zparser_rdata_str $!zerror_rdata_str;
-
-    rd_text          = ((str_seq . delim)* . str_seq)
-                     >zparser_rdata_start
-                     %zparser_rdata_text $!zerror_rdata_text;
-
-    rdata_a          = delim . rd_ipv4;
-    rdata_ns         = delim . rd_dname;
-    rdata_md         = delim . rd_dname;
-    rdata_mf         = delim . rd_dname;
-    rdata_cname      = delim . rd_dname;
-    rdata_soa        = ((delim . rd_dname){2}) . (delim . rd_int32) .
-                       ((delim . rd_timef){4});
-    rdata_mb         = delim . rd_dname;
-    rdata_mg         = delim . rd_dname;
-    rdata_mr         = delim . rd_dname;
-    # rdata_null     = delim . rd_binary;
-    rdata_wks        = delim . rd_ipv4 . delim . rd_wks;
-    rdata_ptr        = delim . rd_dname;
-    rdata_hinfo      = delim . rd_str . delim . rd_str;
-    rdata_minfo      = delim . rd_dname . delim . rd_dname;
-    rdata_mx         = delim . rd_int16 . delim . rd_dname;
-    rdata_txt        = delim . rd_text;
-
-    rrtype_and_rdata =
-        ( "A"          . rdata_a         >{parser->current_rr.type = DNS_TYPE_A;}
-        | "NS"         . rdata_ns        >{parser->current_rr.type = DNS_TYPE_NS;}
-        | "MD"         . rdata_md        >{parser->current_rr.type = DNS_TYPE_MD;}
-        | "MF"         . rdata_mf        >{parser->current_rr.type = DNS_TYPE_MF;}
-        | "CNAME"      . rdata_cname     >{parser->current_rr.type = DNS_TYPE_CNAME;}
-        | "SOA"        . rdata_soa       >{parser->current_rr.type = DNS_TYPE_SOA;}
-        | "MB"         . rdata_mb        >{parser->current_rr.type = DNS_TYPE_MB;}
-        | "MG"         . rdata_mg        >{parser->current_rr.type = DNS_TYPE_MG;}
-        | "MR"         . rdata_mr        >{parser->current_rr.type = DNS_TYPE_MR;}
-        # "NULL"       . rdata_null      >{parser->current_rr.type = DNS_TYPE_NULL;}
-        | "WKS"        . rdata_wks       >{parser->current_rr.type = DNS_TYPE_WKS;}
-        | "PTR"        . rdata_ptr       >{parser->current_rr.type = DNS_TYPE_PTR;}
-        | "HINFO"      . rdata_hinfo     >{parser->current_rr.type = DNS_TYPE_HINFO;}
-        | "MINFO"      . rdata_minfo     >{parser->current_rr.type = DNS_TYPE_MINFO;}
-        | "MX"         . rdata_mx        >{parser->current_rr.type = DNS_TYPE_MX;}
-        | "TXT"        . rdata_txt       >{parser->current_rr.type = DNS_TYPE_TXT;}
-        )                                $!zerror_rr_typedata;
+    rrclass          = "IN" %zparser_rr_class;
 
     # RFC 1035: <rr> contents take one of the following forms:
     # [<TTL>] [<class>] <type> <RDATA>
     # [<class>] [<TTL>] <type> <RDATA>
-    rr = ( owner                         %zparser_rr_owner
-         . delim 
-         . ( (rrclass? . (rrttl %zparser_rr_ttl)?)
-           | ((rrttl %zparser_rr_ttl)? . rrclass?)
-           | zlen
-           )
-         . rrtype_and_rdata
-         . endline
-         )                               >zparser_rr_start
-                                         %zparser_rr_end
-                                         $!zerror_rr;
+    rr               =
+                     ( owner >zparser_rr_start %zparser_rr_owner
+                     . delim
+                     . ( (rrclass . delim)? . (ttl %zparser_rr_ttl . delim)?
+                       | (ttl %zparser_rr_ttl . delim)? . (rrclass . delim?)
+                       )
+                     . rrtype . rdata . endline
+                     )
+                     %zparser_rr_end
+                     $!zerror_rr;
 
     ## Main line parsing, entries, directives, records.
 
-    dollar_origin = ("$ORIGIN" . delim . abs_dname . endline)
-                  %zparser_dollar_origin
-                  $!zerror_dollar_origin;
-    dollar_ttl    = ("$TTL"    . delim . ttl . endline)
-                  %zparser_dollar_ttl
-                  $!zerror_dollar_ttl;
+    dollar_origin    = ("$ORIGIN" . delim . abs_dname . endline)
+                     %zparser_dollar_origin
+                     $!zerror_dollar_origin;
 
-    blank = endline;
+    dollar_ttl       = ("$TTL" . delim . ttl . endline)
+                     %zparser_dollar_ttl
+                     $!zerror_dollar_ttl;
+
+    blank            = endline;
 
     # RFC 1035: The following entries are defined:
-    # endline:        <blank>[<comment>]
-    # dollar_origin: $ORIGIN <domain-name> [<comment>]
+    # blank:         <blank>[<comment>]
     # rr:            <domain-name><rr> [<comment>]
+    # rr:            <blank><rr> [<comment>]
+    # dollar_origin: $ORIGIN <domain-name> [<comment>]
     # RFC 2038: The Master File format is extended to include the following...
     # blank:         $TTL <TTL> [comment]
-    entry = (blank | rr | dollar_origin | dollar_ttl) $!zerror_entry;
+    entry            =
+                     ( blank
+                     | rr
+                     | dollar_origin
+                     | dollar_ttl
+                     ) $!zerror_entry;
 
-    line := [^\n]* @zparser_reinitialize . newline @{ fgoto main; };
+    line_error      := [^\n]* @zparser_reinitialize . newline @{ fgoto main; };
 
     # RFC 1035: The format of these files is a sequence of entries.
-    main := entry*;
-
-
-    # TODO
-    # RFC 1035: $INCLUDE <file-name> [<domain-name>] [<comment>]
-    # RFC 1035: <blank><rr> [<comment>]
-    # RRtypes
-    # special region for dnames? 
-    # Unknown records
+    main            := entry*;
 
 }%%
