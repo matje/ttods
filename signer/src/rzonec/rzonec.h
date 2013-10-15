@@ -16,6 +16,8 @@
 #include "signer/zone.h"
 #include "util/region.h"
 
+#define RZONEC_STACK_MAX 8
+
 /**
  * Zone parser structure.
  *
@@ -30,7 +32,9 @@ struct zparser {
     uint32_t klass;           /* zone class */
 
     /* Ragel variables */
+    int stack[RZONEC_STACK_MAX];
     int cs;
+    int top;
 
     unsigned int line;        /* number of lines */
     unsigned int line_update; /* for debug printing */
