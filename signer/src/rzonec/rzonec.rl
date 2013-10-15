@@ -59,7 +59,8 @@ zparser_create(zone_type* zone)
         sizeof(rdata_type));
     parser->region = r;
     parser->zone = zone;
-    parser->origin = zone->apex;
+    parser->origin = dname_clone(r, zone->apex);
+    parser->previous = NULL;
     parser->ttl = zone->default_ttl;
     parser->klass = zone->klass;
     parser->cs = zparser_start;

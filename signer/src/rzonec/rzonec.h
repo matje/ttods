@@ -26,6 +26,7 @@ typedef struct zparser zparser_type;
 struct zparser {
     region_type* region;      /* global memory region */
     dname_type* origin;       /* current origin */
+    dname_type* previous;     /* previous rr owner */
     zone_type* zone;          /* currently parsed zone */
     /* We could handle ttl as a duration */
     uint64_t ttl;             /* current ttl */
