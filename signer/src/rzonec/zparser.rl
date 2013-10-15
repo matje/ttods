@@ -225,8 +225,15 @@
     action zparser_rdata_call {
         fhold;
         switch (parser->current_rr.type) {
-           case DNS_TYPE_A:          fcall rdata_a;
-           case DNS_TYPE_NS:         fcall rdata_ns;
+           case DNS_TYPE_A:
+               fcall rdata_a;
+           case DNS_TYPE_NS:
+           case DNS_TYPE_MD:
+           case DNS_TYPE_MF:
+           case DNS_TYPE_CNAME:
+                fcall rdata_ns;
+           case DNS_TYPE_SOA:
+                fcall rdata_soa;
            default:
                 ods_log_error("[zparser] line %d: rrtype %d not supported",
                     parser->line, parser->current_rr.type);
@@ -463,9 +470,20 @@
                      >zparser_rdata_start $zparser_rdata_char
                      %zparser_rdata_end   $!zerror_rdata_err;
 
+    rd_int32         = digit+
+                     >zparser_rdata_start $zparser_rdata_char
+                     %zparser_rdata_end   $!zerror_rdata_err;
+
+    rd_timef         = ttl
+                     >zparser_rdata_start $zparser_rdata_char
+                     %zparser_rdata_end   $!zerror_rdata_err;
+
     ## Resource records parsing.
     rdata_a         := rd_ipv4  %{ fhold; fret; } . special_char;
     rdata_ns        := rd_dname %{ fhold; fret; } . special_char;
+    rdata_soa       := (rd_dname . delim . rd_dname . delim . rd_int32 . delim
+                     .  rd_timef . delim . rd_timef . delim . rd_timef . delim
+                     .  rd_timef) %{fhold; fret; } . special_char;
 
     rdata            = (delim . ^special_char) @zparser_rdata_call;
 
