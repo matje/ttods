@@ -135,3 +135,27 @@ dns_rrstruct_by_type(uint16_t type)
     return &dns_rrstructs[0];
 }
 
+
+/**
+ * Return RDATA format.
+ *
+ */
+const char*
+dns_rdata_format_str(dns_rdata_format rd)
+{
+    switch (rd) {
+        case DNS_RDATA_IPV4: return "ipv4addr"; break;
+        case DNS_RDATA_COMPRESSED_DNAME: return "dname"; break;
+        case DNS_RDATA_UNCOMPRESSED_DNAME: return "dname"; break;
+        case DNS_RDATA_INT16: return "int16"; break;
+        case DNS_RDATA_INT32: return "int32"; break;
+        case DNS_RDATA_TIMEF: return "period"; break;
+        case DNS_RDATA_WKS: return "wks"; break;
+        case DNS_RDATA_TEXT: return "character-string"; break;
+        case DNS_RDATA_TEXTS: return "character-strings"; break;
+        case DNS_RDATA_BINARY: return "binary"; break;
+        default:
+            break;
+    }
+    return "unknown";
+}

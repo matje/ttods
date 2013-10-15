@@ -108,7 +108,7 @@ struct rrstruct_struct {
     uint16_t type; /* RRtype */
     uint8_t minimum; /* Minimum number of RDATAs */
     uint8_t maximum; /* Maximum number of RDATAs */
-    uint8_t rdata[DNS_RDATA_MAX]; /* RDATAs */
+    dns_rdata_format rdata[DNS_RDATA_MAX]; /* RDATAs */
 };
 
 /**
@@ -142,6 +142,14 @@ rrstruct_type* dns_rrstruct_by_name(const char* name);
  *
  */
 rrstruct_type* dns_rrstruct_by_type(uint16_t type);
+
+/**
+ * Return RDATA format.
+ * @param rd:   rdata format.
+ * @return:     (const char*) string.
+ *
+ */
+const char* dns_rdata_format_str(dns_rdata_format rd);
 
 #endif /* DNS_DNS_H */
 
