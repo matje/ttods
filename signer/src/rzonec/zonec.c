@@ -125,6 +125,7 @@ zonec_rdata_services(region_type* region, const char* buf)
     size_t offset = 0;
 
     (void)memcpy(rdata, buf, strlen(buf));
+    (void)ods_strtriml(rdata);
     ods_strreplace(rdata, '\t', sep);
     service = rdata;
 

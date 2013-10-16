@@ -274,8 +274,6 @@
             parser->totalerrors++;
             fhold; fgoto line_error;
         }
-        ods_log_debug("[zparser] error: line %d: rdata[%u] added",
-             parser->line, parser->current_rr.rdlen);
     }
 
     # Actions: resource records.
@@ -386,6 +384,8 @@
     ## Utility parsing, newline, comments, delimeters, numbers, time values.
 
     special_char     = [$;() \t\n\\];
+    special_char_end = [$;()\n\\];
+
 
     newline          = '\n' $zparser_newline;
 
@@ -492,7 +492,7 @@
                      >zparser_rdata_start $zparser_rdata_char
                      %zparser_rdata_end   $!zerror_rdata_err;
 
-    rd_services      = (delim . (mnemonic | decimal_number))+
+    rd_services      = ((delim . (mnemonic | decimal_number))+ . delim?)
                      >zparser_rdata_start $zparser_rdata_char
                      %zparser_rdata_end   $!zerror_rdata_err;
 
@@ -509,7 +509,7 @@
                      %{ fhold; fret; } . special_char;
 
     rdata_wks       := (rd_ipv4 . rd_services)
-                     %{ fhold; fret; } . special_char;
+                     %{ fhold; fret; } . special_char_end;
 
     rdata            = (delim . ^special_char) @zparser_rdata_call;
 
