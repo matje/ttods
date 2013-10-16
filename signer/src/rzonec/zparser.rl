@@ -93,6 +93,34 @@
             (unsigned int) parser->ttl);
     }
 
+    # Actions: character strings.
+    action zparser_text_char2wire {
+        if (parser->rdsize <= DNS_RDLEN_MAX) {
+            parser->rdbuf[parser->rdsize] = fc;
+            parser->rdsize++;
+        } else {
+            ods_log_error("[zparser] error: line %d: character string overflow",
+                parser->line);
+            parser->totalerrors++;
+            fhold; fgoto line_error;
+        }
+    }
+    action zparser_text_octet2wire_init {
+        if (parser->rdsize <= DNS_RDLEN_MAX) {
+            parser->rdbuf[parser->dname_size] = 0;
+            parser->rdsize++;
+        } else {
+            ods_log_error("[zparser] error: line %d: character string overflow",
+                parser->line);
+            parser->totalerrors++;
+            fhold; fgoto line_error;
+        }
+    }
+    action zparser_text_octet2wire {
+        parser->rdbuf[parser->rdsize-1] *= 10;
+        parser->rdbuf[parser->rdsize-1] += (fc - '0');
+    }
+
     # Actions: labels and domain names.
     action zparser_label_start {
         parser->label_head = parser->dname_size;
@@ -239,6 +267,8 @@
                 fcall rdata_soa;
            case DNS_TYPE_WKS:
                 fcall rdata_wks;
+           case DNS_TYPE_HINFO:
+                fcall rdata_hinfo;
            case DNS_TYPE_MINFO:
                 fcall rdata_minfo;
            case DNS_TYPE_NULL:
@@ -330,6 +360,24 @@
     }
     action zerror_timeformat {
         ods_log_error("[zparser] error: line %d: ttl time format error (fc=%c)",
+            parser->line, fc);
+        parser->totalerrors++;
+        fhold; fgoto line_error;
+    }
+    action zerror_text_ddd {
+        ods_log_error("[zparser] error: line %d: bad octet in text",
+            parser->line);
+        parser->totalerrors++;
+        fhold; fgoto line_error;
+    }
+    action zerror_text_x {
+        ods_log_error("[zparser] error: line %d: bad escape in text",
+            parser->line);
+        parser->totalerrors++;
+        fhold; fgoto line_error;
+    }
+    action zerror_str_seq {
+        ods_log_error("[zparser] error: line %d: bad character string (fc=%c)",
             parser->line, fc);
         parser->totalerrors++;
         fhold; fgoto line_error;
@@ -437,6 +485,10 @@
                      >zparser_label_octet2wire_init
                      $zparser_label_octet2wire
                      $!zerror_label_ddd;
+    text_ddd         = [0-7] {3}
+                     >zparser_text_octet2wire_init
+                     $zparser_text_octet2wire
+                     $!zerror_text_ddd;
 
     # RFC 1035: \X   where X is any character other than a digit (0-9), is
     #                used to quote that character so that its special meaning
@@ -445,6 +497,9 @@
     label_x          = ^digit
                      $zparser_label_char2wire
                      $!zerror_label_x;
+    text_x           = ^digit
+                     $zparser_text_char2wire
+                     $!zerror_text_x;
 
     label_escape     = '\\' . (label_x | label_ddd);
     label_char       = ([^@().\"\$\\; \t\n])
@@ -452,6 +507,20 @@
                      $!zerror_label_char;
 
     label_character  = (label_char | label_escape);
+
+    text_escape      = '\\' . (text_x | text_ddd);
+    text_char        =  ([^@().\"\$\\; \t\n])
+                     $zparser_text_char2wire;
+
+    text_delim       =  ([@().\"\$\\; \t\n])
+                     $zparser_text_char2wire;
+
+    text_character   = (text_char | text_escape);
+    text_character_delim = (text_character | text_delim);
+
+    str_seq          = ('\"' . (text_character_delim* :>> '\"')
+                     | text_character+)
+                     $!zerror_str_seq;
 
     # RFC 1035: The labels in the domain name are expressed as character
     # strings. MM: But requires different processing then for non-labels.
@@ -499,6 +568,10 @@
                      >zparser_rdata_start $zparser_rdata_char
                      %zparser_rdata_end   $!zerror_rdata_err;
 
+    rd_str           = str_seq
+                     >zparser_rdata_start
+                     %zparser_rdata_end   $!zerror_rdata_err;
+
     ## Resource records parsing.
     rdata_a         := rd_ipv4
                      %{ fhold; fret; } . special_char;
@@ -513,6 +586,9 @@
 
     rdata_wks       := (rd_ipv4 . rd_services)
                      %{ fhold; fret; } . special_char_end;
+
+    rdata_hinfo     := (rd_str . delim . rd_str)
+                     %{ fhold; fret; } . special_char;
 
     rdata_minfo     := (rd_dname . delim . rd_dname)
                      %{ fhold; fret; } . special_char;
