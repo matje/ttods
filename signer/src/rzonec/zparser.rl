@@ -271,6 +271,8 @@
                 fcall rdata_hinfo;
            case DNS_TYPE_MINFO:
                 fcall rdata_minfo;
+           case DNS_TYPE_MX:
+                fcall rdata_mx;
            case DNS_TYPE_NULL:
            default:
                 if (!rs->name) {
@@ -413,8 +415,6 @@
         fhold; fgoto line_error;
     }
     action zerror_rr_typedata {
-        ods_log_error("[zparser] error: line %d: bad rr typedata (fc=%c)",
-            parser->line, fc);
         parser->totalerrors++;
         fhold; fgoto line_error;
     }
@@ -556,7 +556,7 @@
                      >zparser_rdata_start $zparser_rdata_char
                      %zparser_rdata_end   $!zerror_rdata_err;
 
-    rd_int32         = digit+
+    rd_int           = digit+
                      >zparser_rdata_start $zparser_rdata_char
                      %zparser_rdata_end   $!zerror_rdata_err;
 
@@ -579,7 +579,7 @@
     rdata_ns        := rd_dname
                      %{ fhold; fret; } . special_char;
 
-    rdata_soa       := (rd_dname . delim . rd_dname . delim . rd_int32 . delim
+    rdata_soa       := (rd_dname . delim . rd_dname . delim . rd_int . delim
                      .  rd_timef . delim . rd_timef . delim . rd_timef . delim
                      .  rd_timef)
                      %{ fhold; fret; } . special_char;
@@ -591,6 +591,9 @@
                      %{ fhold; fret; } . special_char;
 
     rdata_minfo     := (rd_dname . delim . rd_dname)
+                     %{ fhold; fret; } . special_char;
+
+    rdata_mx        := (rd_int . delim . rd_dname)
                      %{ fhold; fret; } . special_char;
 
     rdata            = (delim . ^special_char) @zparser_rdata_call;
