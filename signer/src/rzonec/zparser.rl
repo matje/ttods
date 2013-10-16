@@ -219,6 +219,9 @@
 
     # Actions: rdata.
     action zparser_rdata_call {
+        char t[10];
+        rrstruct_type* rs = dns_rrstruct_by_type(parser->current_rr.type);
+
         fhold;
         switch (parser->current_rr.type) {
            case DNS_TYPE_A:
@@ -233,9 +236,14 @@
                 fcall rdata_ns;
            case DNS_TYPE_SOA:
                 fcall rdata_soa;
+           case DNS_TYPE_NULL:
            default:
-                ods_log_error("[zparser] line %d: rrtype %d not supported",
-                    parser->line, parser->current_rr.type);
+                if (!rs->name) {
+                    snprintf(&t[0], 10, "TYPE%u",
+                        (unsigned) parser->current_rr.type);
+                }
+                ods_log_error("[zparser] line %d: rrtype %s not supported",
+                    parser->line, rs->name?rs->name:&t[0]);
                 parser->totalerrors++;
                 fgoto line_error;
        }
