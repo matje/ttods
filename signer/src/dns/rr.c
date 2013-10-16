@@ -34,7 +34,9 @@
 #include "dns/dns.h"
 #include "dns/rr.h"
 
+/*
 static const char* logstr = "rr";
+*/
 
 
 /**
@@ -98,10 +100,10 @@ rr_compare_rdata(rr_type* rr1, rr_type* rr2)
                     rdata_get_dname(&rr2->rdata[i]));
                 break;
             case DNS_RDATA_IPV4:
-            case DNS_RDATA_WKS:
             case DNS_RDATA_INT16:
             case DNS_RDATA_INT32:
             case DNS_RDATA_TIMEF:
+            case DNS_RDATA_SERVICES:
             case DNS_RDATA_BINARY:
             default:
                 if (rdata_size(&rr1->rdata[i]) < rdata_size(&rr2->rdata[i])) {

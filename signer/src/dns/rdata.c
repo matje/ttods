@@ -193,11 +193,11 @@ rdata_print_timef(FILE* fd, rdata_type* rdata)
 
 
 /**
- * Print wks RDATA element.
+ * Print services RDATA element.
  *
  */
 static void
-rdata_print_wks(FILE* fd, rdata_type* rdata)
+rdata_print_services(FILE* fd, rdata_type* rdata)
 {
     buffer_type data;
     buffer_create_from(&data, rdata_get_data(rdata), rdata_size(rdata));
@@ -261,8 +261,8 @@ rdata_print(FILE* fd, rdata_type* rdata, uint16_t rrtype, uint16_t pos)
         case DNS_RDATA_TIMEF:
             rdata_print_timef(fd, rdata);
             break;
-        case DNS_RDATA_WKS:
-            rdata_print_wks(fd, rdata);
+        case DNS_RDATA_SERVICES:
+            rdata_print_services(fd, rdata);
             break;
         case DNS_RDATA_UNCOMPRESSED_DNAME:
         case DNS_RDATA_BINARY:

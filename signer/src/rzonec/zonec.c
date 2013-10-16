@@ -105,11 +105,11 @@ zonec_rdata_timef(region_type* region, const char* buf)
 
 
 /**
- * Convert protocol and services into RDATA element.
+ * Convert services into RDATA element.
  *
  */
 static uint16_t*
-zonec_rdata_wks(region_type* region, const char* buf)
+zonec_rdata_services(region_type* region, const char* buf)
 {
     static char rdata[DNS_RDLEN_MAX];
     char sep = ' ';
@@ -223,15 +223,15 @@ zonec_rdata_add(region_type* region, rr_type* rr, dns_rdata_format rdformat,
         case DNS_RDATA_TIMEF:
             d = zonec_rdata_timef(region, rdbuf);
             break;
-        case DNS_RDATA_WKS:
-            d = zonec_rdata_wks(region, rdbuf);
+        case DNS_RDATA_SERVICES:
+            d = zonec_rdata_services(region, rdbuf);
             break;
         case DNS_RDATA_TEXT:
         case DNS_RDATA_TEXTS:
             d = zonec_rdata_text(region, rdbuf, rdsize);
             break;
-        case DNS_RDATA_UNCOMPRESSED_DNAME:
-        case DNS_RDATA_BINARY:
+        case DNS_RDATA_UNCOMPRESSED_DNAME: /* TODO */
+        case DNS_RDATA_BINARY: /* TODO */
             d = NULL;
             dname = NULL;
             break;

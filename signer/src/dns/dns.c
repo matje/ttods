@@ -59,7 +59,8 @@ static rrstruct_type dns_rrstructs[(DNS_NUMRRTYPES+1)] = {
 /*     8 */ { "MG", DNS_TYPE_MG, 1, 1, { DNS_RDATA_COMPRESSED_DNAME } },
 /*     9 */ { "MR", DNS_TYPE_MR, 1, 1, { DNS_RDATA_COMPRESSED_DNAME } },
 /*    10 */ { "NULL", DNS_TYPE_NULL, 1, 1, { DNS_RDATA_BINARY } },
-/*    11 */ { "WKS", DNS_TYPE_WKS, 2, 2, { DNS_RDATA_IPV4, DNS_RDATA_WKS } },
+/*    11 */ { "WKS", DNS_TYPE_WKS, 2, 2,
+              { DNS_RDATA_IPV4, DNS_RDATA_SERVICES } },
 /*    12 */ { "PTR", DNS_TYPE_PTR, 1, 1, { DNS_RDATA_COMPRESSED_DNAME } },
 /*    13 */ { "HINFO", DNS_TYPE_MINFO, 2, 2,
               { DNS_RDATA_TEXT, DNS_RDATA_TEXT } },
@@ -150,7 +151,7 @@ dns_rdata_format_str(dns_rdata_format rd)
         case DNS_RDATA_INT16: return "int16"; break;
         case DNS_RDATA_INT32: return "int32"; break;
         case DNS_RDATA_TIMEF: return "period"; break;
-        case DNS_RDATA_WKS: return "wks"; break;
+        case DNS_RDATA_SERVICES: return "services"; break;
         case DNS_RDATA_TEXT: return "character-string"; break;
         case DNS_RDATA_TEXTS: return "character-strings"; break;
         case DNS_RDATA_BINARY: return "binary"; break;

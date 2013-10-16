@@ -236,6 +236,8 @@
                 fcall rdata_ns;
            case DNS_TYPE_SOA:
                 fcall rdata_soa;
+           case DNS_TYPE_WKS:
+                fcall rdata_wks;
            case DNS_TYPE_NULL:
            default:
                 if (!rs->name) {
@@ -272,6 +274,8 @@
             parser->totalerrors++;
             fhold; fgoto line_error;
         }
+        ods_log_debug("[zparser] error: line %d: rdata[%u] added",
+             parser->line, parser->current_rr.rdlen);
     }
 
     # Actions: resource records.
@@ -410,6 +414,9 @@
 
     time_value       = (decimal_number . timeformat)+ . decimal_number?;
 
+    # mnemonic: for example "TCP", "UDP", "DNS", ...
+    mnemonic = alpha+;
+
     # RFC 1035: TTL is a decimal integer
     # The $TTL field may take any time value.
     ttl              = (decimal_number | time_value)
@@ -485,33 +492,44 @@
                      >zparser_rdata_start $zparser_rdata_char
                      %zparser_rdata_end   $!zerror_rdata_err;
 
+    rd_services      = (delim . (mnemonic | decimal_number))+
+                     >zparser_rdata_start $zparser_rdata_char
+                     %zparser_rdata_end   $!zerror_rdata_err;
+
     ## Resource records parsing.
-    rdata_a         := rd_ipv4  %{ fhold; fret; } . special_char;
-    rdata_ns        := rd_dname %{ fhold; fret; } . special_char;
+    rdata_a         := rd_ipv4
+                     %{ fhold; fret; } . special_char;
+
+    rdata_ns        := rd_dname
+                     %{ fhold; fret; } . special_char;
+
     rdata_soa       := (rd_dname . delim . rd_dname . delim . rd_int32 . delim
                      .  rd_timef . delim . rd_timef . delim . rd_timef . delim
-                     .  rd_timef) %{fhold; fret; } . special_char;
+                     .  rd_timef)
+                     %{ fhold; fret; } . special_char;
 
+    rdata_wks       := (rd_ipv4 . rd_services)
+                     %{ fhold; fret; } . special_char;
 
     rdata            = (delim . ^special_char) @zparser_rdata_call;
 
     rrtype           =
-                     ( "A"          >{parser->current_rr.type = DNS_TYPE_A;}
-                     | "NS"         >{parser->current_rr.type = DNS_TYPE_NS;}
-                     | "MD"         >{parser->current_rr.type = DNS_TYPE_MD;}
-                     | "MF"         >{parser->current_rr.type = DNS_TYPE_MF;}
-                     | "CNAME"      >{parser->current_rr.type = DNS_TYPE_CNAME;}
-                     | "SOA"        >{parser->current_rr.type = DNS_TYPE_SOA;}
-                     | "MB"         >{parser->current_rr.type = DNS_TYPE_MB;}
-                     | "MG"         >{parser->current_rr.type = DNS_TYPE_MG;}
-                     | "MR"         >{parser->current_rr.type = DNS_TYPE_MR;}
-                     # "NULL"       >{parser->current_rr.type = DNS_TYPE_NULL;}
-                     | "WKS"        >{parser->current_rr.type = DNS_TYPE_WKS;}
-                     | "PTR"        >{parser->current_rr.type = DNS_TYPE_PTR;}
-                     | "HINFO"      >{parser->current_rr.type = DNS_TYPE_HINFO;}
-                     | "MINFO"      >{parser->current_rr.type = DNS_TYPE_MINFO;}
-                     | "MX"         >{parser->current_rr.type = DNS_TYPE_MX;}
-                     | "TXT"        >{parser->current_rr.type = DNS_TYPE_TXT;}
+                     ( "A"          @{parser->current_rr.type = DNS_TYPE_A;}
+                     | "NS"         @{parser->current_rr.type = DNS_TYPE_NS;}
+                     | "MD"         @{parser->current_rr.type = DNS_TYPE_MD;}
+                     | "MF"         @{parser->current_rr.type = DNS_TYPE_MF;}
+                     | "CNAME"      @{parser->current_rr.type = DNS_TYPE_CNAME;}
+                     | "SOA"        @{parser->current_rr.type = DNS_TYPE_SOA;}
+                     | "MB"         @{parser->current_rr.type = DNS_TYPE_MB;}
+                     | "MG"         @{parser->current_rr.type = DNS_TYPE_MG;}
+                     | "MR"         @{parser->current_rr.type = DNS_TYPE_MR;}
+                     # "NULL"       @{parser->current_rr.type = DNS_TYPE_NULL;}
+                     | "WKS"        @{parser->current_rr.type = DNS_TYPE_WKS;}
+                     | "PTR"        @{parser->current_rr.type = DNS_TYPE_PTR;}
+                     | "HINFO"      @{parser->current_rr.type = DNS_TYPE_HINFO;}
+                     | "MINFO"      @{parser->current_rr.type = DNS_TYPE_MINFO;}
+                     | "MX"         @{parser->current_rr.type = DNS_TYPE_MX;}
+                     | "TXT"        @{parser->current_rr.type = DNS_TYPE_TXT;}
                      )
                      $!zerror_rr_typedata;
 
