@@ -42,17 +42,6 @@ zonec_rdata_ipv4(region_type* region, const char* buf)
 
 
 /**
- * Convert domain name into RDATA element.
- *
- */
-static dname_type*
-zonec_rdata_dname(region_type* region, const char* buf)
-{
-    return dname_create(region, buf);
-}
-
-
-/**
  * Convert int16 into RDATA element.
  *
  */
@@ -205,7 +194,7 @@ zonec_rdata_wks(region_type* region, const char* buf)
  */
 int
 zonec_rdata_add(region_type* region, rr_type* rr, dns_rdata_format rdformat,
-   const char* rdbuf, size_t rdsize)
+    dname_type* name, const char* rdbuf, size_t rdsize)
 {
     uint16_t* d = NULL;
     dname_type* dname = NULL;
@@ -223,7 +212,7 @@ zonec_rdata_add(region_type* region, rr_type* rr, dns_rdata_format rdformat,
             d = zonec_rdata_ipv4(region, rdbuf);
             break;
         case DNS_RDATA_COMPRESSED_DNAME:
-            dname = zonec_rdata_dname(region, rdbuf);
+            dname = name;
             break;
         case DNS_RDATA_INT16:
             d = zonec_rdata_int16(region, rdbuf);

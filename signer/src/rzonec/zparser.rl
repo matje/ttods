@@ -34,7 +34,6 @@
             parser->totalerrors++;
             fhold; fgoto line_error;
         }
-        ods_log_debug("[zparser] line %d: open parentheses %c", parser->line, fc);
         parser->group_lines = 1;
     }
     action zparser_parentheses_close {
@@ -44,7 +43,6 @@
             parser->totalerrors++;
             fhold; fgoto line_error;
         }
-        ods_log_debug("[zparser] line %d: close parentheses %c", parser->line, fc);
         parser->group_lines = 0;
     }
     action zparser_single_line { parser->group_lines == 0 }
@@ -132,11 +130,9 @@
             (parser->dname_size - parser->label_head - 1);
     }
     action zparser_dname_origin {
-        ods_log_debug("[zparser] line %d: dname = $ORIGIN %c", parser->line, fc);
         parser->dname = parser->origin;
     }
     action zparser_dname_previous {
-        ods_log_debug("[zparser] line %d: dname = prev %c", parser->line, fc);
         parser->dname = parser->previous;
     }
     action zparser_dname_start {
@@ -231,6 +227,9 @@
            case DNS_TYPE_MD:
            case DNS_TYPE_MF:
            case DNS_TYPE_CNAME:
+           case DNS_TYPE_MB:
+           case DNS_TYPE_MG:
+           case DNS_TYPE_MR:
                 fcall rdata_ns;
            case DNS_TYPE_SOA:
                 fcall rdata_soa;
@@ -260,7 +259,7 @@
         rrstruct_type* rs = dns_rrstruct_by_type(parser->current_rr.type);
         parser->rdbuf[parser->rdsize] = '\0';
         if (!zonec_rdata_add(parser->region, &parser->current_rr,
-            rs->rdata[parser->current_rr.rdlen],
+            rs->rdata[parser->current_rr.rdlen], parser->dname,
             parser->rdbuf, parser->rdsize)) {
             parser->totalerrors++;
             fhold; fgoto line_error;
@@ -484,6 +483,7 @@
     rdata_soa       := (rd_dname . delim . rd_dname . delim . rd_int32 . delim
                      .  rd_timef . delim . rd_timef . delim . rd_timef . delim
                      .  rd_timef) %{fhold; fret; } . special_char;
+
 
     rdata            = (delim . ^special_char) @zparser_rdata_call;
 
