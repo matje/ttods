@@ -233,11 +233,14 @@
            case DNS_TYPE_MB:
            case DNS_TYPE_MG:
            case DNS_TYPE_MR:
+           case DNS_TYPE_PTR:
                 fcall rdata_ns;
            case DNS_TYPE_SOA:
                 fcall rdata_soa;
            case DNS_TYPE_WKS:
                 fcall rdata_wks;
+           case DNS_TYPE_MINFO:
+                fcall rdata_minfo;
            case DNS_TYPE_NULL:
            default:
                 if (!rs->name) {
@@ -510,6 +513,9 @@
 
     rdata_wks       := (rd_ipv4 . rd_services)
                      %{ fhold; fret; } . special_char_end;
+
+    rdata_minfo     := (rd_dname . delim . rd_dname)
+                     %{ fhold; fret; } . special_char;
 
     rdata            = (delim . ^special_char) @zparser_rdata_call;
 
