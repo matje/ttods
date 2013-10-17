@@ -246,6 +246,7 @@ rdata_print(FILE* fd, rdata_type* rdata, uint16_t rrtype, uint16_t pos)
             rdata_print_ipv4(fd, rdata);
             break;
         case DNS_RDATA_COMPRESSED_DNAME:
+        case DNS_RDATA_UNCOMPRESSED_DNAME:
             rdata_print_dname(fd, rdata);
             break;
         case DNS_RDATA_INT16:
@@ -264,7 +265,6 @@ rdata_print(FILE* fd, rdata_type* rdata, uint16_t rrtype, uint16_t pos)
         case DNS_RDATA_SERVICES:
             rdata_print_services(fd, rdata);
             break;
-        case DNS_RDATA_UNCOMPRESSED_DNAME:
         case DNS_RDATA_BINARY:
         default:
             fprintf(fd, "<unknown>");

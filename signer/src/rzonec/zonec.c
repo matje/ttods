@@ -213,6 +213,7 @@ zonec_rdata_add(region_type* region, rr_type* rr, dns_rdata_format rdformat,
             d = zonec_rdata_ipv4(region, rdbuf);
             break;
         case DNS_RDATA_COMPRESSED_DNAME:
+        case DNS_RDATA_UNCOMPRESSED_DNAME: /* TODO */
             dname = name;
             break;
         case DNS_RDATA_INT16:
@@ -231,7 +232,6 @@ zonec_rdata_add(region_type* region, rr_type* rr, dns_rdata_format rdformat,
         case DNS_RDATA_TEXTS:
             d = zonec_rdata_text(region, rdbuf, rdsize);
             break;
-        case DNS_RDATA_UNCOMPRESSED_DNAME: /* TODO */
         case DNS_RDATA_BINARY: /* TODO */
             d = NULL;
             dname = NULL;

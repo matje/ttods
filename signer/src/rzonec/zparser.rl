@@ -270,11 +270,15 @@
            case DNS_TYPE_HINFO:
                 fcall rdata_hinfo;
            case DNS_TYPE_MINFO:
+           case DNS_TYPE_RP:
                 fcall rdata_minfo;
            case DNS_TYPE_MX:
+           case DNS_TYPE_AFSDB:
                 fcall rdata_mx;
            case DNS_TYPE_TXT:
                 fcall rdata_txt;
+           case DNS_TYPE_X25:
+                fcall rdata_x25;
            case DNS_TYPE_NULL:
            default:
                 if (!rs->name) {
@@ -609,6 +613,9 @@
     rdata_txt       := rd_str . (delim . rd_str)*
                      %{ fhold; fret; } . special_char_end;
 
+    rdata_x25       := rd_str
+                     %{ fhold; fret; } . special_char;
+
     rdata            = (delim . ^special_char) @zparser_rdata_call;
 
     rrtype           =
@@ -628,6 +635,9 @@
                      | "MINFO"      @{parser->current_rr.type = DNS_TYPE_MINFO;}
                      | "MX"         @{parser->current_rr.type = DNS_TYPE_MX;}
                      | "TXT"        @{parser->current_rr.type = DNS_TYPE_TXT;}
+                     | "RP"         @{parser->current_rr.type = DNS_TYPE_RP;}
+                     | "AFSDB"      @{parser->current_rr.type = DNS_TYPE_AFSDB;}
+                     | "X25"        @{parser->current_rr.type = DNS_TYPE_X25;}
                      )
                      $!zerror_rr_typedata;
 

@@ -69,7 +69,11 @@ static rrstruct_type dns_rrstructs[(DNS_NUMRRTYPES+1)] = {
 /*    15 */ { "MX", DNS_TYPE_MX, 2, 2,
               { DNS_RDATA_INT16, DNS_RDATA_COMPRESSED_DNAME } } ,
 /*    16 */ { "TXT", DNS_TYPE_TXT, 1, 1, { DNS_RDATA_TEXTS } },
-
+/*    17 */ { "RP", DNS_TYPE_RP, 2, 2,
+              { DNS_RDATA_UNCOMPRESSED_DNAME, DNS_RDATA_UNCOMPRESSED_DNAME } },
+/*    18 */ { "AFSDB", DNS_TYPE_AFSDB, 2, 2,
+              { DNS_RDATA_INT16, DNS_RDATA_UNCOMPRESSED_DNAME } },
+/*    19 */ { "X25", DNS_TYPE_X25, 1, 1, { DNS_RDATA_INT16, DNS_RDATA_TEXT } },
 };
 
 
