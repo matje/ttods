@@ -64,10 +64,12 @@
 #define DNS_TYPE_TXT       16	/* RFC 1035: text strings */
 #define DNS_TYPE_RP        17	/* RFC 1183: responsible person */
 #define DNS_TYPE_AFSDB     18	/* RFC 1183: AFS database location (Deprecated - use SRV) */
-#define DNS_TYPE_X25       19	/* RFC 1183: X.25 and ISDN addresses, route binding */
+#define DNS_TYPE_X25       19	/* RFC 1183: X.25 addresses */
+#define DNS_TYPE_ISDN      20	/* RFC 1183: ISDN addresses */
+#define DNS_TYPE_RT        21	/* RFC 1183: route binding */
 
 #define DNS_NUMRRCLASSES DNS_CLASS_HS+1 /* +1 for CLASS0 */
-#define DNS_NUMRRTYPES   DNS_TYPE_X25+1  /* +1 for TYPE0 */
+#define DNS_NUMRRTYPES   DNS_TYPE_RT+1  /* +1 for TYPE0 */
 
 /** RDATA */
 
