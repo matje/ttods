@@ -273,6 +273,8 @@
                 fcall rdata_minfo;
            case DNS_TYPE_MX:
                 fcall rdata_mx;
+           case DNS_TYPE_TXT:
+                fcall rdata_txt;
            case DNS_TYPE_NULL:
            default:
                 if (!rs->name) {
@@ -306,6 +308,14 @@
         if (!zonec_rdata_add(parser->region, &parser->current_rr,
             rs->rdata[parser->current_rr.rdlen], parser->dname,
             parser->rdbuf, parser->rdsize)) {
+            parser->totalerrors++;
+            fhold; fgoto line_error;
+        }
+    }
+    action zparser_rdata_str_end {
+        parser->rdbuf[parser->rdsize] = '\0';
+        if (!zonec_rdata_add(parser->region, &parser->current_rr,
+            DNS_RDATA_TEXT, parser->dname, parser->rdbuf, parser->rdsize)) {
             parser->totalerrors++;
             fhold; fgoto line_error;
         }
@@ -570,7 +580,7 @@
 
     rd_str           = str_seq
                      >zparser_rdata_start
-                     %zparser_rdata_end   $!zerror_rdata_err;
+                     %zparser_rdata_str_end $!zerror_rdata_err;
 
     ## Resource records parsing.
     rdata_a         := rd_ipv4
@@ -595,6 +605,9 @@
 
     rdata_mx        := (rd_int . delim . rd_dname)
                      %{ fhold; fret; } . special_char;
+
+    rdata_txt       := rd_str . (delim . rd_str)*
+                     %{ fhold; fret; } . special_char_end;
 
     rdata            = (delim . ^special_char) @zparser_rdata_call;
 
