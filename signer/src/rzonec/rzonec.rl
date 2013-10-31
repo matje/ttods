@@ -183,6 +183,10 @@ zparser_process_rr(zparser_type* parser)
         rrstruct_type* rrstruct = dns_rrstruct_by_type(parser->current_rr.type);
         ods_log_warning("[%s] warning: type %s in zone %s is experimental",
             logstr, rrstruct->name, parser->zone->name);
+    } else if (parser->current_rr.type == DNS_TYPE_NSAP_PTR) {
+        rrstruct_type* rrstruct = dns_rrstruct_by_type(parser->current_rr.type);
+        ods_log_warning("[%s] warning: type %s in zone %s is deprecated",
+            logstr, rrstruct->name, parser->zone->name);
     }
     
     /* if soa: update new serial */

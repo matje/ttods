@@ -131,6 +131,30 @@ rdata_print_dname(FILE* fd, rdata_type* rdata)
  *
  */
 static void
+rdata_print_hex(FILE* fd, rdata_type* rdata)
+{
+    static const char hexdigit[] = {
+        '0', '1', '2', '3', '4', '5', '6', '7',
+        '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'
+    };
+    uint8_t* data = rdata_get_data(rdata);
+    size_t size = rdata_size(rdata);
+    size_t i;
+    for (i=0; i < size; i++) {
+        uint8_t octet = *data;
+        fprintf(fd, "%c", (unsigned) hexdigit[octet >> 4]);
+        fprintf(fd, "%c", (unsigned) hexdigit[octet & 0x0f]);
+        data++;
+    }
+    return;
+}
+
+
+/**
+ * Print int16 RDATA element.
+ *
+ */
+static void
 rdata_print_int16(FILE* fd, rdata_type* rdata)
 {
     uint16_t data = wf_read_uint16(rdata_get_data(rdata));
@@ -148,6 +172,19 @@ rdata_print_int32(FILE* fd, rdata_type* rdata)
 {
     uint32_t data = wf_read_uint32(rdata_get_data(rdata));
     fprintf(fd, "%lu", (unsigned long) data);
+    return;
+}
+
+
+/**
+ * Print nsap RDATA element.
+ *
+ */
+static void
+rdata_print_nsap(FILE* fd, rdata_type* rdata)
+{
+    fprintf(fd, "0x");
+    rdata_print_hex(fd, rdata);
     return;
 }
 
@@ -264,6 +301,9 @@ rdata_print(FILE* fd, rdata_type* rdata, uint16_t rrtype, uint16_t pos)
             break;
         case DNS_RDATA_SERVICES:
             rdata_print_services(fd, rdata);
+            break;
+        case DNS_RDATA_NSAP:
+            rdata_print_nsap(fd, rdata);
             break;
         case DNS_RDATA_BINARY:
         default:

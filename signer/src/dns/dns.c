@@ -77,6 +77,9 @@ static rrstruct_type dns_rrstructs[(DNS_NUMRRTYPES+1)] = {
 /*    20 */ { "ISDN", DNS_TYPE_ISDN, 1, 2, { DNS_RDATA_TEXT, DNS_RDATA_TEXT } },
 /*    21 */ { "RT", DNS_TYPE_RT, 2, 2,
               { DNS_RDATA_INT16, DNS_RDATA_UNCOMPRESSED_DNAME } },
+/*    22 */ { "NSAP", DNS_TYPE_NSAP, 1, 1, { DNS_RDATA_NSAP } },
+/*    23 */ { "NSAP-PTR", DNS_TYPE_NSAP_PTR, 1, 1,
+              { DNS_RDATA_UNCOMPRESSED_DNAME } },
 };
 
 

@@ -262,6 +262,7 @@
            case DNS_TYPE_MG:
            case DNS_TYPE_MR:
            case DNS_TYPE_PTR:
+           case DNS_TYPE_NSAP_PTR:
                 fcall rdata_ns;
            case DNS_TYPE_SOA:
                 fcall rdata_soa;
@@ -282,6 +283,8 @@
                 fcall rdata_x25;
            case DNS_TYPE_ISDN:
                 fcall rdata_isdn;
+           case DNS_TYPE_NSAP:
+                fcall rdata_nsap;
            case DNS_TYPE_NULL:
            default:
                 if (!rs->name) {
@@ -302,6 +305,19 @@
         if (parser->rdsize <= DNS_RDLEN_MAX) {
             parser->rdbuf[parser->rdsize] = fc;
             parser->rdsize++;
+        } else {
+            ods_log_error("[zparser] error: line %d: rdata overflow",
+                parser->line);
+            parser->totalerrors++;
+            fhold; fgoto line_error;
+        }
+    }
+    action zparser_rdata_char_nsap {
+        if (parser->rdsize <= DNS_RDLEN_MAX) {
+            if (fc != '.') {
+                parser->rdbuf[parser->rdsize] = fc;
+                parser->rdsize++;
+            }
         } else {
             ods_log_error("[zparser] error: line %d: rdata overflow",
                 parser->line);
@@ -432,6 +448,8 @@
         fhold; fgoto line_error;
     }
     action zerror_rr_typedata {
+        ods_log_error("[zparser] error: line %d: bad rr typedata (fc=%c)",
+            parser->line, fc);
         parser->totalerrors++;
         fhold; fgoto line_error;
     }
@@ -589,6 +607,10 @@
                      >zparser_rdata_start
                      %zparser_rdata_str_end $!zerror_rdata_err;
 
+    rd_nsap          = (xdigit | '.')+
+                     >zparser_rdata_start $zparser_rdata_char_nsap
+                     %zparser_rdata_end   $!zerror_rdata_err;
+
     ## Resource records parsing.
     rdata_a         := rd_ipv4
                      %{ fhold; fret; } . special_char;
@@ -622,6 +644,9 @@
     rdata_isdn      := rd_str . (delim . rd_str)?
                      %{ fhold; fret; } . special_char_end;
 
+    rdata_nsap      := '0x' . rd_nsap
+                     %{ fhold; fret; } . special_char;
+
     rdata            = (delim . ^special_char) @zparser_rdata_call;
 
     rrtype           =
@@ -646,6 +671,8 @@
                      | "X25"        @{parser->current_rr.type = DNS_TYPE_X25;}
                      | "ISDN"       @{parser->current_rr.type = DNS_TYPE_ISDN;}
                      | "RT"         @{parser->current_rr.type = DNS_TYPE_RT;}
+                     | "NSAP"       @{parser->current_rr.type = DNS_TYPE_NSAP;}
+                     | "NSAP-PTR"   @{parser->current_rr.type = DNS_TYPE_NSAP_PTR;}
                      )
                      $!zerror_rr_typedata;
 

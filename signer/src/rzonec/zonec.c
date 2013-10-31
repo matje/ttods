@@ -14,12 +14,49 @@
 #include "util/util.h"
 
 #include <arpa/inet.h>
+#include <ctype.h>
 #include <netdb.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 static const char* logstr = "zonec";
+
+
+/**
+ * Convert hex format into RDATA element.
+ *
+ */
+static uint16_t*
+zonec_rdata_hex(region_type* region, const char* buf, size_t buflen)
+{
+    uint16_t* r = NULL;
+    uint8_t* t;
+    int i;
+
+    if (buflen % 2 != 0) {
+        ods_log_error("[%s] error: invalid hex length %u (must be a multiple "
+            "of 2)", logstr, (unsigned) buflen);
+    } else {
+        r = region_alloc(region, sizeof(uint16_t) + (buflen/2));
+        *r = buflen/2;
+        t = (uint8_t*) (r+1);
+        while (*buf) {
+            i = 16;
+            *t = 0;
+            while (i >= 1) {
+                ods_log_assert(isxdigit((int)*buf));
+                *t += util_hexdigit2int(*buf) * i;
+                i -= 15;
+                buf++;
+            }
+            t++;
+        }
+    }
+
+
+    return r;
+}
 
 
 /**
@@ -62,6 +99,17 @@ zonec_rdata_int32(region_type* region, const char* buf)
 {
     uint32_t number = htonl(atoi(buf));
     return rdata_init_data(region, &number, sizeof(number));
+}
+
+
+/**
+ * Convert nsap format into RDATA element.
+ *
+ */
+static uint16_t*
+zonec_rdata_nsap(region_type* region, const char* buf, size_t buflen)
+{
+    return zonec_rdata_hex(region, buf, buflen);
 }
 
 
@@ -232,6 +280,9 @@ zonec_rdata_add(region_type* region, rr_type* rr, dns_rdata_format rdformat,
         case DNS_RDATA_TEXTS:
             d = zonec_rdata_text(region, rdbuf, rdsize);
             break;
+        case DNS_RDATA_NSAP:
+            d = zonec_rdata_nsap(region, rdbuf, rdsize);
+            break;
         case DNS_RDATA_BINARY: /* TODO */
             d = NULL;
             dname = NULL;
@@ -241,7 +292,7 @@ zonec_rdata_add(region_type* region, rr_type* rr, dns_rdata_format rdformat,
     if (rdformat == DNS_RDATA_COMPRESSED_DNAME
         || rdformat == DNS_RDATA_UNCOMPRESSED_DNAME) {
         if (!dname) {
-            ods_log_error("[%s] error: bad rdata element '%s'", logstr,
+            ods_log_error("[%s] error: bad rdata dname '%s'", logstr,
                 rdbuf);
             return 0;
         }
