@@ -89,7 +89,7 @@
     }
     action zparser_dollar_ttl {
         parser->ttl = parser->number;
-        ods_log_verbose("[zparser] line %d: $TTL set to %u", parser->line-1,
+        ods_log_debug("[zparser] line %d: $TTL set to %u", parser->line-1,
             (unsigned int) parser->ttl);
     }
 
@@ -241,7 +241,7 @@
         char str[DNAME_MAXLEN*5]; /* all \DDD */
         parser->origin = dname_clone(parser->region, parser->dname);
         dname_str(parser->origin, &str[0]);
-        ods_log_verbose("[zparser] line %d: $ORIGIN set to %s", parser->line-1,
+        ods_log_debug("[zparser] line %d: $ORIGIN set to %s", parser->line-1,
             str);
     }
 
