@@ -35,6 +35,7 @@
 #define UTIL_UTIL_H
 
 #include <stdint.h>
+#include <time.h>
 
 /**
  * A general purpose lookup table.
@@ -106,6 +107,14 @@ int util_hexdigit2int(char hx);
  *
  */
 uint32_t util_str2ttl(const char* str, const char** end);
+
+/**
+ * Convert time to seconds since epoch.
+ * @param tm:  time.
+ * @return:    (time_t) time.
+ *
+ */
+time_t util_mktime_from_utc(const struct tm* tm);
 
 /**
  * Get bit in bitmap.

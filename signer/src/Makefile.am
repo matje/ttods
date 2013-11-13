@@ -21,6 +21,7 @@ sbin_PROGRAMS = ttods-signerd ttods-signer
 ttods_signerd_SOURCES=		ods-signerd.c \
 				adapter/adapter.c adapter\adapter.h \
 				adapter/adfile.c adapter\adfile.h \
+				compat/b64.c compat/b64.h \
 				daemon/cfg.c daemon/cfg.h \
 				daemon/cmdhandler.c daemon/cmdhandler.h \
 				daemon/engine.c daemon/engine.h \

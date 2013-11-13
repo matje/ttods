@@ -8,17 +8,20 @@
  */
 
 #include "rzonec/zonec.h"
+#include "compat/b64.h"
 #include "dns/rdata.h"
 #include "util/log.h"
 #include "util/str.h"
 #include "util/util.h"
 
+#define _XOPEN_SOURCE 600
 #include <arpa/inet.h>
 #include <ctype.h>
 #include <netdb.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 static const char* logstr = "zonec";
 
@@ -75,6 +78,18 @@ zonec_rdata_ipv4(region_type* region, const char* buf)
         r = rdata_init_data(region, &address, sizeof(address));
     }
     return r;
+}
+
+
+/**
+ * Convert int8 into RDATA element.
+ *
+ */
+static uint16_t*
+zonec_rdata_int8(region_type* region, const char* buf)
+{
+    uint8_t number = atoi(buf);
+    return rdata_init_data(region, &number, sizeof(number));
 }
 
 
@@ -147,6 +162,66 @@ zonec_rdata_timef(region_type* region, const char* buf)
     } else {
         timef = htonl(timef);
         r = rdata_init_data(region, &timef, sizeof(timef));
+    }
+    return r;
+}
+
+
+/**
+ * Convert rrtype format into RDATA element.
+ *
+ */
+static uint16_t*
+zonec_rdata_rrtype(region_type* region, const char* buf)
+{
+    uint16_t* r = NULL;
+    uint16_t type = dns_rrtype_by_name(buf);
+    if (!type) {
+        ods_log_error("[%s] error: unrecognized RRtype '%s'", logstr, buf);
+    } else {
+        type = htons(type);
+        r = rdata_init_data(region, &type, sizeof(type));
+    }
+    return r;
+}
+
+
+/**
+ * Convert datetime format into RDATA element.
+ *
+ */
+static uint16_t*
+zonec_rdata_datetime(region_type* region, const char* buf)
+{
+    uint16_t* r = NULL;
+    struct tm tm;
+#ifndef _XOPEN_SOURCE
+    ods_log_debug("[%s] strptime: xopen_source is NOT defined", logstr);
+#endif
+    if (!strptime(buf, "%Y%m%d%H%M%S", &tm)) { /* TODO compat function */
+        ods_log_error("[%s] error: invalid datetime '%s'", logstr, buf);
+    } else {
+        uint32_t dt = htonl(util_mktime_from_utc(&tm));
+        r = rdata_init_data(region, &dt, sizeof(dt));
+    }
+    return r;
+}
+
+
+/**
+ * Convert base64 format into RDATA element.
+ *
+ */
+static uint16_t*
+zonec_rdata_base64(region_type* region, const char* buf)
+{
+    uint8_t rdata[DNS_RDLEN_MAX];
+    uint16_t* r = NULL;
+    int i = b64_pton(buf, rdata, DNS_RDLEN_MAX);
+    if (i < 0) {
+        ods_log_error("[%s] error: invalid base64 '%s'", logstr, buf);
+    } else {
+        r = rdata_init_data(region, rdata, i);
     }
     return r;
 }
@@ -252,7 +327,8 @@ zonec_rdata_add(region_type* region, rr_type* rr, dns_rdata_format rdformat,
         return 0;
     }
     if (!rdsize) {
-        ods_log_error("[%s] error: empty rdata element", logstr);
+        ods_log_error("[%s] error: empty %s rdata element", logstr,
+            dns_rdata_format_str(rdformat));
         return 0;
     }
 
@@ -263,6 +339,9 @@ zonec_rdata_add(region_type* region, rr_type* rr, dns_rdata_format rdformat,
         case DNS_RDATA_COMPRESSED_DNAME:
         case DNS_RDATA_UNCOMPRESSED_DNAME:
             dname = name;
+            break;
+        case DNS_RDATA_INT8:
+            d = zonec_rdata_int8(region, rdbuf);
             break;
         case DNS_RDATA_INT16:
             d = zonec_rdata_int16(region, rdbuf);
@@ -282,6 +361,15 @@ zonec_rdata_add(region_type* region, rr_type* rr, dns_rdata_format rdformat,
             break;
         case DNS_RDATA_NSAP:
             d = zonec_rdata_nsap(region, rdbuf, rdsize);
+            break;
+        case DNS_RDATA_RRTYPE:
+            d = zonec_rdata_rrtype(region, rdbuf);
+            break;
+        case DNS_RDATA_DATETIME:
+            d = zonec_rdata_datetime(region, rdbuf);
+            break;
+        case DNS_RDATA_BASE64:
+//            d = zonec_rdata_base64(region, rdbuf);
             break;
         case DNS_RDATA_BINARY: /* TODO */
             d = NULL;

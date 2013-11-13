@@ -33,6 +33,9 @@
 
 #include "dns/dns.h"
 
+#include <ctype.h>
+#include <stdlib.h>
+#include <string.h>
 #include <strings.h>
 
 /* Classes defined in RFC 1035 */
@@ -80,6 +83,11 @@ static rrstruct_type dns_rrstructs[(DNS_NUMRRTYPES+1)] = {
 /*    22 */ { "NSAP", DNS_TYPE_NSAP, 1, 1, { DNS_RDATA_NSAP } },
 /*    23 */ { "NSAP-PTR", DNS_TYPE_NSAP_PTR, 1, 1,
               { DNS_RDATA_UNCOMPRESSED_DNAME } },
+/*    24 */ { "SIG", DNS_TYPE_SIG, 9, 9,
+              { DNS_RDATA_RRTYPE, DNS_RDATA_INT8, DNS_RDATA_INT8,
+                DNS_RDATA_TIMEF, DNS_RDATA_DATETIME, DNS_RDATA_DATETIME,
+                DNS_RDATA_INT16, DNS_RDATA_UNCOMPRESSED_DNAME,
+                DNS_RDATA_BASE64 } },
 };
 
 
@@ -134,6 +142,27 @@ dns_rrstruct_by_name(const char* name)
 
 
 /**
+ * Get RR type by name.
+ *
+ */
+uint16_t
+dns_rrtype_by_name(const char* name)
+{
+    char* end;
+    long type;
+    rrstruct_type* rstruct = dns_rrstruct_by_name(name);
+    if (rstruct && rstruct->name) { return rstruct->type; }
+    if (strlen(name) < 5) { return 0; }
+    if (strncasecmp(name, "TYPE", 4) != 0) { return 0; }
+    if (!isdigit((int)name[4])) { return 0; }
+    type = strtol(name+4, &end, 10);
+    if (*end != '\0') { return 0; }
+    if (type < 0 || type > 65535L) { return 0; }
+    return (uint16_t) type;
+}
+
+
+/**
  * Get RR structure by type.
  *
  */
@@ -158,12 +187,16 @@ dns_rdata_format_str(dns_rdata_format rd)
         case DNS_RDATA_IPV4: return "ipv4addr"; break;
         case DNS_RDATA_COMPRESSED_DNAME: return "dname"; break;
         case DNS_RDATA_UNCOMPRESSED_DNAME: return "dname"; break;
+        case DNS_RDATA_INT8: return "int8"; break;
         case DNS_RDATA_INT16: return "int16"; break;
         case DNS_RDATA_INT32: return "int32"; break;
         case DNS_RDATA_TIMEF: return "period"; break;
+        case DNS_RDATA_DATETIME: return "datetime"; break;
         case DNS_RDATA_SERVICES: return "services"; break;
         case DNS_RDATA_TEXT: return "character-string"; break;
         case DNS_RDATA_TEXTS: return "character-strings"; break;
+        case DNS_RDATA_RRTYPE: return "rrtype"; break;
+        case DNS_RDATA_BASE64: return "base64"; break;
         case DNS_RDATA_BINARY: return "binary"; break;
         default:
             break;

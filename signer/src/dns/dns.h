@@ -69,10 +69,10 @@
 #define DNS_TYPE_RT        21	/* RFC 1183: route through */
 #define DNS_TYPE_NSAP      22	/* RFC 1706: NSAP address */
 #define DNS_TYPE_NSAP_PTR  23	/* RFC 1706: NSAP domain name pointer (Obsolete - use PTR) */
-
+#define DNS_TYPE_SIG       24	/* RFC 2535: security signature */
 
 #define DNS_NUMRRCLASSES DNS_CLASS_HS+1 /* +1 for CLASS0 */
-#define DNS_NUMRRTYPES   DNS_TYPE_NSAP_PTR+1  /* +1 for TYPE0 */
+#define DNS_NUMRRTYPES   DNS_TYPE_SIG+1  /* +1 for TYPE0 */
 
 /** RDATA */
 
@@ -83,18 +83,22 @@ enum dns_rdata_format_enum {
     DNS_RDATA_IPV4,               /* 32-bit IPv4 address. */
     DNS_RDATA_COMPRESSED_DNAME,   /* Possibly compressed domain name. */
     DNS_RDATA_UNCOMPRESSED_DNAME, /* Uncompressed domain name. */
+    DNS_RDATA_INT8,               /* 8-bit integer. */
     DNS_RDATA_INT16,              /* 16-bit integer. */
     DNS_RDATA_INT32,              /* 32-bit integer. */
     DNS_RDATA_TIMEF,              /* 32-bit integer representing time. */
+    DNS_RDATA_DATETIME,           /* 32-bit integer representing datetime. */
     DNS_RDATA_SERVICES,           /* RFC 1010 style services. */
     DNS_RDATA_TEXT,               /* Text string. */
     DNS_RDATA_TEXTS,              /* One or more text strings. */
     DNS_RDATA_NSAP,               /* NSAP address. */
+    DNS_RDATA_RRTYPE,             /* RRtype. */
+    DNS_RDATA_BASE64,             /* Base64 binary data. */
     DNS_RDATA_BINARY              /* Binary data (unknown length). */
 };
 typedef enum dns_rdata_format_enum dns_rdata_format;
 
-#define DNS_RDATA_MAX 7
+#define DNS_RDATA_MAX 9
 #define DNS_RDLEN_MAX 65535
 
 /**
@@ -151,6 +155,14 @@ rrstruct_type* dns_rrstruct_by_name(const char* name);
  *
  */
 rrstruct_type* dns_rrstruct_by_type(uint16_t type);
+
+/**
+ * Get RR type by name.
+ * @param name: name.
+ * @return:     (uint16_t) RR type.
+ *
+ */
+uint16_t dns_rrtype_by_name(const char* name);
 
 /**
  * Return RDATA format.

@@ -285,6 +285,8 @@
                 fcall rdata_isdn;
            case DNS_TYPE_NSAP:
                 fcall rdata_nsap;
+           case DNS_TYPE_SIG:
+                fcall rdata_sig;
            case DNS_TYPE_NULL:
            default:
                 if (!rs->name) {
@@ -302,6 +304,24 @@
         parser->rdsize = 0;
     }
     action zparser_rdata_char {
+        if (parser->rdsize <= DNS_RDLEN_MAX) {
+            parser->rdbuf[parser->rdsize] = fc;
+            parser->rdsize++;
+        } else {
+            ods_log_error("[zparser] error: line %d: rdata overflow",
+                parser->line);
+            parser->totalerrors++;
+            fhold; fgoto line_error;
+        }
+    }
+    action zparser_rdata_char_b64 {
+        if (isspace(fc))
+        ods_log_error("[zparser] b64: line %d: char space", parser->line);
+        else if (fc == '\n')
+        ods_log_error("[zparser] b64: line %d: char newline", parser->line);
+        else 
+        ods_log_error("[zparser] b64: line %d: char %c", parser->line, fc);
+
         if (parser->rdsize <= DNS_RDLEN_MAX) {
             parser->rdbuf[parser->rdsize] = fc;
             parser->rdsize++;
@@ -611,6 +631,19 @@
                      >zparser_rdata_start $zparser_rdata_char_nsap
                      %zparser_rdata_end   $!zerror_rdata_err;
 
+    rd_rrtype        = (upper | digit | '-')+
+                     >zparser_rdata_start $zparser_rdata_char
+                     %zparser_rdata_end   $!zerror_rdata_err;
+
+    rd_datetime      = digit{14}
+                     >zparser_rdata_start $zparser_rdata_char
+                     %zparser_rdata_end   $!zerror_rdata_err;
+
+    # RFC4648: Base16, Base32 and Base64 Data Encodings
+    rd_b64           = ((alnum | [+/]) . (delim?) )+ . ('='{0,2})
+                     >zparser_rdata_start $zparser_rdata_char_b64
+                     %zparser_rdata_end   $!zerror_rdata_err;
+
     ## Resource records parsing.
     rdata_a         := rd_ipv4
                      %{ fhold; fret; } . special_char;
@@ -647,6 +680,11 @@
     rdata_nsap      := '0x' . rd_nsap
                      %{ fhold; fret; } . special_char;
 
+    rdata_sig       := ( rd_rrtype . delim . rd_int . delim . rd_int . delim
+                       . rd_timef . delim . rd_datetime . delim . rd_datetime
+                       . delim . rd_int . delim . rd_dname . delim . rd_b64) 
+                     %{ fhold; fret; } . special_char_end;
+
     rdata            = (delim . ^special_char) @zparser_rdata_call;
 
     rrtype           =
@@ -673,6 +711,7 @@
                      | "RT"         @{parser->current_rr.type = DNS_TYPE_RT;}
                      | "NSAP"       @{parser->current_rr.type = DNS_TYPE_NSAP;}
                      | "NSAP-PTR"   @{parser->current_rr.type = DNS_TYPE_NSAP_PTR;}
+                     | "SIG"        @{parser->current_rr.type = DNS_TYPE_SIG;}
                      )
                      $!zerror_rr_typedata;
 
