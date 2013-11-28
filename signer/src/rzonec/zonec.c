@@ -331,6 +331,9 @@ zonec_rdata_add(region_type* region, rr_type* rr, dns_rdata_format rdformat,
         ods_log_error("[%s] error: empty %s rdata element", logstr,
             dns_rdata_format_str(rdformat));
         return 0;
+    } else {
+        ods_log_error("[%s] info: add %s rdata element '%s'", logstr,
+            dns_rdata_format_str(rdformat), rdbuf);
     }
 
     switch (rdformat) {
@@ -370,7 +373,7 @@ zonec_rdata_add(region_type* region, rr_type* rr, dns_rdata_format rdformat,
             d = zonec_rdata_datetime(region, rdbuf);
             break;
         case DNS_RDATA_BASE64:
-//            d = zonec_rdata_base64(region, rdbuf);
+            d = zonec_rdata_base64(region, rdbuf);
             break;
         case DNS_RDATA_BINARY: /* TODO */
             d = NULL;

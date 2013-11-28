@@ -12,6 +12,12 @@
     machine zparser;
 
     # Actions.
+    action zparser_goto_main {
+        fgoto main;
+    }
+    action zparser_hold_ret {
+        fhold; fret;
+    }
 
     # Actions: line parsing.
     action zparser_reinitialize {
@@ -315,13 +321,6 @@
         }
     }
     action zparser_rdata_char_b64 {
-        if (isspace(fc))
-        ods_log_error("[zparser] b64: line %d: char space", parser->line);
-        else if (fc == '\n')
-        ods_log_error("[zparser] b64: line %d: char newline", parser->line);
-        else 
-        ods_log_error("[zparser] b64: line %d: char %c", parser->line, fc);
-
         if (parser->rdsize <= DNS_RDLEN_MAX) {
             parser->rdbuf[parser->rdsize] = fc;
             parser->rdsize++;
@@ -490,8 +489,7 @@
     ## Utility parsing, newline, comments, delimeters, numbers, time values.
 
     special_char     = [$;() \t\n\\];
-    special_char_end = [$;()\n\\];
-
+    special_char_end = [$;()\n\\] when zparser_single_line;
 
     newline          = '\n' $zparser_newline;
 
@@ -640,50 +638,50 @@
                      %zparser_rdata_end   $!zerror_rdata_err;
 
     # RFC4648: Base16, Base32 and Base64 Data Encodings
-    rd_b64           = ((alnum | [+/]) . (delim?) )+ . ('='{0,2})
+    rd_b64           = (((alnum | [+/])+ . delim?)+ . ('='{0,2}))
                      >zparser_rdata_start $zparser_rdata_char_b64
                      %zparser_rdata_end   $!zerror_rdata_err;
 
     ## Resource records parsing.
     rdata_a         := rd_ipv4
-                     %{ fhold; fret; } . special_char;
+                     %zparser_hold_ret . special_char;
 
     rdata_ns        := rd_dname
-                     %{ fhold; fret; } . special_char;
+                     %zparser_hold_ret . special_char;
 
     rdata_soa       := (rd_dname . delim . rd_dname . delim . rd_int . delim
                      .  rd_timef . delim . rd_timef . delim . rd_timef . delim
                      .  rd_timef)
-                     %{ fhold; fret; } . special_char;
+                     %zparser_hold_ret . special_char;
 
     rdata_wks       := (rd_ipv4 . rd_services)
-                     %{ fhold; fret; } . special_char_end;
+                     %zparser_hold_ret . special_char_end;
 
     rdata_hinfo     := (rd_str . delim . rd_str)
-                     %{ fhold; fret; } . special_char;
+                     %zparser_hold_ret . special_char;
 
     rdata_minfo     := (rd_dname . delim . rd_dname)
-                     %{ fhold; fret; } . special_char;
+                     %zparser_hold_ret . special_char;
 
     rdata_mx        := (rd_int . delim . rd_dname)
-                     %{ fhold; fret; } . special_char;
+                     %zparser_hold_ret . special_char;
 
     rdata_txt       := rd_str . (delim . rd_str)*
-                     %{ fhold; fret; } . special_char_end;
+                     %zparser_hold_ret . special_char_end;
 
     rdata_x25       := rd_str
-                     %{ fhold; fret; } . special_char;
+                     %zparser_hold_ret . special_char;
 
     rdata_isdn      := rd_str . (delim . rd_str)?
-                     %{ fhold; fret; } . special_char_end;
+                     %zparser_hold_ret . special_char_end;
 
     rdata_nsap      := '0x' . rd_nsap
-                     %{ fhold; fret; } . special_char;
+                     %zparser_hold_ret . special_char;
 
     rdata_sig       := ( rd_rrtype . delim . rd_int . delim . rd_int . delim
                        . rd_timef . delim . rd_datetime . delim . rd_datetime
                        . delim . rd_int . delim . rd_dname . delim . rd_b64) 
-                     %{ fhold; fret; } . special_char_end;
+                     %zparser_hold_ret . special_char_end;
 
     rdata            = (delim . ^special_char) @zparser_rdata_call;
 
@@ -757,7 +755,8 @@
                      | dollar_ttl
                      ) $!zerror_entry;
 
-    line_error      := [^\n]* @zparser_reinitialize . newline @{ fgoto main; };
+    line_error      := [^\n]* @zparser_reinitialize
+                     . newline @zparser_goto_main;
 
     # RFC 1035: The format of these files is a sequence of entries.
     main            := entry*;
