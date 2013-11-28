@@ -7,6 +7,7 @@
  *
  */
 
+#include "config.h"
 #include "rzonec/zonec.h"
 #include "compat/b64.h"
 #include "dns/rdata.h"
@@ -14,7 +15,6 @@
 #include "util/str.h"
 #include "util/util.h"
 
-#define _XOPEN_SOURCE 600
 #include <arpa/inet.h>
 #include <ctype.h>
 #include <netdb.h>
@@ -22,6 +22,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 static const char* logstr = "zonec";
 
@@ -195,9 +199,6 @@ zonec_rdata_datetime(region_type* region, const char* buf)
 {
     uint16_t* r = NULL;
     struct tm tm;
-#ifndef _XOPEN_SOURCE
-    ods_log_debug("[%s] strptime: xopen_source is NOT defined", logstr);
-#endif
     if (!strptime(buf, "%Y%m%d%H%M%S", &tm)) { /* TODO compat function */
         ods_log_error("[%s] error: invalid datetime '%s'", logstr, buf);
     } else {

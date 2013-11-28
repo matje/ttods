@@ -1,3 +1,5 @@
 sometimes owner names are incorrectly parsed (or outputted)
 
 SIG RR
+../../../signer/src/rzonec/zonec.c: At top level:
+../../../signer/src/rzonec/zonec.c:216:1: warning: ‘zonec_rdata_base64’ defined but not used [-Wunused-function]
