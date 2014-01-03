@@ -57,6 +57,8 @@ zparser_create(zone_type* zone)
     parser = (zparser_type*) region_alloc(r, sizeof(zparser_type));
     parser->tmp_rdata = (rdata_type*) region_alloc(r, DNS_RDATA_MAX *
         sizeof(rdata_type));
+    parser->top = 0;
+    parser->cs = 0;
     parser->region = r;
     parser->zone = zone;
     parser->origin = dname_clone(r, zone->apex);

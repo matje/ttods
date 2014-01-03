@@ -1,5 +1,5 @@
 run
 
-$ ragel -G2 -C rzonec.rl
+$ ragel -e -T0 -C rzonec.rl
 
 in this directory, before making ttods

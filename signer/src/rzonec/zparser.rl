@@ -481,7 +481,8 @@
     action zerror_rdata_err {
         rrstruct_type* rs = dns_rrstruct_by_type(parser->current_rr.type);
         ods_log_error("[zparser] error: line %d: bad %s rdata (fc=%c)",
-            parser->line, rs[parser->current_rr.rdlen]);
+            parser->line,
+            dns_rdata_format_str(rs->rdata[parser->current_rr.rdlen]), fc);
         parser->totalerrors++;
         fhold; fgoto line_error;
     }

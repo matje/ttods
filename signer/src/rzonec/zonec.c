@@ -331,9 +331,6 @@ zonec_rdata_add(region_type* region, rr_type* rr, dns_rdata_format rdformat,
         ods_log_error("[%s] error: empty %s rdata element", logstr,
             dns_rdata_format_str(rdformat));
         return 0;
-    } else {
-        ods_log_error("[%s] info: add %s rdata element '%s'", logstr,
-            dns_rdata_format_str(rdformat), rdbuf);
     }
 
     switch (rdformat) {
@@ -398,5 +395,7 @@ zonec_rdata_add(region_type* region, rr_type* rr, dns_rdata_format rdformat,
         rr->rdata[rr->rdlen].data = d;
     }
     rr->rdlen++;
+    ods_log_error("[%s] info: added %s rdata element '%s'", logstr,
+        dns_rdata_format_str(rdformat), rdbuf);
     return 1;
 }
