@@ -40,6 +40,7 @@
             parser->totalerrors++;
             fhold; fgoto line_error;
         }
+        ods_log_debug("[zparser] line %d: open parentheses", parser->line);
         parser->group_lines = 1;
     }
     action zparser_parentheses_close {
@@ -49,6 +50,7 @@
             parser->totalerrors++;
             fhold; fgoto line_error;
         }
+        ods_log_debug("[zparser] line %d: close parentheses", parser->line);
         parser->group_lines = 0;
     }
     action zparser_single_line { parser->group_lines == 0 }
@@ -494,7 +496,7 @@
     ## Utility parsing, newline, comments, delimeters, numbers, time values.
 
     special_char     = [$;() \t\n\\];
-    special_char_end = [$;()\n\\] when zparser_single_line;
+    special_char_end = [$;\n\\] when zparser_single_line;
 
     newline          = '\n' $zparser_newline;
 
@@ -643,7 +645,7 @@
                      %zparser_rdata_end   $!zerror_rdata_err;
 
     # RFC4648: Base16, Base32 and Base64 Data Encodings
-    rd_b64           = (((alnum | [+/])+ . delim?)+ . ('='{0,2} . delim?))
+    rd_b64           = (((alnum | [+/])+ . delim?)+ . '='{0,2} . delim?)
                      >zparser_rdata_start $zparser_rdata_char_b64
                      %zparser_rdata_end   $!zerror_rdata_err;
 
@@ -659,7 +661,7 @@
                      .  rd_timef)
                      %zparser_hold_ret . special_char;
 
-    rdata_wks       := (rd_ipv4 . rd_services)
+    rdata_wks       := (rd_ipv4 . rd_services . delim?)
                      %zparser_hold_ret . special_char_end;
 
     rdata_hinfo     := (rd_str . delim . rd_str)
@@ -671,13 +673,13 @@
     rdata_mx        := (rd_int . delim . rd_dname)
                      %zparser_hold_ret . special_char;
 
-    rdata_txt       := rd_str . (delim . rd_str)*
+    rdata_txt       := (rd_str . (delim . rd_str)* . delim?)
                      %zparser_hold_ret . special_char_end;
 
     rdata_x25       := rd_str
                      %zparser_hold_ret . special_char;
 
-    rdata_isdn      := rd_str . (delim . rd_str)?
+    rdata_isdn      := (rd_str . (delim . rd_str)? . delim?)
                      %zparser_hold_ret . special_char_end;
 
     rdata_nsap      := '0x' . rd_nsap
@@ -685,7 +687,7 @@
 
     rdata_sig       := ( rd_rrtype . delim . rd_int . delim . rd_int . delim
                        . rd_timef . delim . rd_datetime . delim . rd_datetime
-                       . delim . rd_int . delim . rd_dname . delim . rd_b64) 
+                       . delim . rd_int . delim . rd_dname . delim . rd_b64)
                      %zparser_hold_ret . special_char_end;
 
     rdata            = (delim . ^special_char) @zparser_rdata_call;
