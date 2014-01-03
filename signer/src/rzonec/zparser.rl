@@ -322,8 +322,10 @@
     }
     action zparser_rdata_char_b64 {
         if (parser->rdsize <= DNS_RDLEN_MAX) {
-            parser->rdbuf[parser->rdsize] = fc;
-            parser->rdsize++;
+            if (isalnum((int) fc) || fc == '+' || fc == '/' || fc == '=') {
+                parser->rdbuf[parser->rdsize] = fc;
+                parser->rdsize++;
+            }
         } else {
             ods_log_error("[zparser] error: line %d: rdata overflow",
                 parser->line);
@@ -480,9 +482,11 @@
     }
     action zerror_rdata_err {
         rrstruct_type* rs = dns_rrstruct_by_type(parser->current_rr.type);
-        ods_log_error("[zparser] error: line %d: bad %s rdata (fc=%c)",
+        parser->rdbuf[parser->rdsize] = '\0';
+        ods_log_error("[zparser] error: line %d: bad %s rdata %s (fc=%c)",
             parser->line,
-            dns_rdata_format_str(rs->rdata[parser->current_rr.rdlen]), fc);
+            dns_rdata_format_str(rs->rdata[parser->current_rr.rdlen]),
+            parser->rdbuf, fc);
         parser->totalerrors++;
         fhold; fgoto line_error;
     }
@@ -639,7 +643,7 @@
                      %zparser_rdata_end   $!zerror_rdata_err;
 
     # RFC4648: Base16, Base32 and Base64 Data Encodings
-    rd_b64           = (((alnum | [+/])+ . delim?)+ . ('='{0,2}))
+    rd_b64           = (((alnum | [+/])+ . delim?)+ . ('='{0,2} . delim?))
                      >zparser_rdata_start $zparser_rdata_char_b64
                      %zparser_rdata_end   $!zerror_rdata_err;
 

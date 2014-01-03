@@ -218,9 +218,12 @@ zonec_rdata_base64(region_type* region, const char* buf)
 {
     uint8_t rdata[DNS_RDLEN_MAX];
     uint16_t* r = NULL;
-    int i = b64_pton(buf, rdata, DNS_RDLEN_MAX);
+    int i;
+    bzero(rdata, sizeof(rdata));
+    i = b64_pton(buf, rdata, DNS_RDLEN_MAX);
     if (i < 0) {
-        ods_log_error("[%s] error: invalid base64 '%s'", logstr, buf);
+        ods_log_error("[%s] error: invalid base64 '%s' (ret %d)",
+            logstr, buf, i);
     } else {
         r = rdata_init_data(region, rdata, i);
     }
