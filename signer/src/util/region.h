@@ -100,7 +100,13 @@ struct region_struct {
  */
 region_type* region_create(void);
 
-/* [TODO] create custom region */
+/**
+ * Create custom region.
+ * @param size: size of region.
+ * @return: (region_type*) new region.
+ *
+ */
+region_type* region_create_custom(size_t size);
 
 /**
  * Allocate size bytes of memory inside region.

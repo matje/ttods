@@ -69,7 +69,7 @@ region_init(region_type* r)
  * Create custom region.
  *
  */
-static region_type*
+region_type*
 region_create_custom(size_t size)
 {
     region_type* r = (region_type*) malloc(size);
