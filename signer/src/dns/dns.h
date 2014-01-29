@@ -70,9 +70,10 @@
 #define DNS_TYPE_NSAP      22	/* RFC 1706: NSAP address */
 #define DNS_TYPE_NSAP_PTR  23	/* RFC 1706: NSAP domain name pointer (Obsolete - use PTR) */
 #define DNS_TYPE_SIG       24	/* RFC 2535: security signature */
+#define DNS_TYPE_KEY       25	/* RFC 2535: security key */
 
 #define DNS_NUMRRCLASSES DNS_CLASS_HS+1 /* +1 for CLASS0 */
-#define DNS_NUMRRTYPES   DNS_TYPE_SIG+1  /* +1 for TYPE0 */
+#define DNS_NUMRRTYPES   DNS_TYPE_KEY+1  /* +1 for TYPE0 */
 
 /** RDATA */
 

@@ -68,7 +68,10 @@ Supported RRtypes
   "NSAP-PTR" 23     # RFC 1348 (obsoleted by RFC 1706)
                     # NSAP domain name pointer, OBSOLETE - use PTR
 
-  "SIG"      24     # RFC 2335, Section 4 (obsoleted by RFC 4033, 4034, 4035)
+  "SIG"      24     # RFC 2535, Section 4 (obsoleted by RFC 4033, 4034, 4035)
                     # Security signature, OBSOLETE - use RRSIG
+
+  "KEY"      25     # RFC 2535, Section 4 (obsoleted by RFC 4033, 4034, 4035)
+                    # Security key, OBSOLETE - use DNSKEY
 
 

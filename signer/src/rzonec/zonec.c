@@ -391,8 +391,8 @@ zonec_rdata_add(region_type* region, rr_type* rr, dns_rdata_format rdformat,
         rr->rdata[rr->rdlen].dname = dname;
     } else {
         if (!d) {
-            ods_log_error("[%s] error: bad rdata element '%s'", logstr,
-                rdbuf);
+            ods_log_error("[%s] error: bad rdata %s '%s'", logstr,
+                dns_rdata_format_str(rdformat), rdbuf);
             return 0;
         }
         rr->rdata[rr->rdlen].data = d;
