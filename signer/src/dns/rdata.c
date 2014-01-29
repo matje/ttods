@@ -112,6 +112,7 @@ rdata_print_base64(FILE* fd, rdata_type* rdata)
     buf = region_alloc(tmp, size*2 + 1);
     len = b64_ntop(data, size, buf, size*2+1);
     fprintf(fd, "%s", buf);
+    region_cleanup(tmp);
     return;
 }
 
