@@ -175,17 +175,19 @@ zparser_process_rr(zparser_type* parser)
     }
     /* supported TYPE */
     if (parser->current_rr.type == DNS_TYPE_MD
-     || parser->current_rr.type == DNS_TYPE_MF) {
+     || parser->current_rr.type == DNS_TYPE_MF
+     || parser->current_rr.type == DNS_TYPE_NSAP_PTR) {
         rrstruct_type* rrstruct = dns_rrstruct_by_type(parser->current_rr.type);
         ods_log_warning("[%s] warning: type %s in zone %s is obsoleted",
             logstr, rrstruct->name, parser->zone->name);
     } else if (parser->current_rr.type == DNS_TYPE_MB
            ||  parser->current_rr.type == DNS_TYPE_MG
-           ||  parser->current_rr.type == DNS_TYPE_MR) {
+           ||  parser->current_rr.type == DNS_TYPE_MR
+           ||  parser->current_rr.type == DNS_TYPE_MINFO) {
         rrstruct_type* rrstruct = dns_rrstruct_by_type(parser->current_rr.type);
         ods_log_warning("[%s] warning: type %s in zone %s is experimental",
             logstr, rrstruct->name, parser->zone->name);
-    } else if (parser->current_rr.type == DNS_TYPE_NSAP_PTR) {
+    } else if (parser->current_rr.type == DNS_TYPE_AFSDB) {
         rrstruct_type* rrstruct = dns_rrstruct_by_type(parser->current_rr.type);
         ods_log_warning("[%s] warning: type %s in zone %s is deprecated",
             logstr, rrstruct->name, parser->zone->name);
