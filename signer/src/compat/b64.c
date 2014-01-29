@@ -32,11 +32,14 @@
  */
 
 #include "compat/b64.h"
+#include "util/log.h"
 
 #include <ctype.h>
 #include <stdlib.h>
 
 static const char b64pad = '=';
+static const char numb64[] =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
 static const uint8_t b64num[] = {
     ['A'] =  0, ['B'] =  1, ['C'] =  2, ['D'] =  3,
@@ -57,7 +60,6 @@ static const uint8_t b64num[] = {
     ['8'] = 60, ['9'] = 61, ['+'] = 62, ['/'] = 63,
 };
 
-
 /**
  * Encode to base64.
  *
@@ -76,75 +78,81 @@ b64_pton(char const* src, uint8_t* target, size_t targetsize)
      * target[2] = ((src[2] & 0x03) << 6) + ((src[3] & 0x3f) >> 0);
      */
 
-   int src_index = 0;
-   size_t target_bytes = 0;
-   int ch;
-   while (*src) {
-       ch = *src++;
-       if (ch == b64pad) {
-           /* padding means we are done */
-           break;
-       } else if (isspace(ch)) {
-           /* ignore whitespace */
-           continue;
-       }
-       /* else assert(isbase64(ch)) */
+    uint8_t* start = target;
+    size_t target_bytes = 0;
+    int src_index = 0;
+    int ch;
 
-       switch (src_index) {
-           case 0:
-               target_bytes += 3;
-               if (target_bytes >= targetsize) {
-                   return -1;
-               }
-               *target = ((b64num[*src] & 0x3f) << 2);
-               break;
-           case 1:
-               *(target++) |= ((b64num[*src] & 0x30) >> 4);
-               *target = ((b64num[*src] & 0x0f) << 4);
-               break;
-           case 2:
-               *(target++) |= ((b64num[*src] & 0x3c) >> 2);
-               *target = ((b64num[*src] & 0x03) << 6);
-               break;
-           case 3:
-               *(target++) |= (b64num[*src] & 0x0f);
-               break;
-           default:
-               return -2;
-               break;
-       }
-       src_index = (src_index+1) % 4;
-   }
-   if (ch == b64pad) {
-       switch (src_index) {
-           case 0:
-           case 1:
-               return -3; /* invalid position for padding */
-           case 2:
-               ch = *src++;
-               while (isspace(ch)) {
-                   ch = *src++;
-               }
-               if (ch != b64pad) {
-                   return -4;
-               }
-           case 3:
-               ch = *src++;
-               while (isspace(ch)) {
-                   ch = *src++;
-               }
-               if (*target != 0) {
-                   return -5;
-               }
-               break;
-           default:
-               return -6;
-               break;
-       }
-   } else if (src_index != 0) {
-       return -7;
-   }
-   return target_bytes;
+    while (*src) {
+        ch = *src;
+        if (ch == b64pad) {
+            /* padding means we are done */
+            break;
+        } else if (isspace(ch)) {
+            /* ignore whitespace */
+            src++;
+            continue;
+        }
+        /* else assert(isbase64(ch)) */
+
+        switch (src_index) {
+            case 0:
+                target_bytes += 3;
+                if (target_bytes >= targetsize) {
+                    return -1;
+                }
+                *target = ((b64num[*src] & 0x3f) << 2);
+                break;
+            case 1:
+                *(target++) |= ((b64num[*src] & 0x30) >> 4);
+                *target = ((b64num[*src] & 0x0f) << 4);
+                break;
+            case 2:
+                *(target++) |= ((b64num[*src] & 0x3c) >> 2);
+                *target = ((b64num[*src] & 0x03) << 6);
+                break;
+            case 3:
+                *(target++) |= (b64num[*src] & 0x3f);
+                break;
+            default:
+                return -2;
+                break;
+        }
+        src++;
+        src_index = (src_index+1) % 4;
+    }
+
+    if (ch == b64pad) {
+        switch (src_index) {
+            case 0:
+            case 1:
+                return -3; /* invalid position for padding */
+            case 2:
+                ch = *src++;
+                while (isspace(ch)) {
+                    ch = *src++;
+                }
+                if (ch != b64pad) {
+                    return -4;
+                }
+            case 3:
+                ch = *src++;
+                while (isspace(ch)) {
+                    ch = *src++;
+                }
+                if (*target != 0) {
+                    return -5;
+                }
+                break;
+            default:
+                return -6;
+                break;
+        }
+    } else if (src_index != 0) {
+        return -7;
+    }
+    target_bytes = target - start;
+    return target_bytes;
 }
 
 
@@ -153,8 +161,88 @@ b64_pton(char const* src, uint8_t* target, size_t targetsize)
  *
  */
 int
-b64_ntop(uint8_t const* src, size_t srcsize, uint8_t* target,
-    size_t targetsize)
+b64_ntop(uint8_t const* src, size_t srcsize, char* target,
+     size_t targetsize)
 {
-   return 0;
+    /**
+     * src:    AAAAAABB BBBBCCCC CCDDDDDD
+     * target: 00AAAAAA 00BBBBBB 00CCCCCC 00DDDDDD
+     */
+
+    /**
+     * target[0] = ((src[0] & 0xfc) >> 2);
+     * target[1] = ((src[0] & 0x03) << 4) + ((src[1] & 0xf0) >> 4);
+     * target[2] = ((src[1] & 0x0f) << 2) + ((src[2] & 0xc0 >> 6);
+     * target[3] = ((src[2] & 0x3f) << 0);
+     */
+
+    size_t target_bytes = 0;
+    int src_index = 0;
+    uint8_t output;
+
+    while (*src) {
+        switch (src_index) {
+            case 0:
+                target_bytes += 4;
+                if (target_bytes > targetsize) {
+                    return -1;
+                }
+                output = (*src & 0xfc) >> 2;
+                *target = numb64[output];
+                ++target;
+
+                output = (*src & 0x03) << 4;
+                break;
+            case 1:
+                output += (*src & 0xf0) >> 4;
+                *target = numb64[output];
+                ++target;
+
+                output = (*src & 0x0f) << 2;
+                break;
+            case 2:
+                output += (*src & 0xc0) >> 6;
+                *target = numb64[output];
+                ++target;
+
+                output = (*src & 0x3f);
+                *target = numb64[output];
+                ++target;
+                break;
+            default:
+                return -2;
+                break;
+        }
+        src_index = (src_index+1) % 3;
+        srcsize--;
+        src++;
+    }
+    if (src_index != 0) {
+        switch (src_index) {
+            case 0:
+                return -3;
+                break;
+            case 1:
+                *target = numb64[output];
+                ++target;
+
+                *target = b64pad;
+                ++target;
+
+                *target = b64pad;
+                ++target;
+                break;
+            case 2:
+                *target = numb64[output];
+                ++target;
+
+                *target = b64pad;
+                ++target;
+                break;
+            default:
+                return -4;
+                break;
+        }
+    }
+    return target_bytes;
 }

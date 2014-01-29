@@ -59,4 +59,7 @@ int b64_pton(char const* src, uint8_t* target, size_t targetsize);
 int b64_ntop(uint8_t const* src, size_t srcsize, char* target,
      size_t targetsize);
 
+int nsd_b64_pton(char const* src, uint8_t* target, size_t targsize);
+int nsd_b64_ntop(uint8_t const* src, size_t srclength, char* target, size_t targsize);
+
 #endif /* COMPAT_B64_H */
