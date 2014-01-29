@@ -1,9 +1,74 @@
 Supported RRtypes
 -----------------
 
-  "A"        1,    # RFC 1035, Section 3.4.1
+  "A"        1      # RFC 1035, Section 3.4.1
+                    # IPv4 host address
 
-  "SOA"      6,    # RFC 1035, Section 3.3.13
-                   SOA TTL semantics updated by rfc2308
-                   dname compression in RDATA [TODO]
+  "NS"       2      # RFC 1035, Section 3.3.11
+                    # Authoritative name server
+
+  "MD"       3      # RFC 1035, Section 3.3.4
+                    # Mail destination, OBSOLETE - use MX
+
+  "MF"       4      # RFC 1035, Section 3.3.5
+                    # Mail forwarder, OBSOLETE - use MX
+
+  "CNAME"    5      # RFC 1035, Section 3.3.1
+                    # Canonical name for an alias
+
+  "SOA"      6      # RFC 1035, Section 3.3.13
+                    # SOA TTL semantics updated by rfc2308
+                    # TODO: dname compression in RDATA
+
+  "MB"       7      # RFC 1035, Section 3.3.3
+                    # Mail box domain name, EXPERIMENTAL
+
+  "MG"       8      # RFC 1035, Section 3.3.6
+                    # Mail group member, EXPERIMENTAL
+
+  "MR"       9      # RFC 1035, Section 3.3.8
+                    # Mail rename domain name, EXPERIMENTAL
+
+  "WKS"      11     # RFC 1035, Section 3.4.2
+                    # Well known service description
+
+  "PTR"      12     # RFC 1035, Section 3.3.12
+                    # Domain name pointer
+
+  "HINFO"    13     # RFC 1035, Section 3.3.2
+                    # Host information
+
+  "MINFO"    14     # RFC 1035, Section 3.3.7
+                    # Mail box or mail list information, EXPERIMENTAL
+
+  "MX"       15     # RFC 1035, Section 3.3.9
+                    # Mail exchange
+
+  "TXT"      16     # RFC 1035, Section 3.3.14
+                    # Text strings
+
+  "RP"       17     # RFC 1183, Section 2.2
+                    # Responsible person
+
+  "AFSDB"    18     # RFC 1183, Section 1
+                    # AFS database location, DEPRECATED - use SRV
+
+  "X25"      19     # RFC 1183, Section 3.1
+                    # X.25 PSDN address
+
+  "ISDN"     20     # RFC 1183, Section 3.2
+                    # ISDN address
+
+  "RT"       21     # RFC 1183, Section 3.3
+                    # Route through
+
+  "NSAP"     22     # RFC 1706, Section 5
+                    # NSAP address
+
+  "NSAP-PTR" 23     # RFC 1348 (obsoleted by RFC 1706)
+                    # NSAP domain name pointer, OBSOLETE - use PTR
+
+  "SIG"      24     # RFC 2335, Section 4 (obsoleted by RFC 4033, 4034, 4035)
+                    # Security signature, OBSOLETE - use RRSIG
+
 
