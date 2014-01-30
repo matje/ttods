@@ -301,6 +301,8 @@
                 fcall rdata_px;
            case DNS_TYPE_GPOS:
                 fcall rdata_gpos;
+           case DNS_TYPE_AAAA:
+                fcall rdata_aaaa;
            case DNS_TYPE_NXT:
                 fcall rdata_nxt;
            case DNS_TYPE_NULL:
@@ -624,9 +626,26 @@
                      | '@' >zparser_dname_origin
                      | zlen %zparser_dname_previous;
 
+    ipv4_label       = digit {1,3} . '.' ;
+    ipv4_label_end   = digit {1,3};
+
+    ipv4_addr        = ipv4_label{3} . ipv4_label_end;
+
+    ipv6_label       = xdigit {1,4} . ':';
+    ipv6_label_end   = xdigit {1,4};
+
+    # RFC 3513: IPv6 Text Representation:
+    # x:x:x:x:x:x:x:x
+    # TODO: with ::
+    # TODO: with d.d.d.d
+    ipv6_addr        = ipv6_label{7} . ipv6_label_end;
+
     ## RDATA parsing.
-    rd_ipv4          = ((digit {1,3}) . '.' . (digit {1,3}) . '.'
-                     .  (digit {1,3}) . '.' . (digit {1,3}))
+    rd_ipv4          = ipv4_addr
+                     >zparser_rdata_start $zparser_rdata_char
+                     %zparser_rdata_end   $!zerror_rdata_err;
+
+    rd_ipv6          = ipv6_addr
                      >zparser_rdata_start $zparser_rdata_char
                      %zparser_rdata_end   $!zerror_rdata_err;
 
@@ -726,6 +745,9 @@
     rdata_gpos      := ( rd_float . delim . rd_float . delim . rd_float )
                      %zparser_hold_ret . special_char;
 
+    rdata_aaaa      := rd_ipv6
+                     %zparser_hold_ret . special_char;
+
     rdata_nxt       := ( rd_dname . rd_bitmap )
                      %zparser_hold_ret . special_char_end;
 
@@ -759,6 +781,7 @@
                      | "KEY"        @{parser->current_rr.type = DNS_TYPE_KEY;}
                      | "PX"         @{parser->current_rr.type = DNS_TYPE_PX;}
                      | "GPOS"       @{parser->current_rr.type = DNS_TYPE_GPOS;}
+                     | "AAAA"       @{parser->current_rr.type = DNS_TYPE_AAAA;}
                      | "NXT"        @{parser->current_rr.type = DNS_TYPE_NXT;}
                      )
                      $!zerror_rr_typedata;

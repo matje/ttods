@@ -192,7 +192,6 @@ static void
 rdata_print_dname(FILE* fd, rdata_type* rdata)
 {
     char str[DNAME_MAXLEN*5];
-    /* assert fd, rdata */
     dname_str(rdata_get_dname(rdata), &str[0]);
     fprintf(fd, "%s", str);
     return;
@@ -282,8 +281,25 @@ static void
 rdata_print_ipv4(FILE* fd, rdata_type* rdata)
 {
     char str[200];
-    /* assert fd, rdata */
     if (inet_ntop(AF_INET, rdata_get_data(rdata), str, sizeof(str))) {
+        fprintf(fd, "%s", str);
+    } else {
+        ods_log_error("[%s] error: inet_ntop failed: %s", logstr,
+            strerror(errno));
+    }
+    return;
+}
+
+
+/**
+ * Print IPv6 RDATA element.
+ *
+ */
+static void
+rdata_print_ipv6(FILE* fd, rdata_type* rdata)
+{
+    char str[200];
+    if (inet_ntop(AF_INET6, rdata_get_data(rdata), str, sizeof(str))) {
         fprintf(fd, "%s", str);
     } else {
         ods_log_error("[%s] error: inet_ntop failed: %s", logstr,
@@ -396,6 +412,9 @@ rdata_print(FILE* fd, rdata_type* rdata, uint16_t rrtype, uint16_t pos)
     switch (rrstruct->rdata[p]) {
         case DNS_RDATA_IPV4:
             rdata_print_ipv4(fd, rdata);
+            break;
+        case DNS_RDATA_IPV6:
+            rdata_print_ipv6(fd, rdata);
             break;
         case DNS_RDATA_COMPRESSED_DNAME:
         case DNS_RDATA_UNCOMPRESSED_DNAME:

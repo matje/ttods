@@ -18,7 +18,7 @@ Supported RRtypes
 
   "SOA"      6      # RFC 1035, Section 3.3.13
                     # SOA TTL semantics updated by rfc2308
-                    # TODO: dname compression in RDATA
+                    # TODO: Domain name compression in RDATA
 
   "MB"       7      # RFC 1035, Section 3.3.3
                     # Mail box domain name, EXPERIMENTAL
@@ -90,6 +90,10 @@ Supported RRtypes
 
   "GPOS"     27     # RFC 1712, Section 3
                     # Geographical position
+
+  "AAAA"     28     # RFC 3596, Section 2
+                    # IP6 address
+                    # WARNING: Addresses may be compressed in output zone.
 
   "NXT"      30     # RFC 2535, Section 5 (obsoleted by RFC 4033, 4034, 4035)
                     # Next domain, OBSOLETE - use NSEC

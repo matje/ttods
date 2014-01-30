@@ -95,8 +95,8 @@ static rrstruct_type dns_rrstructs[(DNS_NUMRRTYPES+1)] = {
                 DNS_RDATA_UNCOMPRESSED_DNAME, DNS_RDATA_UNCOMPRESSED_DNAME } },
 /*    27 */ { "GPOS", DNS_TYPE_GPOS, 3, 3,
               { DNS_RDATA_FLOAT, DNS_RDATA_FLOAT, DNS_RDATA_FLOAT } },
+/*    28 */ { "AAAA", DNS_TYPE_AAAA, 1, 1, { DNS_RDATA_IPV6 } },
 
-/*    28 */ { NULL, DNS_TYPE_NULL, 1, 1, { DNS_RDATA_BINARY } },
 /*    29 */ { NULL, DNS_TYPE_NULL, 1, 1, { DNS_RDATA_BINARY } },
 
 /*    30 */ { "NXT", DNS_TYPE_NXT, 2, 2,
@@ -213,6 +213,7 @@ dns_rdata_format_str(dns_rdata_format rd)
         case DNS_RDATA_BASE64: return "base64"; break;
         case DNS_RDATA_BITMAP: return "bitmap"; break;
         case DNS_RDATA_FLOAT: return "float"; break;
+        case DNS_RDATA_IPV6: return "ipv6addr"; break;
         case DNS_RDATA_BINARY: return "binary"; break;
         default:
             break;

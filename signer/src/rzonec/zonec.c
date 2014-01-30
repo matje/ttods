@@ -180,6 +180,26 @@ zonec_rdata_ipv4(region_type* region, const char* buf)
 
 
 /**
+ * Convert IPv6 address into RDATA element.
+ *
+ */
+static uint16_t*
+zonec_rdata_ipv6(region_type* region, const char* buf)
+{
+    uint8_t address[DNS_IPV6_ADDRLEN];
+    uint16_t *r = NULL;
+
+    if (inet_pton(AF_INET6, buf, address) != 1) {
+        ods_log_error("[%s] error: invalid rdata IPv6 address '%s'", logstr,
+            buf);
+    } else {
+        r = rdata_init_data(region, address, sizeof(address));
+    }
+    return r;
+}
+
+
+/**
  * Convert int8 into RDATA element.
  *
  */
@@ -394,6 +414,9 @@ zonec_rdata_add(region_type* region, rr_type* rr, dns_rdata_format rdformat,
     switch (rdformat) {
         case DNS_RDATA_IPV4:
             d = zonec_rdata_ipv4(region, rdbuf);
+            break;
+        case DNS_RDATA_IPV6:
+            d = zonec_rdata_ipv6(region, rdbuf);
             break;
         case DNS_RDATA_COMPRESSED_DNAME:
         case DNS_RDATA_UNCOMPRESSED_DNAME:

@@ -73,6 +73,7 @@
 #define DNS_TYPE_KEY       25	/* RFC 2535: security key */
 #define DNS_TYPE_PX        26	/* RFC 2163: X.400 mail mapping information */
 #define DNS_TYPE_GPOS      27	/* RFC 1712: geographical position */
+#define DNS_TYPE_AAAA      28	/* RFC 3596: IP6 address */
 
 #define DNS_TYPE_NXT       30   /* RFC 2535: next domain (Obsolete - use NSEC) */
 
@@ -101,12 +102,14 @@ enum dns_rdata_format_enum {
     DNS_RDATA_BASE64,             /* Base64 binary data. */
     DNS_RDATA_BITMAP,             /* RRtype bitmap. */
     DNS_RDATA_FLOAT,              /* Floating point number. */
+    DNS_RDATA_IPV6,               /* 128-bit IPv6 address. */
     DNS_RDATA_BINARY              /* Binary data (unknown length). */
 };
 typedef enum dns_rdata_format_enum dns_rdata_format;
 
 #define DNS_RDATA_MAX 9
 #define DNS_STRLEN_MAX 256
+#define DNS_IPV6_ADDRLEN (128/8)
 #define DNS_RDLEN_MAX 65535
 
 /**
