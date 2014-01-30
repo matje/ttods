@@ -31,6 +31,9 @@ Supported RRtypes
 
   "WKS"      11     # RFC 1035, Section 3.4.2
                     # Well known service description
+                    # WARNING: The order of services and ports may change in
+                    # input and output zone. Also, numbers may be converted to
+                    # mnemonics.
 
   "PTR"      12     # RFC 1035, Section 3.3.12
                     # Domain name pointer
@@ -69,9 +72,11 @@ Supported RRtypes
                     # NSAP domain name pointer, OBSOLETE - use PTR
 
   "SIG"      24     # RFC 2535, Section 4 (obsoleted by RFC 4033, 4034, 4035)
-                    # Security signature, OBSOLETE - use RRSIG
+                    # Security signature
 
-  "KEY"      25     # RFC 2535, Section 4 (obsoleted by RFC 4033, 4034, 4035)
-                    # Security key, OBSOLETE - use DNSKEY
+  "KEY"      25     # RFC 2535, Section 3 (obsoleted by RFC 4033, 4034, 4035)
+                    # Security key
 
+  "NXT"      30     # RFC 2535, Section 5 (obsoleted by RFC 4033, 4034, 4035)
+                    # Next domain, OBSOLETE - use NSEC
 
