@@ -40,6 +40,8 @@ Supported RRtypes
 
   "HINFO"    13     # RFC 1035, Section 3.3.2
                     # Host information
+                    # WARNING: Unqouted character-strings become quoted
+                    # character-strings in output zone
 
   "MINFO"    14     # RFC 1035, Section 3.3.7
                     # Mail box or mail list information, EXPERIMENTAL
@@ -49,6 +51,8 @@ Supported RRtypes
 
   "TXT"      16     # RFC 1035, Section 3.3.14
                     # Text strings
+                    # WARNING: Unqouted character-strings become quoted
+                    # character-strings in output zone
 
   "RP"       17     # RFC 1183, Section 2.2
                     # Responsible person
@@ -58,9 +62,13 @@ Supported RRtypes
 
   "X25"      19     # RFC 1183, Section 3.1
                     # X.25 PSDN address
+                    # WARNING: Unqouted character-strings become quoted
+                    # character-strings in output zone
 
   "ISDN"     20     # RFC 1183, Section 3.2
                     # ISDN address
+                    # WARNING: Unqouted character-strings become quoted
+                    # character-strings in output zone
 
   "RT"       21     # RFC 1183, Section 3.3
                     # Route through
