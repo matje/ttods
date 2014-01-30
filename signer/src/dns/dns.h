@@ -71,6 +71,7 @@
 #define DNS_TYPE_NSAP_PTR  23	/* RFC 1706: NSAP domain name pointer (Obsolete - use PTR) */
 #define DNS_TYPE_SIG       24	/* RFC 2535: security signature */
 #define DNS_TYPE_KEY       25	/* RFC 2535: security key */
+#define DNS_TYPE_PX        26	/* RFC 2163: X.400 mail mapping information */
 
 #define DNS_TYPE_NXT       30   /* RFC 2535: next domain (Obsolete - use NSEC) */
 

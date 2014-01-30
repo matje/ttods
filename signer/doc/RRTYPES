@@ -85,6 +85,9 @@ Supported RRtypes
   "KEY"      25     # RFC 2535, Section 3 (obsoleted by RFC 4033, 4034, 4035)
                     # Security key
 
+  "PX"       26     # RFC 2136, Section 4
+                    # X.400 mail mapping information
+
   "NXT"      30     # RFC 2535, Section 5 (obsoleted by RFC 4033, 4034, 4035)
                     # Next domain, OBSOLETE - use NSEC
 

@@ -297,6 +297,8 @@
                 fcall rdata_sig;
            case DNS_TYPE_KEY:
                 fcall rdata_key;
+           case DNS_TYPE_PX:
+                fcall rdata_px;
            case DNS_TYPE_NXT:
                 fcall rdata_nxt;
            case DNS_TYPE_NULL:
@@ -702,6 +704,9 @@
                        . rd_b64)
                      %zparser_hold_ret . special_char_end;
 
+    rdata_px        := ( rd_int . delim . rd_dname . delim . rd_dname )
+                     %zparser_hold_ret . special_char;
+
     rdata_nxt       := ( rd_dname . rd_bitmap )
                      %zparser_hold_ret . special_char_end;
 
@@ -733,6 +738,7 @@
                      | "NSAP-PTR"   @{parser->current_rr.type = DNS_TYPE_NSAP_PTR;}
                      | "SIG"        @{parser->current_rr.type = DNS_TYPE_SIG;}
                      | "KEY"        @{parser->current_rr.type = DNS_TYPE_KEY;}
+                     | "PX"         @{parser->current_rr.type = DNS_TYPE_PX;}
                      | "NXT"        @{parser->current_rr.type = DNS_TYPE_NXT;}
                      )
                      $!zerror_rr_typedata;
