@@ -99,6 +99,7 @@ rr_compare_rdata(rr_type* rr1, rr_type* rr2)
                 res = dname_compare(rdata_get_dname(&rr1->rdata[i]),
                     rdata_get_dname(&rr2->rdata[i]));
                 break;
+            case DNS_RDATA_BITMAP:
             case DNS_RDATA_IPV4:
             case DNS_RDATA_INT8:
             case DNS_RDATA_INT16:

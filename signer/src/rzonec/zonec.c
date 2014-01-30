@@ -53,6 +53,59 @@ zonec_rdata_base64(region_type* region, const char* buf)
 
 
 /**
+ * Convert RRtype bitmap into RDATA element (NXT).
+ *
+ */
+static uint16_t*
+zonec_rdata_bitmap_nxt(region_type* region, const char* buf)
+{
+    static char rdata[DNS_RDLEN_MAX];
+    char* next = NULL;
+    char* delim;
+    char* rrtype;
+    char sep = ' ';
+    uint8_t bitmap[16];
+    size_t offset = 0;
+    uint16_t i;
+    uint16_t last = 0;
+
+    (void)memset(bitmap, 0, sizeof(bitmap));
+    (void)memset(rdata, 0, sizeof(rdata));
+    (void)memcpy(rdata, buf, strlen(buf));
+    (void)ods_strtriml(rdata);
+    ods_strreplace(rdata, '\t', sep);
+    rrtype = rdata;
+    delim = ods_strchr_and_fwd(rrtype, sep, &offset);
+    if (delim) {
+        next = delim+offset;
+        *delim = '\0';
+    }
+
+    while (rrtype && *rrtype) {
+        uint16_t t = dns_rrtype_by_name(rrtype);
+        if (t != 0 && t < 128) {
+            util_setbit(bitmap, t);
+        } else {
+            ods_log_error("[%s] error: invalid rrtype in bitmap '%s'", logstr,
+                rrtype);
+            return NULL;
+        }
+        rrtype = next;
+        delim = ods_strchr_and_fwd(next, sep, &offset);
+        if (delim) {
+            next = delim+offset;
+            *delim = '\0';
+        }
+    }
+
+    for (i = 0; i < 16; i++) {
+        if (bitmap[i] != 0) last = i + 1;
+    }
+    return rdata_init_data(region, bitmap, last);
+}
+
+
+/**
  * Convert datetime format into RDATA element.
  *
  */
@@ -212,6 +265,8 @@ zonec_rdata_services(region_type* region, const char* buf)
     size_t size = 0;
     size_t offset = 0;
 
+    (void)memset(bitmap, 0, sizeof(bitmap));
+    (void)memset(rdata, 0, sizeof(rdata));
     (void)memcpy(rdata, buf, strlen(buf));
     (void)ods_strtriml(rdata);
     ods_strreplace(rdata, '\t', sep);
@@ -376,8 +431,8 @@ zonec_rdata_add(region_type* region, rr_type* rr, dns_rdata_format rdformat,
             d = zonec_rdata_base64(region, rdbuf);
             break;
         case DNS_RDATA_BITMAP:
-            ods_log_info("[%s] info: added %s rdata element '%s'", logstr,
-                dns_rdata_format_str(rdformat), rdbuf);
+            d = zonec_rdata_bitmap_nxt(region, rdbuf);
+            break;
         case DNS_RDATA_BINARY: /* TODO */
             d = NULL;
             dname = NULL;

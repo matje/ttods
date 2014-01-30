@@ -105,15 +105,36 @@ rdata_print_base64(FILE* fd, rdata_type* rdata)
     char* buf;
     uint8_t* data = rdata_get_data(rdata);
     size_t size = rdata_size(rdata);
-    int len;
     if (size == 0) { return; }
     tmp = region_create_custom(sizeof(region_type) + size*2 + 1);
     if (!tmp) { return; }
     buf = region_alloc(tmp, size*2 + 1);
-    len = b64_ntop(data, size, buf, size*2+1);
+    (void) b64_ntop(data, size, buf, size*2+1);
     fprintf(fd, "%s", buf);
     region_cleanup(tmp);
     return;
+}
+
+
+/**
+ * Print bitmap format RDATA element (NXT).
+ *
+ */
+static void
+rdata_print_bitmap_nxt(FILE* fd, rdata_type* rdata)
+{
+    size_t i;
+    uint8_t* bm = rdata_get_data(rdata);
+    size_t size = rdata_size(rdata);
+    int sequel = 0;
+    for (i = 0; i < size*8; i++) {
+       if (util_getbit(bm, i)) {
+           if (sequel) fprintf(fd, " ");
+           rr_print_rrtype(fd, i);
+           sequel = 1;
+       }
+    }
+   return;
 }
 
 
@@ -386,6 +407,9 @@ rdata_print(FILE* fd, rdata_type* rdata, uint16_t rrtype, uint16_t pos)
             break;
         case DNS_RDATA_BASE64:
             rdata_print_base64(fd, rdata);
+            break;
+        case DNS_RDATA_BITMAP:
+            rdata_print_bitmap_nxt(fd, rdata);
             break;
         case DNS_RDATA_BINARY:
         default:

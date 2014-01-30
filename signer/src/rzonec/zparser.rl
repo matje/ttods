@@ -648,7 +648,7 @@
                      >zparser_rdata_start $zparser_rdata_char
                      %zparser_rdata_end   $!zerror_rdata_err;
 
-    rd_bitmap        = ((delim . (upper | digit | '-')+)+ . delim?)
+    rd_bitmap        = ((delim . (upper | digit | '-')+)* . delim?)
                      >zparser_rdata_start $zparser_rdata_char
                      %zparser_rdata_end   $!zerror_rdata_err;
 
