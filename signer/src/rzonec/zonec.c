@@ -31,6 +31,47 @@ static const char* logstr = "zonec";
 
 
 /**
+ * Convert base64 format into RDATA element.
+ *
+ */
+static uint16_t*
+zonec_rdata_base64(region_type* region, const char* buf)
+{
+    uint8_t rdata[DNS_RDLEN_MAX];
+    uint16_t* r = NULL;
+    int i;
+    bzero(rdata, sizeof(rdata));
+    i = b64_pton(buf, rdata, DNS_RDLEN_MAX);
+    if (i < 0) {
+        ods_log_error("[%s] error: invalid base64 '%s' (ret %d)",
+            logstr, buf, i);
+    } else {
+        r = rdata_init_data(region, rdata, i);
+    }
+    return r;
+}
+
+
+/**
+ * Convert datetime format into RDATA element.
+ *
+ */
+static uint16_t*
+zonec_rdata_datetime(region_type* region, const char* buf)
+{
+    uint16_t* r = NULL;
+    struct tm tm;
+    if (!strptime(buf, "%Y%m%d%H%M%S", &tm)) { /* TODO compat function */
+        ods_log_error("[%s] error: invalid datetime '%s'", logstr, buf);
+    } else {
+        uint32_t dt = htonl(util_mktime_from_utc(&tm));
+        r = rdata_init_data(region, &dt, sizeof(dt));
+    }
+    return r;
+}
+
+
+/**
  * Convert hex format into RDATA element.
  *
  */
@@ -133,45 +174,6 @@ zonec_rdata_nsap(region_type* region, const char* buf, size_t buflen)
 
 
 /**
- * Convert text format into RDATA element.
- *
- */
-static uint16_t*
-zonec_rdata_text(region_type* region, const char* buf, size_t buflen)
-{
-    size_t size = buflen+1;
-    uint16_t* r = region_alloc(region, sizeof(uint16_t) + size);
-    uint8_t* p;
-    *r = size;
-    p = (uint8_t*) (r+1);
-    *p = buflen;
-    memcpy(p+1, buf, buflen);
-    return r;
-}
-
-
-/**
- * Convert time format into RDATA element.
- *
- */
-static uint16_t*
-zonec_rdata_timef(region_type* region, const char* buf)
-{
-    uint16_t* r = NULL;
-    uint32_t timef;
-    const char* end;
-    timef = util_str2ttl(buf, &end);
-    if (*end != '\0') {
-        ods_log_error("[%s] error: invalid rdata time '%s'", logstr, buf);
-    } else {
-        timef = htonl(timef);
-        r = rdata_init_data(region, &timef, sizeof(timef));
-    }
-    return r;
-}
-
-
-/**
  * Convert rrtype format into RDATA element.
  *
  */
@@ -185,47 +187,6 @@ zonec_rdata_rrtype(region_type* region, const char* buf)
     } else {
         type = htons(type);
         r = rdata_init_data(region, &type, sizeof(type));
-    }
-    return r;
-}
-
-
-/**
- * Convert datetime format into RDATA element.
- *
- */
-static uint16_t*
-zonec_rdata_datetime(region_type* region, const char* buf)
-{
-    uint16_t* r = NULL;
-    struct tm tm;
-    if (!strptime(buf, "%Y%m%d%H%M%S", &tm)) { /* TODO compat function */
-        ods_log_error("[%s] error: invalid datetime '%s'", logstr, buf);
-    } else {
-        uint32_t dt = htonl(util_mktime_from_utc(&tm));
-        r = rdata_init_data(region, &dt, sizeof(dt));
-    }
-    return r;
-}
-
-
-/**
- * Convert base64 format into RDATA element.
- *
- */
-static uint16_t*
-zonec_rdata_base64(region_type* region, const char* buf)
-{
-    uint8_t rdata[DNS_RDLEN_MAX];
-    uint16_t* r = NULL;
-    int i;
-    bzero(rdata, sizeof(rdata));
-    i = b64_pton(buf, rdata, DNS_RDLEN_MAX);
-    if (i < 0) {
-        ods_log_error("[%s] error: invalid base64 '%s' (ret %d)",
-            logstr, buf, i);
-    } else {
-        r = rdata_init_data(region, rdata, i);
     }
     return r;
 }
@@ -311,6 +272,45 @@ zonec_rdata_services(region_type* region, const char* buf)
         protocol = (uint8_t*) (r+1);
         *protocol = proto->p_proto;
         memcpy(protocol+1, bitmap, *r);
+    }
+    return r;
+}
+
+
+/**
+ * Convert text format into RDATA element.
+ *
+ */
+static uint16_t*
+zonec_rdata_text(region_type* region, const char* buf, size_t buflen)
+{
+    size_t size = buflen+1;
+    uint16_t* r = region_alloc(region, sizeof(uint16_t) + size);
+    uint8_t* p;
+    *r = size;
+    p = (uint8_t*) (r+1);
+    *p = buflen;
+    memcpy(p+1, buf, buflen);
+    return r;
+}
+
+
+/**
+ * Convert time format into RDATA element.
+ *
+ */
+static uint16_t*
+zonec_rdata_timef(region_type* region, const char* buf)
+{
+    uint16_t* r = NULL;
+    uint32_t timef;
+    const char* end;
+    timef = util_str2ttl(buf, &end);
+    if (*end != '\0') {
+        ods_log_error("[%s] error: invalid rdata time '%s'", logstr, buf);
+    } else {
+        timef = htonl(timef);
+        r = rdata_init_data(region, &timef, sizeof(timef));
     }
     return r;
 }
