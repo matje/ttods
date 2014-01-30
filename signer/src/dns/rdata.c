@@ -95,6 +95,33 @@ rdata_get_dname(rdata_type* rdata)
 
 
 /**
+ * Print text format RDATA element.
+ *
+ */
+static void
+rdata_print_character_string(FILE* fd, rdata_type* rdata, int quoted)
+{
+    const uint8_t* d = rdata_get_data(rdata);
+    uint8_t l = d[0];
+    size_t i;
+    if (quoted) fprintf(fd, "\"");
+    for (i = 1; i <= l; ++i) {
+        char c = (char) d[i];
+        if (isprint((int)c)) {
+            if (c == '"' || c == '\\') {
+                fprintf(fd, "\\");
+            }
+            fprintf(fd, "%c", c);
+        } else {
+            fprintf(fd, "\\%03u", (unsigned) d[i]);
+        }
+    }
+    if (quoted) fprintf(fd, "\"");
+    return;
+}
+
+
+/**
  * Print base64 format RDATA element.
  *
  */
@@ -168,6 +195,18 @@ rdata_print_dname(FILE* fd, rdata_type* rdata)
     /* assert fd, rdata */
     dname_str(rdata_get_dname(rdata), &str[0]);
     fprintf(fd, "%s", str);
+    return;
+}
+
+
+/**
+ * Print floating point format RDATA element.
+ *
+ */
+static void
+rdata_print_float(FILE* fd, rdata_type* rdata)
+{
+    rdata_print_character_string(fd, rdata, 0);
     return;
 }
 
@@ -287,22 +326,7 @@ rdata_print_rrtype(FILE* fd, rdata_type* rdata)
 static void
 rdata_print_text(FILE* fd, rdata_type* rdata)
 {
-    const uint8_t* d = rdata_get_data(rdata);
-    uint8_t l = d[0];
-    size_t i;
-    fprintf(fd, "\"");
-    for (i = 1; i <= l; ++i) {
-        char c = (char) d[i];
-        if (isprint((int)c)) {
-            if (c == '"' || c == '\\') {
-                fprintf(fd, "\\");
-            }
-            fprintf(fd, "%c", c);
-        } else {
-            fprintf(fd, "\\%03u", (unsigned) d[i]);
-        }
-    }
-    fprintf(fd, "\"");
+    rdata_print_character_string(fd, rdata, 1);
     return;
 }
 
@@ -410,6 +434,9 @@ rdata_print(FILE* fd, rdata_type* rdata, uint16_t rrtype, uint16_t pos)
             break;
         case DNS_RDATA_BITMAP:
             rdata_print_bitmap_nxt(fd, rdata);
+            break;
+        case DNS_RDATA_FLOAT:
+            rdata_print_float(fd, rdata);
             break;
         case DNS_RDATA_BINARY:
         default:

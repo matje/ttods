@@ -103,7 +103,7 @@
 
     # Actions: character strings.
     action zparser_text_char2wire {
-        if (parser->rdsize <= DNS_RDLEN_MAX) {
+        if (parser->rdsize < DNS_STRLEN_MAX) {
             parser->rdbuf[parser->rdsize] = fc;
             parser->rdsize++;
         } else {
@@ -114,7 +114,7 @@
         }
     }
     action zparser_text_octet2wire_init {
-        if (parser->rdsize <= DNS_RDLEN_MAX) {
+        if (parser->rdsize < DNS_STRLEN_MAX) {
             parser->rdbuf[parser->dname_size] = 0;
             parser->rdsize++;
         } else {
@@ -299,6 +299,8 @@
                 fcall rdata_key;
            case DNS_TYPE_PX:
                 fcall rdata_px;
+           case DNS_TYPE_GPOS:
+                fcall rdata_gpos;
            case DNS_TYPE_NXT:
                 fcall rdata_nxt;
            case DNS_TYPE_NULL:
@@ -430,6 +432,12 @@
     }
     action zerror_text_ddd {
         ods_log_error("[zparser] error: line %d: bad octet in text",
+            parser->line);
+        parser->totalerrors++;
+        fhold; fgoto line_error;
+    }
+    action zerror_float {
+        ods_log_error("[zparser] error: line %d: bad float number",
             parser->line);
         parser->totalerrors++;
         fhold; fgoto line_error;
@@ -588,6 +596,10 @@
                      | text_character+)
                      $!zerror_str_seq;
 
+    str_float        = (('-')? . digit+ . '.' . digit+ )
+                     $zparser_text_char2wire
+                     $!zerror_float;
+
     # RFC 1035: The labels in the domain name are expressed as character
     # strings. MM: But requires different processing then for non-labels.
     label            = label_character{1,63}
@@ -625,6 +637,10 @@
     rd_int           = digit+
                      >zparser_rdata_start $zparser_rdata_char
                      %zparser_rdata_end   $!zerror_rdata_err;
+
+    rd_float         = str_float
+                     >zparser_rdata_start
+                     %zparser_rdata_end $!zerror_rdata_err;
 
     rd_timef         = ttl
                      >zparser_rdata_start $zparser_rdata_char
@@ -707,6 +723,9 @@
     rdata_px        := ( rd_int . delim . rd_dname . delim . rd_dname )
                      %zparser_hold_ret . special_char;
 
+    rdata_gpos      := ( rd_float . delim . rd_float . delim . rd_float )
+                     %zparser_hold_ret . special_char;
+
     rdata_nxt       := ( rd_dname . rd_bitmap )
                      %zparser_hold_ret . special_char_end;
 
@@ -739,6 +758,7 @@
                      | "SIG"        @{parser->current_rr.type = DNS_TYPE_SIG;}
                      | "KEY"        @{parser->current_rr.type = DNS_TYPE_KEY;}
                      | "PX"         @{parser->current_rr.type = DNS_TYPE_PX;}
+                     | "GPOS"       @{parser->current_rr.type = DNS_TYPE_GPOS;}
                      | "NXT"        @{parser->current_rr.type = DNS_TYPE_NXT;}
                      )
                      $!zerror_rr_typedata;

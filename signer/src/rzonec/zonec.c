@@ -414,6 +414,7 @@ zonec_rdata_add(region_type* region, rr_type* rr, dns_rdata_format rdformat,
         case DNS_RDATA_SERVICES:
             d = zonec_rdata_services(region, rdbuf);
             break;
+        case DNS_RDATA_FLOAT:
         case DNS_RDATA_TEXT:
         case DNS_RDATA_TEXTS:
             d = zonec_rdata_text(region, rdbuf, rdsize);

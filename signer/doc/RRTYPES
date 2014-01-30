@@ -88,6 +88,9 @@ Supported RRtypes
   "PX"       26     # RFC 2136, Section 4
                     # X.400 mail mapping information
 
+  "GPOS"     27     # RFC 1712, Section 3
+                    # Geographical position
+
   "NXT"      30     # RFC 2535, Section 5 (obsoleted by RFC 4033, 4034, 4035)
                     # Next domain, OBSOLETE - use NSEC
 
