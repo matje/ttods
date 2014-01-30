@@ -375,6 +375,9 @@ zonec_rdata_add(region_type* region, rr_type* rr, dns_rdata_format rdformat,
         case DNS_RDATA_BASE64:
             d = zonec_rdata_base64(region, rdbuf);
             break;
+        case DNS_RDATA_BITMAP:
+            ods_log_info("[%s] info: added %s rdata element '%s'", logstr,
+                dns_rdata_format_str(rdformat), rdbuf);
         case DNS_RDATA_BINARY: /* TODO */
             d = NULL;
             dname = NULL;
@@ -398,7 +401,7 @@ zonec_rdata_add(region_type* region, rr_type* rr, dns_rdata_format rdformat,
         rr->rdata[rr->rdlen].data = d;
     }
     rr->rdlen++;
-    ods_log_error("[%s] info: added %s rdata element '%s'", logstr,
+    ods_log_info("[%s] info: added %s rdata element '%s'", logstr,
         dns_rdata_format_str(rdformat), rdbuf);
     return 1;
 }

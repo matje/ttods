@@ -72,8 +72,10 @@
 #define DNS_TYPE_SIG       24	/* RFC 2535: security signature */
 #define DNS_TYPE_KEY       25	/* RFC 2535: security key */
 
+#define DNS_TYPE_NXT       30   /* RFC 2535: next domain (Obsolete - use NSEC) */
+
 #define DNS_NUMRRCLASSES DNS_CLASS_HS+1 /* +1 for CLASS0 */
-#define DNS_NUMRRTYPES   DNS_TYPE_KEY+1  /* +1 for TYPE0 */
+#define DNS_NUMRRTYPES   DNS_TYPE_NXT+1  /* +1 for TYPE0 */
 
 /** RDATA */
 
@@ -95,6 +97,7 @@ enum dns_rdata_format_enum {
     DNS_RDATA_NSAP,               /* NSAP address. */
     DNS_RDATA_RRTYPE,             /* RRtype. */
     DNS_RDATA_BASE64,             /* Base64 binary data. */
+    DNS_RDATA_BITMAP,             /* RRtype bitmap. */
     DNS_RDATA_BINARY              /* Binary data (unknown length). */
 };
 typedef enum dns_rdata_format_enum dns_rdata_format;

@@ -297,6 +297,8 @@
                 fcall rdata_sig;
            case DNS_TYPE_KEY:
                 fcall rdata_key;
+           case DNS_TYPE_NXT:
+                fcall rdata_nxt;
            case DNS_TYPE_NULL:
            default:
                 if (!rs->name) {
@@ -646,6 +648,10 @@
                      >zparser_rdata_start $zparser_rdata_char
                      %zparser_rdata_end   $!zerror_rdata_err;
 
+    rd_bitmap        = ((delim . (upper | digit | '-')+)+ . delim?)
+                     >zparser_rdata_start $zparser_rdata_char
+                     %zparser_rdata_end   $!zerror_rdata_err;
+
     # RFC4648: Base16, Base32 and Base64 Data Encodings
     rd_b64           = (((alnum | [+/])+ . delim?)+ . '='{0,2} . delim?)
                      >zparser_rdata_start $zparser_rdata_char_b64
@@ -663,7 +669,7 @@
                      .  rd_timef)
                      %zparser_hold_ret . special_char;
 
-    rdata_wks       := (rd_ipv4 . rd_services . delim?)
+    rdata_wks       := (rd_ipv4 . rd_services)
                      %zparser_hold_ret . special_char_end;
 
     rdata_hinfo     := (rd_str . delim . rd_str)
@@ -696,6 +702,9 @@
                        . rd_b64)
                      %zparser_hold_ret . special_char_end;
 
+    rdata_nxt       := ( rd_dname . rd_bitmap )
+                     %zparser_hold_ret . special_char_end;
+
     rdata            = (delim . ^special_char) @zparser_rdata_call;
 
     rrtype           =
@@ -724,6 +733,7 @@
                      | "NSAP-PTR"   @{parser->current_rr.type = DNS_TYPE_NSAP_PTR;}
                      | "SIG"        @{parser->current_rr.type = DNS_TYPE_SIG;}
                      | "KEY"        @{parser->current_rr.type = DNS_TYPE_KEY;}
+                     | "NXT"        @{parser->current_rr.type = DNS_TYPE_NXT;}
                      )
                      $!zerror_rr_typedata;
 

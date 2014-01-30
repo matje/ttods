@@ -91,6 +91,13 @@ static rrstruct_type dns_rrstructs[(DNS_NUMRRTYPES+1)] = {
 /*    25 */ { "KEY", DNS_TYPE_KEY, 4, 4,
               { DNS_RDATA_INT16, DNS_RDATA_INT8, DNS_RDATA_INT8,
                 DNS_RDATA_BASE64 } },
+/*    26 */ { NULL, DNS_TYPE_NULL, 1, 1, { DNS_RDATA_BINARY } },
+/*    27 */ { NULL, DNS_TYPE_NULL, 1, 1, { DNS_RDATA_BINARY } },
+/*    28 */ { NULL, DNS_TYPE_NULL, 1, 1, { DNS_RDATA_BINARY } },
+/*    29 */ { NULL, DNS_TYPE_NULL, 1, 1, { DNS_RDATA_BINARY } },
+
+/*    30 */ { "NXT", DNS_TYPE_NXT, 2, 2,
+              { DNS_RDATA_UNCOMPRESSED_DNAME, DNS_RDATA_BITMAP } },
 };
 
 
@@ -198,8 +205,10 @@ dns_rdata_format_str(dns_rdata_format rd)
         case DNS_RDATA_SERVICES: return "services"; break;
         case DNS_RDATA_TEXT: return "character-string"; break;
         case DNS_RDATA_TEXTS: return "character-strings"; break;
+        case DNS_RDATA_NSAP: return "nsap"; break;
         case DNS_RDATA_RRTYPE: return "rrtype"; break;
         case DNS_RDATA_BASE64: return "base64"; break;
+        case DNS_RDATA_BITMAP: return "bitmap"; break;
         case DNS_RDATA_BINARY: return "binary"; break;
         default:
             break;
