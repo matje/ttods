@@ -198,7 +198,8 @@ zparser_process_rr(zparser_type* parser)
     /* add rr to zone */
     status = zone_add_rr(parser->zone, &parser->current_rr, 1);
     if (status != ODS_STATUS_OK) {
-        ods_log_error("[%s] error: adding rr failed", logstr);
+        ods_log_error("[%s] error: adding rr failed: %s", logstr,
+            ods_status2str(status));
         return 0;
     }
 
