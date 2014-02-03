@@ -631,14 +631,39 @@
 
     ipv4_addr        = ipv4_label{3} . ipv4_label_end;
 
+    # RFC 5952: A Recommendation for IPv6 Address Text Representation
+    # Section 4.1:   Leading zeros MUST be suppressed. INCOMPATIBLE
+    # Section 4.2.3: Choice in Placement of "::". INCOMPATIBLE
+    # Section 4.3:   Lowercase. INCOMPATIBLE
+    # Section 5:     IPv4 mapped addresses solely with well known prefix. INCOMPATIBLE
     ipv6_label       = xdigit {1,4} . ':';
     ipv6_label_end   = xdigit {1,4};
 
-    # RFC 3513: IPv6 Text Representation:
-    # x:x:x:x:x:x:x:x
-    # TODO: with ::
-    # TODO: with d.d.d.d
-    ipv6_addr        = ipv6_label{7} . ipv6_label_end;
+    # RFC 3513: IPv6 Text Representation.
+
+    # 1. x:x:x:x:x:x:x:x
+    ipv6_xxxxxxxx    = ipv6_label{7} . ipv6_label_end;
+
+    # 2. Compressed: ::
+    ipv6_compressed  = ipv6_label{1,6} . ':'
+                     | ipv6_label{1,5} . ':'                   . ipv6_label_end
+                     | ipv6_label{1,4} . ':' . ipv6_label{0,1} . ipv6_label_end
+                     | ipv6_label{1,3} . ':' . ipv6_label{0,2} . ipv6_label_end
+                     | ipv6_label{1,2} . ':' . ipv6_label{0,3} . ipv6_label_end
+                     | ipv6_label      . ':' . ipv6_label{0,4} . ipv6_label_end
+                     | ':'             . ':' . ipv6_label{0,5} . ipv6_label_end?
+                     ;
+
+    # 3. with IPv4
+    ipv6_mapped      = ipv6_label{6}                           . ipv4_addr
+                     | ipv6_label{1,4} . ':'                   . ipv4_addr
+                     | ipv6_label{1,3} . ':' . ipv6_label{0,1} . ipv4_addr
+                     | ipv6_label{1,2} . ':' . ipv6_label{0,2} . ipv4_addr
+                     | ipv6_label      . ':' . ipv6_label{0,3} . ipv4_addr
+                     | ':'             . ':' . ipv6_label{0,4} . ipv4_addr
+                     ;
+
+    ipv6_addr        = ( ipv6_xxxxxxxx | ipv6_compressed | ipv6_mapped );
 
     ## RDATA parsing.
     rd_ipv4          = ipv4_addr
