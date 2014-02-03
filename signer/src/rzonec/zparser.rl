@@ -303,6 +303,8 @@
                 fcall rdata_gpos;
            case DNS_TYPE_AAAA:
                 fcall rdata_aaaa;
+           case DNS_TYPE_LOC:
+                fcall rdata_loc;
            case DNS_TYPE_NXT:
                 fcall rdata_nxt;
            case DNS_TYPE_NULL:
@@ -539,6 +541,8 @@
 
     decimal_number   = digit+ $zparser_decimal_digit;
 
+    float_number     = digit+ . digit+;
+
     time_value       = (decimal_number . timeformat)+ . decimal_number?;
 
     # mnemonic: for example "TCP", "UDP", "DNS", ...
@@ -714,6 +718,25 @@
                      >zparser_rdata_start $zparser_rdata_char
                      %zparser_rdata_end   $!zerror_rdata_err;
 
+    rd_loc           =
+                     ( ([0-8][0-9] | "90")                        . delim
+                     . ([0-5]?[0-9]                               . delim)?
+                     . ([0-5]?[0-9] . ('.' . [0-9]{1,3})?         . delim)?
+                     . ('N' | 'S')                                . delim
+
+                     . ([0-9]{1,2} | '1' . [0-7][0-9] | "180")    . delim
+                     . ([0-5]?[0-9]                               . delim)?
+                     . ([0-5]?[0-9] . ('.' . [0-9]{1,3})?         . delim)?
+                     . ('E' | 'W')                                . delim
+
+                     # Not completely RFC 1876 compliant
+                     . '-'? . digit+ . ('.' . [0-9]{1,2})? . 'm'?
+                     . (delim . [0-9]{1,8}   . ('.' . [0-9]{1,2})? . 'm'?){0,2}
+                     . (delim . [0-9]{1,8}   . ('.' . [0-9]{1,2})? . 'm'?)?
+                     )
+                     >zparser_rdata_start $zparser_rdata_char
+                     %zparser_rdata_end   $!zerror_rdata_err;
+
     # RFC4648: Base16, Base32 and Base64 Data Encodings
     rd_b64           = (((alnum | [+/])+ . delim?)+ . '='{0,2} . delim?)
                      >zparser_rdata_start $zparser_rdata_char_b64
@@ -773,6 +796,9 @@
     rdata_aaaa      := rd_ipv6
                      %zparser_hold_ret . special_char;
 
+    rdata_loc       := rd_loc
+                     %zparser_hold_ret . special_char;
+
     rdata_nxt       := ( rd_dname . rd_bitmap )
                      %zparser_hold_ret . special_char_end;
 
@@ -807,6 +833,7 @@
                      | "PX"         @{parser->current_rr.type = DNS_TYPE_PX;}
                      | "GPOS"       @{parser->current_rr.type = DNS_TYPE_GPOS;}
                      | "AAAA"       @{parser->current_rr.type = DNS_TYPE_AAAA;}
+                     | "LOC"        @{parser->current_rr.type = DNS_TYPE_LOC;}
                      | "NXT"        @{parser->current_rr.type = DNS_TYPE_NXT;}
                      )
                      $!zerror_rr_typedata;

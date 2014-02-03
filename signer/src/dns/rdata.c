@@ -310,6 +310,17 @@ rdata_print_ipv6(FILE* fd, rdata_type* rdata)
 
 
 /**
+ * Print loc RDATA element.
+ *
+ */
+static void
+rdata_print_loc(FILE* fd, rdata_type* rdata)
+{
+    fprintf(fd, "LOC");
+    return;
+}
+
+/**
  * Print nsap RDATA element.
  *
  */
@@ -406,9 +417,17 @@ rdata_print(FILE* fd, rdata_type* rdata, uint16_t rrtype, uint16_t pos)
     ods_log_assert(fd);
     ods_log_assert(rdata);
     rrstruct = dns_rrstruct_by_type(rrtype);
+    /* special handling */
     if (rrstruct->rdata[0] == DNS_RDATA_TEXTS) {
         p = 0;
     }
+/*
+    if (pos && rrstruct->rdata[0] == DNS_RDATA_LOC) {
+        return;
+    }
+*/
+
+    /* regular rdata */
     switch (rrstruct->rdata[p]) {
         case DNS_RDATA_IPV4:
             rdata_print_ipv4(fd, rdata);
@@ -456,6 +475,9 @@ rdata_print(FILE* fd, rdata_type* rdata, uint16_t rrtype, uint16_t pos)
             break;
         case DNS_RDATA_FLOAT:
             rdata_print_float(fd, rdata);
+            break;
+        case DNS_RDATA_LOC:
+            rdata_print_loc(fd, rdata);
             break;
         case DNS_RDATA_BINARY:
         default:

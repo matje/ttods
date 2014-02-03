@@ -95,6 +95,9 @@ Supported RRtypes
                     # IP6 address
                     # WARNING: Addresses may be compressed in output zone.
 
+  "LOC"      29     # RFC 1876, Section 2
+                    # Local information
+
   "NXT"      30     # RFC 2535, Section 5 (obsoleted by RFC 4033, 4034, 4035)
                     # Next domain, OBSOLETE - use NSEC
 

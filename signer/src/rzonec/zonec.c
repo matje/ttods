@@ -31,6 +31,28 @@ static const char* logstr = "zonec";
 
 
 /**
+ * Parse integer.
+ *
+ */
+static int
+zonec_parse_int(const char* str, char** end, int* result,
+    const char* name, int min, int max)
+{
+    *result = (int) strtol(str, end, 10);
+    if (*result < min || *result > max) {
+        ods_log_error("[%z] error: loc %s must be within the range "
+            "[%d...%d]", logstr, name, min, max);
+        return 0;
+    }
+    if (!isspace((int)**end) && **end != '\0' && **end != 'm') {
+        ods_log_error("[%z] error: bad %s in loc rdata", logstr, name);
+        return 0;
+    }
+    return 1;
+}
+
+
+/**
  * Convert base64 format into RDATA element.
  *
  */
@@ -236,6 +258,132 @@ zonec_rdata_int32(region_type* region, const char* buf)
 
 
 /**
+ * Convert LOC latitude/longitude.
+ *
+ */
+static int
+zonec_rdata_loc_dms(const char* buf, char** end, int* d, int* m, int* s,
+    char* c, int degrees, char c1, char c2)
+{
+    int sec = 0;
+    int f = 0;
+    /* degrees */
+    if (!zonec_parse_int(buf, end, d, "degrees", 0, degrees)) {
+        return 0;
+    }
+    if (!isspace((int)*buf)) {
+        return 0;
+    }
+    while(isspace((int)*buf)) {
+        ++buf;
+    }
+    if (*buf == c1 || *buf == c2) {
+        *c = *buf;
+        return 1;
+    }
+    /* minutes */
+    if (!zonec_parse_int(buf, end, m, "minutes", 0, 59)) {
+        return 0;
+    }
+    if (!isspace((int)*buf)) {
+        return 0;
+    }
+    while(isspace((int)*buf)) {
+        ++buf;
+    }
+    if (*buf == c1 || *buf == c2) {
+        *c = *buf;
+        return 1;
+    }
+    /* seconds */
+    if (!zonec_parse_int(buf, end, &sec, "seconds", 0, 59)) {
+        return 0;
+    }
+    if (*buf == '.') {
+        ++buf;
+        if (!zonec_parse_int(buf, end, &f, "seconds fraction", 0, 999)) {
+            return 0;
+        }
+    }
+    *s = (1000*sec + f);
+    if (!isspace((int)*buf)) {
+        return 0;
+    }
+    while(isspace((int)*buf)) {
+        ++buf;
+    }
+    if (*buf == c1 || *buf == c2) {
+        *c = *buf;
+        return 1;
+    }
+    return 0;
+}
+
+
+/**
+ * Convert loc format into RDATA element.
+ *
+ */
+static uint16_t*
+zonec_rdata_loc(region_type* region, const char* buf)
+{
+    uint32_t lat, lon, alt;
+    int d, m, s;
+    char c;
+    /* latitude */
+    d = 0;
+    m = 0;
+    s = 0;
+    c = 0;
+    if (!zonec_rdata_loc_dms(buf, (char**) &buf, &d, &m, &s, &c, 90,
+        'N', 'S')) {
+        goto loc_error;
+    }
+    switch (c) {
+        case 'N':
+            lat = ((uint32_t)1<<31) + (3600000*d + 60000*m + s);
+            break;
+        case 'S':
+            lat = ((uint32_t)1<<31) - (3600000*d + 60000*m + s);
+            break;
+        default:
+            goto loc_error;
+            break;
+    }
+    /* longitude */
+    d = 0;
+    m = 0;
+    s = 0;
+    c = 0;
+    if (!zonec_rdata_loc_dms(buf, (char**) &buf, &d, &m, &s, &c, 180,
+        'E', 'W')) {
+        goto loc_error;
+    }
+    switch (c) {
+        case 'E':
+            lon = ((uint32_t)1<<31) + (3600000*d + 60000*m + s);
+            break;
+        case 'W':
+            lon = ((uint32_t)1<<31) - (3600000*d + 60000*m + s);
+            break;
+        default:
+            goto loc_error;
+            break;
+    }
+    /* altitude */
+
+    /* size */
+
+    /* horizontal precision */
+
+    /* vertical precision */
+
+loc_error:
+    return NULL;
+}
+
+
+/**
  * Convert nsap format into RDATA element.
  *
  */
@@ -411,6 +559,9 @@ zonec_rdata_add(region_type* region, rr_type* rr, dns_rdata_format rdformat,
         return 0;
     }
 
+    ods_log_info("[%s] info: adding %s rdata element '%s'", logstr,
+        dns_rdata_format_str(rdformat), rdbuf);
+
     switch (rdformat) {
         case DNS_RDATA_IPV4:
             d = zonec_rdata_ipv4(region, rdbuf);
@@ -457,6 +608,9 @@ zonec_rdata_add(region_type* region, rr_type* rr, dns_rdata_format rdformat,
         case DNS_RDATA_BITMAP:
             d = zonec_rdata_bitmap_nxt(region, rdbuf);
             break;
+        case DNS_RDATA_LOC:
+            d = zonec_rdata_loc(region, rdbuf);
+            break;
         case DNS_RDATA_BINARY: /* TODO */
             d = NULL;
             dname = NULL;
@@ -480,7 +634,7 @@ zonec_rdata_add(region_type* region, rr_type* rr, dns_rdata_format rdformat,
         rr->rdata[rr->rdlen].data = d;
     }
     rr->rdlen++;
-    ods_log_info("[%s] info: added %s rdata element '%s'", logstr,
+    ods_log_debug("[%s] info: added %s rdata element '%s'", logstr,
         dns_rdata_format_str(rdformat), rdbuf);
     return 1;
 }
