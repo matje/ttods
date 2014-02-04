@@ -722,17 +722,18 @@
                      ( ([0-8][0-9] | "90")                        . delim
                      . ([0-5]?[0-9]                               . delim)?
                      . ([0-5]?[0-9] . ('.' . [0-9]{1,3})?         . delim)?
-                     . ('N' | 'S')                                . delim
+                     . ('N'i | 'S'i)                              . delim
 
                      . ([0-9]{1,2} | '1' . [0-7][0-9] | "180")    . delim
                      . ([0-5]?[0-9]                               . delim)?
                      . ([0-5]?[0-9] . ('.' . [0-9]{1,3})?         . delim)?
-                     . ('E' | 'W')                                . delim
+                     . ('E'i | 'W'i)                              . delim
 
                      # Not completely RFC 1876 compliant
-                     . '-'? . digit+ . ('.' . [0-9]{1,2})? . 'm'?
-                     . (delim . [0-9]{1,8}   . ('.' . [0-9]{1,2})? . 'm'?){0,2}
-                     . (delim . [0-9]{1,8}   . ('.' . [0-9]{1,2})? . 'm'?)?
+                     . '-'? . digit+ . ('.' . [0-9]{1,2})? . ('m'i)?
+                     . (delim . [0-9]{1,8} . ('.' . [0-9]{1,2})? . ('m'i)?){0,2}
+                     . (delim . [0-9]{1,8} . ('.' . [0-9]{1,2})? . ('m'i)?)?
+                     . delim?
                      )
                      >zparser_rdata_start $zparser_rdata_char
                      %zparser_rdata_end   $!zerror_rdata_err;
@@ -797,7 +798,7 @@
                      %zparser_hold_ret . special_char;
 
     rdata_loc       := rd_loc
-                     %zparser_hold_ret . special_char;
+                     %zparser_hold_ret . special_char_end;
 
     rdata_nxt       := ( rd_dname . rd_bitmap )
                      %zparser_hold_ret . special_char_end;

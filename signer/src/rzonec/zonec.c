@@ -14,6 +14,7 @@
 #include "util/log.h"
 #include "util/str.h"
 #include "util/util.h"
+#include "wire/buffer.h"
 
 #include <arpa/inet.h>
 #include <ctype.h>
@@ -35,17 +36,18 @@ static const char* logstr = "zonec";
  *
  */
 static int
-zonec_parse_int(const char* str, char** end, int* result,
-    const char* name, int min, int max)
+zonec_parse_int(const char* str, char** end, int32_t* result,
+    const char* name, int32_t min, int32_t max)
 {
-    *result = (int) strtol(str, end, 10);
+    *result = (int32_t) strtol(str, end, 10);
     if (*result < min || *result > max) {
         ods_log_error("[%z] error: loc %s must be within the range "
             "[%d...%d]", logstr, name, min, max);
         return 0;
     }
-    if (!isspace((int)**end) && **end != '\0' && **end != 'm') {
-        ods_log_error("[%z] error: bad %s in loc rdata", logstr, name);
+    if (!isspace((int)**end) && **end != '\0' && **end != 'm' &&
+        **end != 'M' && **end != '.') {
+        ods_log_error("[%s] error: bad %s in loc rdata: %c", logstr, name, **end);
         return 0;
     }
     return 1;
@@ -257,21 +259,64 @@ zonec_rdata_int32(region_type* region, const char* buf)
 }
 
 
+/** RFC 1876 code samples */
+
+/*
+ * routines to convert between on-the-wire RR format and zone file
+ * format.  Does not contain conversion to/from decimal degrees;
+ * divide or multiply by 60*60*1000 for that.
+ */
+static unsigned int poweroften[10] = {1, 10, 100, 1000, 10000, 100000,
+    1000000,10000000,100000000,1000000000};
+
+/* converts ascii size/precision X * 10**Y(cm) to 0xXY. moves pointer.*/
+static uint8_t
+zonec_rdata_loc_precsize_aton(char* cp, char **endptr)
+{
+    unsigned int mval = 0, cmval = 0;
+    u_int8_t retval = 0;
+    int exponent;
+    int mantissa;
+    while (isdigit((int)*cp)) mval = mval * 10 + (*cp++ - '0');
+    /* centimeters */
+    if (*cp == '.') {
+        cp++;
+        if (isdigit(*cp)) {
+            cmval = (*cp++ - '0') * 10;
+            if (isdigit(*cp)) {
+                cmval += (*cp++ - '0');
+            }
+        }
+    }
+    cmval = (mval * 100) + cmval;
+    for (exponent = 0; exponent < 9; exponent++)
+        if (cmval < poweroften[exponent+1])
+            break;
+    mantissa = cmval / poweroften[exponent];
+    if (mantissa > 9) mantissa = 9;
+    ods_log_debug("[%s] debug: cmval %d mantissa %d exponent %d", logstr, cmval, mantissa, exponent);
+    retval = (mantissa << 4) | exponent;
+    if (*cp == 'm') cp++;
+    *endptr = cp;
+    return (retval);
+}
+
+
 /**
  * Convert LOC latitude/longitude.
  *
  */
 static int
-zonec_rdata_loc_dms(const char* buf, char** end, int* d, int* m, int* s,
-    char* c, int degrees, char c1, char c2)
+zonec_rdata_loc_dms(const char* buf, char** end, int32_t* d, int32_t* m,
+    int32_t* s, int32_t* f, char* c, int32_t degrees, char c1, char c2)
 {
-    int sec = 0;
-    int f = 0;
     /* degrees */
     if (!zonec_parse_int(buf, end, d, "degrees", 0, degrees)) {
         return 0;
     }
+    buf = (const char*) *end;
     if (!isspace((int)*buf)) {
+        ods_log_error("[%s] error: bad degrees %c in loc rr", logstr, *buf);
         return 0;
     }
     while(isspace((int)*buf)) {
@@ -279,13 +324,17 @@ zonec_rdata_loc_dms(const char* buf, char** end, int* d, int* m, int* s,
     }
     if (*buf == c1 || *buf == c2) {
         *c = *buf;
+        ++buf;
+        *end = (char*) buf;
         return 1;
     }
     /* minutes */
     if (!zonec_parse_int(buf, end, m, "minutes", 0, 59)) {
         return 0;
     }
+    buf = (const char*) *end;
     if (!isspace((int)*buf)) {
+        ods_log_error("[%s] error: bad minutes %c in loc rr", logstr, *buf);
         return 0;
     }
     while(isspace((int)*buf)) {
@@ -293,20 +342,24 @@ zonec_rdata_loc_dms(const char* buf, char** end, int* d, int* m, int* s,
     }
     if (*buf == c1 || *buf == c2) {
         *c = *buf;
+        ++buf;
+        *end = (char*) buf;
         return 1;
     }
     /* seconds */
-    if (!zonec_parse_int(buf, end, &sec, "seconds", 0, 59)) {
+    if (!zonec_parse_int(buf, end, s, "seconds", 0, 59)) {
         return 0;
     }
+    buf = (const char*) *end;
     if (*buf == '.') {
         ++buf;
-        if (!zonec_parse_int(buf, end, &f, "seconds fraction", 0, 999)) {
+        if (!zonec_parse_int(buf, end, f, "seconds fraction", 0, 999)) {
             return 0;
         }
+        buf = (const char*) *end;
     }
-    *s = (1000*sec + f);
     if (!isspace((int)*buf)) {
+        ods_log_error("[%s] error: bad seconds %c in loc rr", logstr, *buf);
         return 0;
     }
     while(isspace((int)*buf)) {
@@ -314,8 +367,11 @@ zonec_rdata_loc_dms(const char* buf, char** end, int* d, int* m, int* s,
     }
     if (*buf == c1 || *buf == c2) {
         *c = *buf;
+        ++buf;
+        *end = (char*) buf;
         return 1;
     }
+    ods_log_error("[%s] error: bad character %c in loc rr", logstr, *buf);
     return 0;
 }
 
@@ -327,56 +383,130 @@ zonec_rdata_loc_dms(const char* buf, char** end, int* d, int* m, int* s,
 static uint16_t*
 zonec_rdata_loc(region_type* region, const char* buf)
 {
+    int i = 0;
+    uint8_t precsize[3] = {0x12, 0x16, 0x13};
     uint32_t lat, lon, alt;
-    int d, m, s;
+    int32_t d, m, s, f;
     char c;
+    uint16_t* r;
+    uint8_t* p;
     /* latitude */
     d = 0;
     m = 0;
     s = 0;
+    f = 0;
     c = 0;
-    if (!zonec_rdata_loc_dms(buf, (char**) &buf, &d, &m, &s, &c, 90,
+    if (!zonec_rdata_loc_dms(buf, (char**) &buf, &d, &m, &s, &f, &c, 90,
         'N', 'S')) {
+        ods_log_error("[%s] error: bad latitude in loc rr", logstr);
         goto loc_error;
     }
     switch (c) {
         case 'N':
-            lat = ((uint32_t)1<<31) + (3600000*d + 60000*m + s);
+            lat = ((uint32_t)1<<31) + (3600000*d + 60000*m + 1000*s + f);
             break;
         case 'S':
-            lat = ((uint32_t)1<<31) - (3600000*d + 60000*m + s);
+            lat = ((uint32_t)1<<31) - (3600000*d + 60000*m + 1000*s + f);
             break;
         default:
+            ods_log_error("[%s] error: bad northiness in loc rr", logstr);
             goto loc_error;
             break;
     }
+    ods_log_debug("[%s] debug: latitude: %d %d %d.%d %c = %u", logstr, d, m, s, f, c, lat);
+
     /* longitude */
     d = 0;
     m = 0;
     s = 0;
+    f = 0;
     c = 0;
-    if (!zonec_rdata_loc_dms(buf, (char**) &buf, &d, &m, &s, &c, 180,
+    if (!zonec_rdata_loc_dms(buf, (char**) &buf, &d, &m, &s, &f, &c, 180,
         'E', 'W')) {
+        ods_log_error("[%s] error: bad longitude in loc rr", logstr);
         goto loc_error;
     }
     switch (c) {
         case 'E':
-            lon = ((uint32_t)1<<31) + (3600000*d + 60000*m + s);
+            lon = ((uint32_t)1<<31) + (3600000*d + 60000*m + 1000*s + f);
             break;
         case 'W':
-            lon = ((uint32_t)1<<31) - (3600000*d + 60000*m + s);
+            lon = ((uint32_t)1<<31) - (3600000*d + 60000*m + 1000*s + f);
             break;
         default:
+            ods_log_error("[%s] error: bad easterness in loc rr", logstr);
             goto loc_error;
             break;
     }
+    ods_log_debug("[%s] debug: longitude: %d %d %d.%d %c = %u", logstr, d, m, s, f, c, lon);
     /* altitude */
-
+    d = 0;
+    m = 0;
+    if (!zonec_parse_int(buf, (char**) &buf, &d, "altitude", -100000, 42849672)) {
+        goto loc_error;
+    }
+    switch (*buf) {
+        case 'm':
+            ++buf;
+            break;
+        case ' ':
+        case '\0':
+            break;
+        case '.':
+            ++buf;
+            if (!zonec_parse_int(buf, (char**) &buf, &m, "altitude fraction", 0, 99)) {
+                goto loc_error;
+            }
+            if (*buf == 'm') {
+               ++buf;
+            }
+            break;
+        default:
+            ods_log_error("[%s] error: bad altitude end in loc rr", logstr);
+            goto loc_error;
+            break;
+    }
+    alt = (uint32_t) 10000000 + (d*100 + m);
+    if (*buf == '\0') {
+        goto loc_done;
+    }
     /* size */
+loc_precsize:
+    if (!isspace((int)*buf)) {
+        ods_log_error("[%s] error: bad precsize[%i] in loc rr: %c", logstr, i, *buf);
+        goto loc_error;
+    }
+    while(isspace((int)*buf)) {
+        ++buf;
+    }
+    if (*buf == '\0') {
+        goto loc_done;
+    }
+    if (i >= 3) {
+        ods_log_error("[%s] error: too many precsizes in loc rr", logstr);
+        goto loc_error;
+    }
+    precsize[i] = zonec_rdata_loc_precsize_aton((char*) buf, (char**) &buf);
+    ++i;
+    if (*buf == '\0') {
+        goto loc_done;
+    }
+    goto loc_precsize;
 
-    /* horizontal precision */
-
-    /* vertical precision */
+loc_done:
+    ods_log_debug("[%s] debug: loc rdata: sz %u hp %u vp %u lat %u lon %u alt %u",
+        logstr, precsize[0], precsize[1], precsize[2], lat, lon, alt);
+    r = region_alloc(region, sizeof(uint16_t) + 16);
+    *r = 16;
+    p = (uint8_t*) (r+1);
+    *p = 0;
+    *(p+1) = precsize[0];
+    *(p+2) = precsize[1];
+    *(p+3) = precsize[2];
+    write_uint32(p+4, lat);
+    write_uint32(p+8, lon);
+    write_uint32(p+12, alt);
+    return r;
 
 loc_error:
     return NULL;
@@ -634,7 +764,7 @@ zonec_rdata_add(region_type* region, rr_type* rr, dns_rdata_format rdformat,
         rr->rdata[rr->rdlen].data = d;
     }
     rr->rdlen++;
-    ods_log_debug("[%s] info: added %s rdata element '%s'", logstr,
+    ods_log_debug("[%s] debug: added %s rdata element '%s'", logstr,
         dns_rdata_format_str(rdformat), rdbuf);
     return 1;
 }

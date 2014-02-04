@@ -97,6 +97,11 @@ Supported RRtypes
 
   "LOC"      29     # RFC 1876, Section 2
                     # Local information
+                    # WARNING: Latitude and longitude will be implicit in
+                    # output zone, for example "34.0 0 0 N" becomes "34 N"
+                    # WARNING: altitude, size, horizontal and vertical
+                    # precision will be explicit in output zone, for example
+                    # "-32" becomes "-32.00m"
 
   "NXT"      30     # RFC 2535, Section 5 (obsoleted by RFC 4033, 4034, 4035)
                     # Next domain, OBSOLETE - use NSEC

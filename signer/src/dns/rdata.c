@@ -132,9 +132,15 @@ rdata_print_base64(FILE* fd, rdata_type* rdata)
     char* buf;
     uint8_t* data = rdata_get_data(rdata);
     size_t size = rdata_size(rdata);
-    if (size == 0) { return; }
+    if (size == 0) {
+        ods_log_error("[%s] error: print base64: empty rdata", logstr);
+        return;
+    }
     tmp = region_create_custom(sizeof(region_type) + size*2 + 1);
-    if (!tmp) { return; }
+    if (!tmp) {
+        ods_log_error("[%s] error: print base64: allocation failure", logstr);
+        return;
+    }
     buf = region_alloc(tmp, size*2 + 1);
     (void) b64_ntop(data, size, buf, size*2+1);
     fprintf(fd, "%s", buf);
@@ -178,7 +184,7 @@ rdata_print_datetime(FILE* fd, rdata_type* rdata)
     if (strftime(buf, sizeof(buf), "%Y%m%d%H%M%S", tm)) {
         fprintf(fd, "%s", buf);
     } else {
-        fprintf(fd, "<error>");
+        ods_log_error("[%s] error: print datetime: strftime failed", logstr);
     }
     return;
 }
@@ -284,7 +290,7 @@ rdata_print_ipv4(FILE* fd, rdata_type* rdata)
     if (inet_ntop(AF_INET, rdata_get_data(rdata), str, sizeof(str))) {
         fprintf(fd, "%s", str);
     } else {
-        ods_log_error("[%s] error: inet_ntop failed: %s", logstr,
+        ods_log_error("[%s] error: print ipv4: inet_ntop failed: %s", logstr,
             strerror(errno));
     }
     return;
@@ -302,9 +308,75 @@ rdata_print_ipv6(FILE* fd, rdata_type* rdata)
     if (inet_ntop(AF_INET6, rdata_get_data(rdata), str, sizeof(str))) {
         fprintf(fd, "%s", str);
     } else {
-        ods_log_error("[%s] error: inet_ntop failed: %s", logstr,
+        ods_log_error("[%s] error: print ipv6: inet_ntop failed: %s", logstr,
             strerror(errno));
     }
+    return;
+}
+
+
+/**
+ * Print latitude or longitude.
+ *
+ */
+static void
+rdata_print_loc_latlon(FILE* fd, uint32_t ll, char c1, char c2)
+{
+    char c;
+    int d;
+    int m;
+    int s;
+    int f;
+    uint32_t llc = ll;
+    uint32_t eq = (uint32_t)1 << 31;
+    if (ll > eq) {
+       c = c1;
+       ll = ll - eq;
+    } else {
+       c = c2;
+       ll = eq - ll;
+    }
+    d = ll / 3600000;
+    ll = ll % 3600000;
+    m = ll / 60000;
+    ll = ll % 60000;
+    s = ll / 1000.0;
+    ll = ll % 1000;
+    f = ll;
+    ods_log_debug("[%s] debug: %u = %02u %02u %02u.%03u %c ", logstr, llc, d, m, s, f, c);
+    fprintf(fd, "%d", d);
+    if (m) fprintf(fd, " %d", m);
+    if (s || f) {
+        if (f) fprintf(fd, " %d.%d", s, f);
+        else   fprintf(fd, " %d", s);
+    }
+    fprintf(fd, " %c ", c);
+    return;
+}
+
+/** RFC 1876 code samples */
+
+/*
+ * routines to convert between on-the-wire RR format and zone file
+ * format.  Does not contain conversion to/from decimal degrees;
+ * divide or multiply by 60*60*1000 for that.
+ */
+static unsigned int poweroften[10] = {1, 10, 100, 1000, 10000, 100000,
+    1000000,10000000,100000000,1000000000};
+
+/* takes an XeY precision/size value, returns a string representation.*/
+static void
+rdata_print_loc_precsize_ntoa(FILE* fd, uint8_t prec)
+{
+    int b, e;
+    unsigned long val;
+    int mantissa = (int)((prec >> 4) & 0x0f) % 10;
+    int exponent = (int)((prec >> 0) & 0x0f) % 10;
+    val = mantissa * poweroften[exponent];
+    b = (int) (val/100);
+    e = (int) (val%100);
+    ods_log_debug("[%s] debug: %u = %d.%.2dm ", logstr, prec, b, e);
+    fprintf(fd,"%d.%.2dm", b, e);
     return;
 }
 
@@ -316,7 +388,50 @@ rdata_print_ipv6(FILE* fd, rdata_type* rdata)
 static void
 rdata_print_loc(FILE* fd, rdata_type* rdata)
 {
-    fprintf(fd, "LOC");
+    uint8_t* data = rdata_get_data(rdata);
+    size_t size = rdata_size(rdata);
+    uint8_t version;
+    uint8_t sz;
+    uint8_t hp;
+    uint8_t vp;
+    uint32_t latlon;
+    uint32_t alt;
+    int b, e;
+    if (size < 16) {
+        ods_log_error("[%s] error: print loc: size too small", logstr);
+        return;
+    }
+    /* version */
+    version = data[0];
+    if (version != 0) {
+        ods_log_error("[%s] error: print loc: version not 0", logstr);
+        return;
+    }
+    /* sz, hp, vp */
+    sz = data[1];
+    hp = data[2];
+    vp = data[3];
+    /* latitude */
+    latlon = wf_read_uint32(data+4);
+    rdata_print_loc_latlon(fd, latlon, 'N', 'S');
+    /* longitude */
+    latlon = wf_read_uint32(data+8);
+    rdata_print_loc_latlon(fd, latlon, 'E', 'W');
+    /* altitude */
+    alt = wf_read_uint32(data+12);
+    b = alt/100;
+    b -= 100000;
+    e = alt%100;
+    ods_log_debug("[%s] debug: %u = %d.%02d", logstr, alt, b, e);
+    fprintf(fd, "%d.%02dm ", b, e);
+    /* size */
+    rdata_print_loc_precsize_ntoa(fd, sz);
+    fprintf(fd, " ");
+    /* horizontal precision */
+    rdata_print_loc_precsize_ntoa(fd, hp);
+    fprintf(fd, " ");
+    /* vertical precision */
+    rdata_print_loc_precsize_ntoa(fd, vp);
     return;
 }
 
@@ -421,12 +536,9 @@ rdata_print(FILE* fd, rdata_type* rdata, uint16_t rrtype, uint16_t pos)
     if (rrstruct->rdata[0] == DNS_RDATA_TEXTS) {
         p = 0;
     }
-/*
     if (pos && rrstruct->rdata[0] == DNS_RDATA_LOC) {
         return;
     }
-*/
-
     /* regular rdata */
     switch (rrstruct->rdata[p]) {
         case DNS_RDATA_IPV4:
