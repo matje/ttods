@@ -101,6 +101,9 @@ static rrstruct_type dns_rrstructs[(DNS_NUMRRTYPES+1)] = {
               { DNS_RDATA_UNCOMPRESSED_DNAME, DNS_RDATA_BITMAP } },
 /*    31 */ { "EID", DNS_TYPE_EID, 1, 1, { DNS_RDATA_UNKNOWN } },
 /*    32 */ { "NIMLOC", DNS_TYPE_NIMLOC, 1, 1, { DNS_RDATA_UNKNOWN } },
+/*    33 */ { "SRV", DNS_TYPE_SRV, 4, 4,
+              { DNS_RDATA_INT16, DNS_RDATA_INT16, DNS_RDATA_INT16,
+                DNS_RDATA_UNCOMPRESSED_DNAME } },
 };
 
 

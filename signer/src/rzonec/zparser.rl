@@ -305,6 +305,8 @@
                 fcall rdata_aaaa;
            case DNS_TYPE_LOC:
                 fcall rdata_loc;
+           case DNS_TYPE_SRV:
+                fcall rdata_srv;
            case DNS_TYPE_NXT:
                 fcall rdata_nxt;
            case DNS_TYPE_NULL:
@@ -803,6 +805,9 @@
     rdata_nxt       := ( rd_dname . rd_bitmap )
                      %zparser_hold_ret . special_char_end;
 
+    rdata_srv       := ( (rd_int . delim){3} . rd_dname )
+                     %zparser_hold_ret . special_char;
+
     rdata            = (delim . ^special_char) @zparser_rdata_call;
 
     rrtype           =
@@ -835,6 +840,9 @@
                      | "GPOS"       @{parser->current_rr.type = DNS_TYPE_GPOS;}
                      | "AAAA"       @{parser->current_rr.type = DNS_TYPE_AAAA;}
                      | "LOC"        @{parser->current_rr.type = DNS_TYPE_LOC;}
+                     # "EID"        @{parser->current_rr.type = DNS_TYPE_EID;}
+                     # "NIMLOC"     @{parser->current_rr.type = DNS_TYPE_NIMLOC;}
+                     | "SRV"        @{parser->current_rr.type = DNS_TYPE_SRV;}
                      | "NXT"        @{parser->current_rr.type = DNS_TYPE_NXT;}
                      )
                      $!zerror_rr_typedata;

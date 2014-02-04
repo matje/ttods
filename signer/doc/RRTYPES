@@ -106,4 +106,5 @@ Supported RRtypes
   "NXT"      30     # RFC 2535, Section 5 (obsoleted by RFC 4033, 4034, 4035)
                     # Next domain, OBSOLETE - use NSEC
 
-  
+  "SRV"      33     # RFC 2782
+                    # Server selection

@@ -78,9 +78,10 @@
 #define DNS_TYPE_NXT       30   /* RFC 2535: next domain (Obsolete - use NSEC) */
 #define DNS_TYPE_EID       31   /* endpoint identifier */
 #define DNS_TYPE_NIMLOC    32   /* nimrod locator */
+#define DNS_TYPE_SRV       33   /* RFC 2782: server selection */
 
 #define DNS_NUMRRCLASSES DNS_CLASS_HS+1 /* +1 for CLASS0 */
-#define DNS_NUMRRTYPES   DNS_TYPE_NXT+1  /* +1 for TYPE0 */
+#define DNS_NUMRRTYPES   DNS_TYPE_SRV+1  /* +1 for TYPE0 */
 
 /** RDATA */
 
