@@ -76,6 +76,8 @@
 #define DNS_TYPE_AAAA      28	/* RFC 3596: IP6 address */
 #define DNS_TYPE_LOC       29	/* RFC 3596: local information */
 #define DNS_TYPE_NXT       30   /* RFC 2535: next domain (Obsolete - use NSEC) */
+#define DNS_TYPE_EID       31   /* endpoint identifier */
+#define DNS_TYPE_NIMLOC    32   /* nimrod locator */
 
 #define DNS_NUMRRCLASSES DNS_CLASS_HS+1 /* +1 for CLASS0 */
 #define DNS_NUMRRTYPES   DNS_TYPE_NXT+1  /* +1 for TYPE0 */
@@ -104,7 +106,7 @@ enum dns_rdata_format_enum {
     DNS_RDATA_FLOAT,              /* Floating point number. */
     DNS_RDATA_IPV6,               /* 128-bit IPv6 address. */
     DNS_RDATA_LOC,                /* LOC RDATA. */
-    DNS_RDATA_BINARY              /* Binary data (unknown length). */
+    DNS_RDATA_UNKNOWN             /* Binary data (unknown length). */
 };
 typedef enum dns_rdata_format_enum dns_rdata_format;
 

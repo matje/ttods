@@ -48,7 +48,7 @@ static rrclass_type dns_rrclasses[DNS_NUMRRCLASSES+1] = {
 };
 
 static rrstruct_type dns_rrstructs[(DNS_NUMRRTYPES+1)] = {
-/*     0 */ { NULL, 0, 1, 1, { DNS_RDATA_BINARY } },
+/*     0 */ { NULL, 0, 1, 1, { DNS_RDATA_UNKNOWN } },
 /*     1 */ { "A", DNS_TYPE_A, 1, 1, { DNS_RDATA_IPV4 } },
 /*     2 */ { "NS", DNS_TYPE_NS, 1, 1, { DNS_RDATA_COMPRESSED_DNAME } },
 /*     3 */ { "MD", DNS_TYPE_MD, 1, 1, { DNS_RDATA_UNCOMPRESSED_DNAME } },
@@ -61,7 +61,7 @@ static rrstruct_type dns_rrstructs[(DNS_NUMRRTYPES+1)] = {
 /*     7 */ { "MB", DNS_TYPE_MB, 1, 1, { DNS_RDATA_COMPRESSED_DNAME } },
 /*     8 */ { "MG", DNS_TYPE_MG, 1, 1, { DNS_RDATA_COMPRESSED_DNAME } },
 /*     9 */ { "MR", DNS_TYPE_MR, 1, 1, { DNS_RDATA_COMPRESSED_DNAME } },
-/*    10 */ { "NULL", DNS_TYPE_NULL, 1, 1, { DNS_RDATA_BINARY } },
+/*    10 */ { "NULL", DNS_TYPE_NULL, 1, 1, { DNS_RDATA_UNKNOWN } },
 /*    11 */ { "WKS", DNS_TYPE_WKS, 2, 2,
               { DNS_RDATA_IPV4, DNS_RDATA_SERVICES } },
 /*    12 */ { "PTR", DNS_TYPE_PTR, 1, 1, { DNS_RDATA_COMPRESSED_DNAME } },
@@ -99,6 +99,8 @@ static rrstruct_type dns_rrstructs[(DNS_NUMRRTYPES+1)] = {
 /*    29 */ { "LOC", DNS_TYPE_LOC, 1, 1, { DNS_RDATA_LOC } },
 /*    30 */ { "NXT", DNS_TYPE_NXT, 2, 2,
               { DNS_RDATA_UNCOMPRESSED_DNAME, DNS_RDATA_BITMAP } },
+/*    31 */ { "EID", DNS_TYPE_EID, 1, 1, { DNS_RDATA_UNKNOWN } },
+/*    32 */ { "NIMLOC", DNS_TYPE_NIMLOC, 1, 1, { DNS_RDATA_UNKNOWN } },
 };
 
 
@@ -213,9 +215,9 @@ dns_rdata_format_str(dns_rdata_format rd)
         case DNS_RDATA_FLOAT: return "float"; break;
         case DNS_RDATA_IPV6: return "ipv6addr"; break;
         case DNS_RDATA_LOC: return "loc"; break;
-        case DNS_RDATA_BINARY: return "binary"; break;
+        case DNS_RDATA_UNKNOWN: return "unknown"; break;
         default:
             break;
     }
-    return "unknown";
+    return "unspecified";
 }

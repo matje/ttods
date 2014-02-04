@@ -741,7 +741,7 @@ zonec_rdata_add(region_type* region, rr_type* rr, dns_rdata_format rdformat,
         case DNS_RDATA_LOC:
             d = zonec_rdata_loc(region, rdbuf);
             break;
-        case DNS_RDATA_BINARY: /* TODO */
+        case DNS_RDATA_UNKNOWN: /* TODO */
             d = NULL;
             dname = NULL;
             break;

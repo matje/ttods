@@ -591,7 +591,7 @@ rdata_print(FILE* fd, rdata_type* rdata, uint16_t rrtype, uint16_t pos)
         case DNS_RDATA_LOC:
             rdata_print_loc(fd, rdata);
             break;
-        case DNS_RDATA_BINARY:
+        case DNS_RDATA_UNKNOWN:
         default:
             fprintf(fd, "<unknown>");
             break;

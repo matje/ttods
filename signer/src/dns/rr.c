@@ -112,7 +112,7 @@ rr_compare_rdata(rr_type* rr1, rr_type* rr2)
             case DNS_RDATA_NSAP:
             case DNS_RDATA_RRTYPE:
             case DNS_RDATA_BASE64:
-            case DNS_RDATA_BINARY:
+            case DNS_RDATA_UNKNOWN:
             default:
                 if (rdata_size(&rr1->rdata[i]) < rdata_size(&rr2->rdata[i])) {
                     return 1;
