@@ -844,6 +844,7 @@
                      # "NIMLOC"     @{parser->current_rr.type = DNS_TYPE_NIMLOC;}
                      | "SRV"        @{parser->current_rr.type = DNS_TYPE_SRV;}
                      | "NXT"        @{parser->current_rr.type = DNS_TYPE_NXT;}
+                     # "ATMA"       @{parser->current_rr.type = DNS_TYPE_ATMA;}
                      )
                      $!zerror_rr_typedata;
 

@@ -104,6 +104,8 @@ static rrstruct_type dns_rrstructs[(DNS_NUMRRTYPES+1)] = {
 /*    33 */ { "SRV", DNS_TYPE_SRV, 4, 4,
               { DNS_RDATA_INT16, DNS_RDATA_INT16, DNS_RDATA_INT16,
                 DNS_RDATA_UNCOMPRESSED_DNAME } },
+/*    34 */ { "ATMA", DNS_TYPE_ATMA, 1, 1, { DNS_RDATA_UNKNOWN } },
+
 };
 
 
