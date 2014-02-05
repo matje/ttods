@@ -284,6 +284,7 @@
            case DNS_TYPE_MX:
            case DNS_TYPE_AFSDB:
            case DNS_TYPE_RT:
+           case DNS_TYPE_KX:
                 fcall rdata_mx;
            case DNS_TYPE_TXT:
                 fcall rdata_txt;
@@ -856,6 +857,7 @@
                      | "SRV"        @{parser->current_rr.type = DNS_TYPE_SRV;}
                      # "ATMA"       @{parser->current_rr.type = DNS_TYPE_ATMA;}
                      | "NAPTR"      @{parser->current_rr.type = DNS_TYPE_NAPTR;}
+                     | "KX"         @{parser->current_rr.type = DNS_TYPE_KX;}
                      )
                      $!zerror_rr_typedata;
 

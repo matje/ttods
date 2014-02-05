@@ -109,6 +109,8 @@ static rrstruct_type dns_rrstructs[(DNS_NUMRRTYPES+1)] = {
               { DNS_RDATA_INT16, DNS_RDATA_INT16, DNS_RDATA_TEXT,
                 DNS_RDATA_TEXT, DNS_RDATA_TEXT,
                 DNS_RDATA_UNCOMPRESSED_DNAME } },
+/*    36 */ { "KX", DNS_TYPE_KX, 2, 2,
+              { DNS_RDATA_INT16, DNS_RDATA_UNCOMPRESSED_DNAME } },
 
 };
 

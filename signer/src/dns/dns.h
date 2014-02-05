@@ -81,9 +81,10 @@
 #define DNS_TYPE_SRV       33   /* RFC 2782: server selection */
 #define DNS_TYPE_ATMA      34   /* ATM address */
 #define DNS_TYPE_NAPTR     35   /* RFC 3403: naming authority pointer */
+#define DNS_TYPE_KX        36   /* RFC 2230: key exchanger */
 
 #define DNS_NUMRRCLASSES DNS_CLASS_HS+1 /* +1 for CLASS0 */
-#define DNS_NUMRRTYPES   DNS_TYPE_NAPTR+1  /* +1 for TYPE0 */
+#define DNS_NUMRRTYPES   DNS_TYPE_KX+1  /* +1 for TYPE0 */
 
 /** RDATA */
 

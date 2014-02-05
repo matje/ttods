@@ -117,3 +117,6 @@ Supported RRtypes
 
   "NAPTR"    35     # RFC 3403, Section 4.1
                     # Naming authority pointer
+
+  "KX"       36     # RFC 2230, Section 3
+                    # Key exchanger
