@@ -55,6 +55,34 @@ zonec_parse_int(const char* str, char** end, int32_t* result,
 
 
 /**
+ * Convert algorithm format into RDATA element.
+ *
+ */
+static uint16_t*
+zonec_rdata_algorithm(region_type* region, const char* buf)
+{
+    uint16_t* r = NULL;
+    uint8_t algo;
+    if (isdigit((int)*buf)) {
+        ods_log_error("[%s] info: algorithm '%s' is a number",
+            logstr, buf);
+        algo = (uint8_t) atoi(buf);
+    } else {
+        algo = dns_algorithm_by_name(buf);
+        if (!algo) {
+            ods_log_error("[%s] error: unrecognized algorithm '%s'",
+                logstr, buf);
+            return NULL;
+        }
+    }
+    ods_log_error("[%s] info: algorithm '%s' = %u",
+        logstr, buf, algo);
+    r = rdata_init_data(region, &algo, sizeof(algo));
+    return r;
+}
+
+
+/**
  * Convert base64 format into RDATA element.
  *
  */
@@ -126,6 +154,31 @@ zonec_rdata_bitmap_nxt(region_type* region, const char* buf)
         if (bitmap[i] != 0) last = i + 1;
     }
     return rdata_init_data(region, bitmap, last);
+}
+
+
+/**
+ * Convert certificate type format into RDATA element.
+ *
+ */
+static uint16_t*
+zonec_rdata_cert_type(region_type* region, const char* buf)
+{
+    uint16_t* r = NULL;
+    uint16_t ct;
+    if (isdigit((int)*buf)) {
+        ct = (uint16_t) atoi(buf);
+    } else {
+        ct = dns_cert_type_by_name(buf);
+        if (!ct) {
+            ods_log_error("[%s] error: unrecognized certificate type '%s'",
+                logstr, buf);
+            return NULL;
+        }
+    }
+    ct = (uint16_t) htons(ct);
+    r = rdata_init_data(region, &ct, sizeof(ct));
+    return r;
 }
 
 
@@ -735,6 +788,12 @@ zonec_rdata_add(region_type* region, rr_type* rr, dns_rdata_format rdformat,
             break;
         case DNS_RDATA_LOC:
             d = zonec_rdata_loc(region, rdbuf);
+            break;
+        case DNS_RDATA_CERT_TYPE:
+            d = zonec_rdata_cert_type(region, rdbuf);
+            break;
+        case DNS_RDATA_ALGORITHM:
+            d = zonec_rdata_algorithm(region, rdbuf);
             break;
         case DNS_RDATA_UNKNOWN: /* TODO */
             d = NULL;

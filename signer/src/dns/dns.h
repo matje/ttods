@@ -37,6 +37,8 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "util/status.h"
+
 /** CLASS */
 #define DNS_CLASS_IN     1 	/* RFC 1035: Internet class */
 #define DNS_CLASS_CS     2 	/* RFC 1035: CSNET class */
@@ -82,9 +84,10 @@
 #define DNS_TYPE_ATMA      34   /* ATM address */
 #define DNS_TYPE_NAPTR     35   /* RFC 3403: naming authority pointer */
 #define DNS_TYPE_KX        36   /* RFC 2230: key exchanger */
+#define DNS_TYPE_CERT      37   /* RFC 4398: certificate */
 
 #define DNS_NUMRRCLASSES DNS_CLASS_HS+1 /* +1 for CLASS0 */
-#define DNS_NUMRRTYPES   DNS_TYPE_KX+1  /* +1 for TYPE0 */
+#define DNS_NUMRRTYPES   DNS_TYPE_CERT+1  /* +1 for TYPE0 */
 
 /** RDATA */
 
@@ -110,6 +113,8 @@ enum dns_rdata_format_enum {
     DNS_RDATA_FLOAT,              /* Floating point number. */
     DNS_RDATA_IPV6,               /* 128-bit IPv6 address. */
     DNS_RDATA_LOC,                /* LOC RDATA. */
+    DNS_RDATA_CERT_TYPE,          /* Certificate number or mnemonic. */
+    DNS_RDATA_ALGORITHM,          /* Algorithm number or mnemonic. */
     DNS_RDATA_UNKNOWN             /* Binary data (unknown length). */
 };
 typedef enum dns_rdata_format_enum dns_rdata_format;
@@ -181,6 +186,22 @@ rrstruct_type* dns_rrstruct_by_type(uint16_t type);
  *
  */
 uint16_t dns_rrtype_by_name(const char* name);
+
+/**
+ * Get certificate type by name.
+ * @param name: name.
+ * @return:     (uint16_t) certificate type.
+ *
+ */
+uint16_t dns_cert_type_by_name(const char* name);
+
+/**
+ * Get algorithm by name.
+ * @param name: name.
+ * @return:     (uint8_t) algorithm.
+ *
+ */
+uint8_t dns_algorithm_by_name(const char* name);
 
 /**
  * Return RDATA format.

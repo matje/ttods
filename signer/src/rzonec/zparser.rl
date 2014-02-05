@@ -312,6 +312,8 @@
                 fcall rdata_srv;
            case DNS_TYPE_NAPTR:
                 fcall rdata_naptr;
+           case DNS_TYPE_CERT:
+                fcall rdata_cert;
            case DNS_TYPE_NULL:
            default:
                 if (!rs->name) {
@@ -551,7 +553,7 @@
     time_value       = (decimal_number . timeformat)+ . decimal_number?;
 
     # mnemonic: for example "TCP", "UDP", "DNS", ...
-    mnemonic = alpha+;
+    mnemonic         = alpha+;
 
     # RFC 1035: TTL is a decimal integer
     # The $TTL field may take any time value.
@@ -747,6 +749,10 @@
                      >zparser_rdata_start $zparser_rdata_char
                      %zparser_rdata_end   $!zerror_rdata_err;
 
+    rd_algorithm     = ( (alpha . (alnum | '-')*) | decimal_number )
+                     >zparser_rdata_start $zparser_rdata_char
+                     %zparser_rdata_end   $!zerror_rdata_err;
+
     # RFC4648: Base16, Base32 and Base64 Data Encodings
     rd_b64           = (((alnum | [+/])+ . delim?)+ . '='{0,2} . delim?)
                      >zparser_rdata_start $zparser_rdata_char_b64
@@ -816,8 +822,12 @@
                      %zparser_hold_ret . special_char;
 
     rdata_naptr     := ( (rd_int . delim){2} . (rd_str . delim){3}
-                     . rd_abs_dname )
+                       . rd_abs_dname)
                      %zparser_hold_ret . special_char;
+
+    rdata_cert      := ( rd_algorithm . delim . rd_int . delim . rd_algorithm
+                       . delim . rd_b64)
+                     %zparser_hold_ret . special_char_end;
 
     rdata            = (delim . ^special_char) @zparser_rdata_call;
 
@@ -858,6 +868,7 @@
                      # "ATMA"       @{parser->current_rr.type = DNS_TYPE_ATMA;}
                      | "NAPTR"      @{parser->current_rr.type = DNS_TYPE_NAPTR;}
                      | "KX"         @{parser->current_rr.type = DNS_TYPE_KX;}
+                     | "CERT"       @{parser->current_rr.type = DNS_TYPE_CERT;}
                      )
                      $!zerror_rr_typedata;
 

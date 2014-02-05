@@ -120,3 +120,7 @@ Supported RRtypes
 
   "KX"       36     # RFC 2230, Section 3
                     # Key exchanger
+
+  "CERT"     37     # RFC 4398, Section 2
+                    # Certificate
+

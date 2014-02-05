@@ -552,9 +552,11 @@ rdata_print(FILE* fd, rdata_type* rdata, uint16_t rrtype, uint16_t pos)
             rdata_print_dname(fd, rdata);
             break;
         case DNS_RDATA_INT8:
+        case DNS_RDATA_ALGORITHM:
             rdata_print_int8(fd, rdata);
             break;
         case DNS_RDATA_INT16:
+        case DNS_RDATA_CERT_TYPE:
             rdata_print_int16(fd, rdata);
             break;
         case DNS_RDATA_INT32:

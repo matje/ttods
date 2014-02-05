@@ -32,6 +32,7 @@
  */
 
 #include "dns/dns.h"
+#include "util/str.h"
 
 #include <ctype.h>
 #include <stdlib.h>
@@ -40,12 +41,59 @@
 
 /* Classes defined in RFC 1035 */
 static rrclass_type dns_rrclasses[DNS_NUMRRCLASSES+1] = {
-        { NULL, 0 },
-        { "IN", DNS_CLASS_IN },
-        { "CS", DNS_CLASS_CS },
-        { "CH", DNS_CLASS_CH },
-        { "HS", DNS_CLASS_HS },
+/*    0 */ { NULL, 0 },
+/*    1 */ { "IN", DNS_CLASS_IN },
+/*    2 */ { "CS", DNS_CLASS_CS },
+/*    3 */ { "CH", DNS_CLASS_CH },
+/*    4 */ { "HS", DNS_CLASS_HS },
 };
+
+/* Certificate types defined in RFC 4398 */
+static ods_lookup_table rdata_cert_types[] = {
+/*  { 0 }, */              /* Reserved                                     */
+    { 1,     "PKIX" },     /* X.509 as per PKIX                            */
+    { 2,     "SPKI" },     /* SPKI certificate                             */
+    { 3,     "PGP" },      /* OpenPGP packet                               */
+    { 4,     "IPKIX" },    /* The URL of an X.509 data object              */
+    { 5,     "ISPKI" },    /* The URL of an SPKI certificate               */
+    { 6,     "IPGP" },     /* The fingerprint and URL of an OpenPGP packet */
+    { 7,     "ACPKIX" },   /* Attribute Certificate                        */
+    { 8,     "IACPKIX" },  /* The URL of an Attribute Certificate          */
+
+    { 253,   "URI" },      /* URI private                                  */
+    { 254,   "OID" },      /* OID private                                  */
+/*  { 255,   NULL }, */    /* Reserved                                     */
+
+/*  { 65280-65534 } */     /* Experimental                                 */
+/*  { 65535 } */           /* Reserved                                     */
+    { 0, NULL }
+};
+
+/* Algorithms defined in RFC 4034, 5155, 5702, 5933, 6605 */
+static ods_lookup_table rdata_algorithms[] = {
+/*  { 0 }, */                      /* Reserved */
+    { 1,   "RSAMD5" },             /* RSA/MD5 */
+    { 2,   "DH" },                 /* Diffie-Hellamn */
+    { 3,   "DSA" },                /* DSA/SHA-1 */
+    { 4,   "ECC" },                /* Elliptic Curve */
+    { 5,   "RSASHA1" },            /* RSA/SHA-1 */
+    { 6,   "DSA-NSEC3-SHA1" },     /* DSA/SHA-1 NSEC3 */
+    { 7,   "RSASHA1-NSEC3-SHA1" }, /* RSA/SHA-1 NSEC3 */
+    { 8,   "RSASHA256" },          /* RSA/SHA-256 */
+
+    { 10,  "RSASHA512" },          /* RSA/SHA-512 */
+
+    { 12,  "ECC-GOST" },           /* GOST R 34.10-2001 */
+    { 13,  "ECDSAP256SHA256" },    /* ECDSA Curve P-256 with SHA-256 */
+    { 14,  "ECDSAP384SHA384" },    /* ECDSA Curve P-384 with SHA-384 */
+
+    { 252, "INDIRECT" },        /* Indirect */
+    { 253, "PRIVATEDNS" },      /* Private  */
+    { 254, "PRIVATEOID" },      /* Private  */
+/*  { 255, NULL }, */           /* Reserved */
+    { 0, NULL }
+};
+
 
 static rrstruct_type dns_rrstructs[(DNS_NUMRRTYPES+1)] = {
 /*     0 */ { NULL, 0, 1, 1, { DNS_RDATA_UNKNOWN } },
@@ -111,7 +159,9 @@ static rrstruct_type dns_rrstructs[(DNS_NUMRRTYPES+1)] = {
                 DNS_RDATA_UNCOMPRESSED_DNAME } },
 /*    36 */ { "KX", DNS_TYPE_KX, 2, 2,
               { DNS_RDATA_INT16, DNS_RDATA_UNCOMPRESSED_DNAME } },
-
+/*    37 */ { "CERT", DNS_TYPE_CERT, 4, 4,
+              { DNS_RDATA_CERT_TYPE, DNS_RDATA_INT8, DNS_RDATA_ALGORITHM,
+                DNS_RDATA_BASE64 } },
 };
 
 
@@ -187,6 +237,40 @@ dns_rrtype_by_name(const char* name)
 
 
 /**
+ * Get certificate type by name.
+ *
+ */
+uint16_t
+dns_cert_type_by_name(const char* name)
+{
+    ods_lookup_table* table = rdata_cert_types;
+    while (table->name != NULL) {
+        if (ods_strcmp(name, table->name) == 0)
+            return (uint16_t) table->id;
+        table++;
+    }
+    return (uint16_t) atoi(name);
+}
+
+
+/**
+ * Get algorithm by name.
+ *
+ */
+uint8_t
+dns_algorithm_by_name(const char* name)
+{
+    ods_lookup_table* table = rdata_algorithms;
+    while (table->name != NULL) {
+        if (ods_strcmp(name, table->name) == 0)
+            return (uint8_t) table->id;
+        table++;
+    }
+    return (uint8_t) atoi(name);
+}
+
+
+/**
  * Get RR structure by type.
  *
  */
@@ -226,6 +310,8 @@ dns_rdata_format_str(dns_rdata_format rd)
         case DNS_RDATA_FLOAT: return "float"; break;
         case DNS_RDATA_IPV6: return "ipv6addr"; break;
         case DNS_RDATA_LOC: return "loc"; break;
+        case DNS_RDATA_CERT_TYPE: return "certificate-type"; break;
+        case DNS_RDATA_ALGORITHM: return "algorithm"; break;
         case DNS_RDATA_UNKNOWN: return "unknown"; break;
         default:
             break;
