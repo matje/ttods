@@ -683,11 +683,6 @@ zonec_rdata_add(region_type* region, rr_type* rr, dns_rdata_format rdformat,
         ods_log_error("[%s] error: too many rdata elements", logstr);
         return 0;
     }
-    if (!rdsize) {
-        ods_log_error("[%s] error: empty %s rdata element", logstr,
-            dns_rdata_format_str(rdformat));
-        return 0;
-    }
 
     ods_log_info("[%s] info: adding %s rdata element '%s'", logstr,
         dns_rdata_format_str(rdformat), rdbuf);

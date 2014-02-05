@@ -305,10 +305,12 @@
                 fcall rdata_aaaa;
            case DNS_TYPE_LOC:
                 fcall rdata_loc;
-           case DNS_TYPE_SRV:
-                fcall rdata_srv;
            case DNS_TYPE_NXT:
                 fcall rdata_nxt;
+           case DNS_TYPE_SRV:
+                fcall rdata_srv;
+           case DNS_TYPE_NAPTR:
+                fcall rdata_naptr;
            case DNS_TYPE_NULL:
            default:
                 if (!rs->name) {
@@ -680,6 +682,10 @@
                      >zparser_rdata_start $zparser_rdata_char
                      %zparser_rdata_end   $!zerror_rdata_err;
 
+    rd_abs_dname     = (abs_dname)
+                     >zparser_rdata_start $zparser_rdata_char
+                     %zparser_rdata_end   $!zerror_rdata_err;
+
     rd_dname         = (abs_dname | rel_dname)
                      >zparser_rdata_start $zparser_rdata_char
                      %zparser_rdata_end   $!zerror_rdata_err;
@@ -808,6 +814,10 @@
     rdata_srv       := ( (rd_int . delim){3} . rd_dname )
                      %zparser_hold_ret . special_char;
 
+    rdata_naptr     := ( (rd_int . delim){2} . (rd_str . delim){3}
+                     . rd_abs_dname )
+                     %zparser_hold_ret . special_char;
+
     rdata            = (delim . ^special_char) @zparser_rdata_call;
 
     rrtype           =
@@ -840,11 +850,12 @@
                      | "GPOS"       @{parser->current_rr.type = DNS_TYPE_GPOS;}
                      | "AAAA"       @{parser->current_rr.type = DNS_TYPE_AAAA;}
                      | "LOC"        @{parser->current_rr.type = DNS_TYPE_LOC;}
+                     | "NXT"        @{parser->current_rr.type = DNS_TYPE_NXT;}
                      # "EID"        @{parser->current_rr.type = DNS_TYPE_EID;}
                      # "NIMLOC"     @{parser->current_rr.type = DNS_TYPE_NIMLOC;}
                      | "SRV"        @{parser->current_rr.type = DNS_TYPE_SRV;}
-                     | "NXT"        @{parser->current_rr.type = DNS_TYPE_NXT;}
                      # "ATMA"       @{parser->current_rr.type = DNS_TYPE_ATMA;}
+                     | "NAPTR"      @{parser->current_rr.type = DNS_TYPE_NAPTR;}
                      )
                      $!zerror_rr_typedata;
 

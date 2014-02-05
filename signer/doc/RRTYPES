@@ -106,5 +106,14 @@ Supported RRtypes
   "NXT"      30     # RFC 2535, Section 5 (obsoleted by RFC 4033, 4034, 4035)
                     # Next domain, OBSOLETE - use NSEC
 
+  "EID"      31     # Endpoint identifier. Not supported.
+
+  "NIMLOC"   31     # Nimrod locator. Not supported.
+
   "SRV"      33     # RFC 2782
                     # Server selection
+
+  "ATMA"     34     # ATM address. Not supported.
+
+  "NAPTR"    35     # RFC 3403, Section 4.1
+                    # Naming authority pointer
