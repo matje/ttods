@@ -180,7 +180,7 @@ b64_ntop(uint8_t const* src, size_t srcsize, char* target,
     int src_index = 0;
     uint8_t output;
 
-    while (*src) {
+    while (srcsize) {
         switch (src_index) {
             case 0:
                 target_bytes += 4;
@@ -188,6 +188,7 @@ b64_ntop(uint8_t const* src, size_t srcsize, char* target,
                     return -1;
                 }
                 output = (*src & 0xfc) >> 2;
+                ods_log_assert(output < 64);
                 *target = numb64[output];
                 ++target;
 
@@ -195,6 +196,7 @@ b64_ntop(uint8_t const* src, size_t srcsize, char* target,
                 break;
             case 1:
                 output += (*src & 0xf0) >> 4;
+                ods_log_assert(output < 64);
                 *target = numb64[output];
                 ++target;
 
@@ -202,10 +204,12 @@ b64_ntop(uint8_t const* src, size_t srcsize, char* target,
                 break;
             case 2:
                 output += (*src & 0xc0) >> 6;
+                ods_log_assert(output < 64);
                 *target = numb64[output];
                 ++target;
 
                 output = (*src & 0x3f);
+                ods_log_assert(output < 64);
                 *target = numb64[output];
                 ++target;
                 break;
@@ -217,12 +221,14 @@ b64_ntop(uint8_t const* src, size_t srcsize, char* target,
         srcsize--;
         src++;
     }
+
     if (src_index != 0) {
         switch (src_index) {
             case 0:
                 return -3;
                 break;
             case 1:
+                ods_log_assert(output < 64);
                 *target = numb64[output];
                 ++target;
 
@@ -233,6 +239,7 @@ b64_ntop(uint8_t const* src, size_t srcsize, char* target,
                 ++target;
                 break;
             case 2:
+                ods_log_assert(output < 64);
                 *target = numb64[output];
                 ++target;
 
