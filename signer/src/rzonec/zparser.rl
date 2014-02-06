@@ -320,6 +320,8 @@
                 fcall rdata_apl;
            case DNS_TYPE_DS:
                 fcall rdata_ds;
+           case DNS_TYPE_SSHFP:
+                fcall rdata_sshfp;
            case DNS_TYPE_NULL:
            default:
                 if (!rs->name) {
@@ -878,6 +880,9 @@
                        . delim . rd_hex . delim? )
                     %zparser_hold_ret . special_char_end;
 
+    rdata_sshfp     := ( rd_int . delim . rd_int . delim . rd_hex . delim? )
+                    %zparser_hold_ret . special_char_end;
+
     rdata            = (delim . ^special_char) @zparser_rdata_call;
 
     rrtype           =
@@ -924,6 +929,7 @@
                      # "OPT"        @{parser->current_rr.type = DNS_TYPE_OPT;}
                      | "APL"        @{parser->current_rr.type = DNS_TYPE_APL;}
                      | "DS"         @{parser->current_rr.type = DNS_TYPE_DS;}
+                     | "SSHFP"      @{parser->current_rr.type = DNS_TYPE_SSHFP;}
                      )
                      $!zerror_rr_typedata;
 

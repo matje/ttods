@@ -143,5 +143,8 @@ Supported RRtypes
                     # List of address prefixes.
                     # WARNING: Empty rdata not supported.
 
-  "DS"        43    # RFC 4034, Section 5.1.
+  "DS"       43     # RFC 4034, Section 5.1.
                     # Delegation signer.
+
+  "SSHFP"    44     # RFC 4255, Section 3.
+                    # SSH key fingerprint.

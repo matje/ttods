@@ -91,9 +91,10 @@
 #define DNS_TYPE_OPT       41   /* RFC 6672: DNAME redirection */
 #define DNS_TYPE_APL       42   /* RFC 3123: list of address prefixes */
 #define DNS_TYPE_DS        43   /* RFC 4034: delegation signer */
+#define DNS_TYPE_SSHFP     44   /* RFC 4255: SSH key fingerprint */
 
 #define DNS_NUMRRCLASSES DNS_CLASS_HS+1 /* +1 for CLASS0 */
-#define DNS_NUMRRTYPES   DNS_TYPE_DS+1  /* +1 for TYPE0 */
+#define DNS_NUMRRTYPES   DNS_TYPE_SSHFP+1  /* +1 for TYPE0 */
 
 /** RDATA */
 

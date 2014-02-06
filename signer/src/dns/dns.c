@@ -170,6 +170,8 @@ static rrstruct_type dns_rrstructs[(DNS_NUMRRTYPES+1)] = {
 /*    43 */ { "DS", DNS_TYPE_DS, 4, 4,
               { DNS_RDATA_INT16, DNS_RDATA_ALGORITHM, DNS_RDATA_INT8,
                 DNS_RDATA_HEX } },
+/*    44 */ { "SSHFP", DNS_TYPE_SSHFP, 3, 3,
+              { DNS_RDATA_INT8, DNS_RDATA_INT8, DNS_RDATA_HEX } },
 };
 
 
