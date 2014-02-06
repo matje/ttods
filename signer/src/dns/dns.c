@@ -164,6 +164,8 @@ static rrstruct_type dns_rrstructs[(DNS_NUMRRTYPES+1)] = {
                 DNS_RDATA_BASE64 } },
 /*    38 */ { "A6", DNS_TYPE_A6, 1, 1, { DNS_RDATA_UNKNOWN } },
 /*    39 */ { "DNAME", DNS_TYPE_DNAME, 1, 1, { DNS_RDATA_UNCOMPRESSED_DNAME } },
+/*    40 */ { "SINK", DNS_TYPE_SINK, 1, 1, { DNS_RDATA_UNKNOWN } },
+/*    41 */ { "OPT", DNS_TYPE_OPT, 1, 1, { DNS_RDATA_UNKNOWN } },
 
 };
 

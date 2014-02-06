@@ -87,9 +87,11 @@
 #define DNS_TYPE_CERT      37   /* RFC 4398: certificate */
 #define DNS_TYPE_A6        38   /* RFC 2874: IPv6 address */
 #define DNS_TYPE_DNAME     39   /* RFC 6672: DNAME redirection */
+#define DNS_TYPE_SINK      40   /* RFC 6672: DNAME redirection */
+#define DNS_TYPE_OPT       41   /* RFC 6672: DNAME redirection */
 
 #define DNS_NUMRRCLASSES DNS_CLASS_HS+1 /* +1 for CLASS0 */
-#define DNS_NUMRRTYPES   DNS_TYPE_DNAME+1  /* +1 for TYPE0 */
+#define DNS_NUMRRTYPES   DNS_TYPE_OPT+1  /* +1 for TYPE0 */
 
 /** RDATA */
 

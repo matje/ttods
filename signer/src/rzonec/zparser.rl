@@ -877,6 +877,8 @@
                      | "CERT"       @{parser->current_rr.type = DNS_TYPE_CERT;}
                      # "A6"         @{parser->current_rr.type = DNS_TYPE_A6;}
                      | "DNAME"      @{parser->current_rr.type = DNS_TYPE_DNAME;}
+                     # "SINK"       @{parser->current_rr.type = DNS_TYPE_SINK;}
+                     # "OPT"        @{parser->current_rr.type = DNS_TYPE_OPT;}
                      )
                      $!zerror_rr_typedata;
 
