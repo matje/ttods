@@ -314,6 +314,8 @@
                 fcall rdata_naptr;
            case DNS_TYPE_CERT:
                 fcall rdata_cert;
+           case DNS_TYPE_DNAME:
+                fcall rdata_dname;
            case DNS_TYPE_NULL:
            default:
                 if (!rs->name) {
@@ -830,6 +832,9 @@
                        . delim . rd_b64)
                      %zparser_hold_ret . special_char_end;
 
+    rdata_dname     := rd_abs_dname
+                     %zparser_hold_ret . special_char;
+
     rdata            = (delim . ^special_char) @zparser_rdata_call;
 
     rrtype           =
@@ -870,6 +875,8 @@
                      | "NAPTR"      @{parser->current_rr.type = DNS_TYPE_NAPTR;}
                      | "KX"         @{parser->current_rr.type = DNS_TYPE_KX;}
                      | "CERT"       @{parser->current_rr.type = DNS_TYPE_CERT;}
+                     # "A6"         @{parser->current_rr.type = DNS_TYPE_A6;}
+                     | "DNAME"      @{parser->current_rr.type = DNS_TYPE_DNAME;}
                      )
                      $!zerror_rr_typedata;
 

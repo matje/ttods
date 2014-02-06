@@ -127,3 +127,5 @@ Supported RRtypes
   "A6"       38     # RFC 2874, Section 3.1 (made historic by RFC 6563)
                     # A6, OBSOLETE - use AAAA. Not supported.
 
+  "DNAME"    39     # RFC 6672, Section 2.1
+                    # DNAME redirection

@@ -163,6 +163,8 @@ static rrstruct_type dns_rrstructs[(DNS_NUMRRTYPES+1)] = {
               { DNS_RDATA_CERT_TYPE, DNS_RDATA_INT8, DNS_RDATA_ALGORITHM,
                 DNS_RDATA_BASE64 } },
 /*    38 */ { "A6", DNS_TYPE_A6, 1, 1, { DNS_RDATA_UNKNOWN } },
+/*    39 */ { "DNAME", DNS_TYPE_DNAME, 1, 1, { DNS_RDATA_UNCOMPRESSED_DNAME } },
+
 };
 
 
