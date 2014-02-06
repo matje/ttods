@@ -316,6 +316,8 @@
                 fcall rdata_cert;
            case DNS_TYPE_DNAME:
                 fcall rdata_dname;
+           case DNS_TYPE_APL:
+                fcall rdata_apl;
            case DNS_TYPE_NULL:
            default:
                 if (!rs->name) {
@@ -383,6 +385,14 @@
         parser->rdbuf[parser->rdsize] = '\0';
         if (!zonec_rdata_add(parser->region, &parser->current_rr,
             DNS_RDATA_TEXT, parser->dname, parser->rdbuf, parser->rdsize)) {
+            parser->totalerrors++;
+            fhold; fgoto line_error;
+        }
+    }
+    action zparser_rdata_apl_end {
+        parser->rdbuf[parser->rdsize] = '\0';
+        if (!zonec_rdata_add(parser->region, &parser->current_rr,
+            DNS_RDATA_APLS, parser->dname, parser->rdbuf, parser->rdsize)) {
             parser->totalerrors++;
             fhold; fgoto line_error;
         }
@@ -639,7 +649,9 @@
                      | '@' >zparser_dname_origin
                      | zlen %zparser_dname_previous;
 
-    ipv4_label       = digit {1,3} . '.' ;
+    addr_prefix      = '/' . digit{1,3};
+
+    ipv4_label       = digit {1,3} . '.';
     ipv4_label_end   = digit {1,3};
 
     ipv4_addr        = ipv4_label{3} . ipv4_label_end;
@@ -755,6 +767,11 @@
                      >zparser_rdata_start $zparser_rdata_char
                      %zparser_rdata_end   $!zerror_rdata_err;
 
+    rd_apl           = ( '!'? . ( ("1:" . ipv4_addr) | ("2:" . ipv6_addr) )
+                     . addr_prefix )
+                     >zparser_rdata_start $zparser_rdata_char
+                     %zparser_rdata_apl_end $!zerror_rdata_err;
+
     # RFC4648: Base16, Base32 and Base64 Data Encodings
     rd_b64           = (((alnum | [+/])+ . delim?)+ . '='{0,2} . delim?)
                      >zparser_rdata_start $zparser_rdata_char_b64
@@ -767,30 +784,30 @@
     rdata_ns        := rd_dname
                      %zparser_hold_ret . special_char;
 
-    rdata_soa       := (rd_dname . delim . rd_dname . delim . rd_int . delim
+    rdata_soa       := ( rd_dname . delim . rd_dname . delim . rd_int . delim
                      .  rd_timef . delim . rd_timef . delim . rd_timef . delim
-                     .  rd_timef)
+                     .  rd_timef )
                      %zparser_hold_ret . special_char;
 
-    rdata_wks       := (rd_ipv4 . rd_services)
+    rdata_wks       := ( rd_ipv4 . rd_services )
                      %zparser_hold_ret . special_char_end;
 
-    rdata_hinfo     := (rd_str . delim . rd_str)
+    rdata_hinfo     := ( rd_str . delim . rd_str )
                      %zparser_hold_ret . special_char;
 
-    rdata_minfo     := (rd_dname . delim . rd_dname)
+    rdata_minfo     := ( rd_dname . delim . rd_dname )
                      %zparser_hold_ret . special_char;
 
-    rdata_mx        := (rd_int . delim . rd_dname)
+    rdata_mx        := ( rd_int . delim . rd_dname )
                      %zparser_hold_ret . special_char;
 
-    rdata_txt       := (rd_str . (delim . rd_str)* . delim?)
+    rdata_txt       := ( rd_str . (delim . rd_str)* . delim? )
                      %zparser_hold_ret . special_char_end;
 
     rdata_x25       := rd_str
                      %zparser_hold_ret . special_char;
 
-    rdata_isdn      := (rd_str . (delim . rd_str)? . delim?)
+    rdata_isdn      := ( rd_str . (delim . rd_str)? . delim? )
                      %zparser_hold_ret . special_char_end;
 
     rdata_nsap      := '0x' . rd_nsap
@@ -799,11 +816,11 @@
     rdata_sig       := ( rd_rrtype . delim . rd_algorithm . delim . rd_int 
                        . delim . rd_timef . delim . rd_datetime . delim
                        . rd_datetime . delim . rd_int . delim . rd_dname
-                       . delim . rd_b64)
+                       . delim . rd_b64 )
                      %zparser_hold_ret . special_char_end;
 
     rdata_key       := ( rd_int . delim . rd_int . delim . rd_algorithm
-                       . delim . rd_b64)
+                       . delim . rd_b64 )
                      %zparser_hold_ret . special_char_end;
 
     rdata_px        := ( rd_int . delim . rd_dname . delim . rd_dname )
@@ -825,15 +842,18 @@
                      %zparser_hold_ret . special_char;
 
     rdata_naptr     := ( (rd_int . delim){2} . (rd_str . delim){3}
-                       . rd_abs_dname)
+                       . rd_abs_dname )
                      %zparser_hold_ret . special_char;
 
     rdata_cert      := ( rd_algorithm . delim . rd_int . delim . rd_algorithm
-                       . delim . rd_b64)
+                       . delim . rd_b64 )
                      %zparser_hold_ret . special_char_end;
 
     rdata_dname     := rd_abs_dname
                      %zparser_hold_ret . special_char;
+
+    rdata_apl       := ( rd_apl? . ( delim . rd_apl)* . delim? )
+                    %zparser_hold_ret . special_char_end;
 
     rdata            = (delim . ^special_char) @zparser_rdata_call;
 
@@ -879,6 +899,7 @@
                      | "DNAME"      @{parser->current_rr.type = DNS_TYPE_DNAME;}
                      # "SINK"       @{parser->current_rr.type = DNS_TYPE_SINK;}
                      # "OPT"        @{parser->current_rr.type = DNS_TYPE_OPT;}
+                     | "APL"        @{parser->current_rr.type = DNS_TYPE_APL;}
                      )
                      $!zerror_rr_typedata;
 

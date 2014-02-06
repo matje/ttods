@@ -138,3 +138,7 @@ Supported RRtypes
 
   "OPT"      41     # RFC 6891, Section 6.1.
                     # Opt. Not allowed in zone file. Not supported.
+
+  "APL"      42     # RFC 3123, Section 4.
+                    # List of address prefixes.
+                    # WARNING: Empty rdata not supported.

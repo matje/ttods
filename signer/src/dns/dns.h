@@ -89,9 +89,10 @@
 #define DNS_TYPE_DNAME     39   /* RFC 6672: DNAME redirection */
 #define DNS_TYPE_SINK      40   /* RFC 6672: DNAME redirection */
 #define DNS_TYPE_OPT       41   /* RFC 6672: DNAME redirection */
+#define DNS_TYPE_APL       42   /* RFC 3123: list of address prefixes */
 
 #define DNS_NUMRRCLASSES DNS_CLASS_HS+1 /* +1 for CLASS0 */
-#define DNS_NUMRRTYPES   DNS_TYPE_OPT+1  /* +1 for TYPE0 */
+#define DNS_NUMRRTYPES   DNS_TYPE_APL+1  /* +1 for TYPE0 */
 
 /** RDATA */
 
@@ -119,6 +120,7 @@ enum dns_rdata_format_enum {
     DNS_RDATA_LOC,                /* LOC RDATA. */
     DNS_RDATA_CERT_TYPE,          /* Certificate number or mnemonic. */
     DNS_RDATA_ALGORITHM,          /* Algorithm number or mnemonic. */
+    DNS_RDATA_APLS,               /* One ore more list of address prefixes. */
     DNS_RDATA_UNKNOWN             /* Binary data (unknown length). */
 };
 typedef enum dns_rdata_format_enum dns_rdata_format;
@@ -127,6 +129,8 @@ typedef enum dns_rdata_format_enum dns_rdata_format;
 #define DNS_STRLEN_MAX 256
 #define DNS_IPV6_ADDRLEN (128/8)
 #define DNS_RDLEN_MAX 65535
+#define DNS_APL_N_MASK 0x80U
+#define DNS_APL_AFDLEN_MASK (~DNS_APL_N_MASK)
 
 /**
  * RR class structure.

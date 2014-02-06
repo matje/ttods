@@ -122,6 +122,58 @@ rdata_print_character_string(FILE* fd, rdata_type* rdata, int quoted)
 
 
 /**
+ * Print apl format RDATA element.
+ *
+ */
+static void
+rdata_print_apl(FILE* fd, rdata_type* rdata)
+{
+    uint8_t* data = rdata_get_data(rdata);
+    size_t size = rdata_size(rdata);
+    uint16_t addressfamily;
+    uint8_t prefix;
+    uint8_t afdlen;
+    int i, n, af;
+    uint8_t afdpart[DNS_IPV6_ADDRLEN];
+    char str[200];
+    if (size && size < 4) {
+        ods_log_error("[%s] error: print apl: too small", logstr);
+        return;
+    }
+    addressfamily = wf_read_uint16(data);
+    prefix = data[2];
+    afdlen = data[3];
+    n = afdlen & DNS_APL_N_MASK;
+    afdlen &= DNS_APL_AFDLEN_MASK;
+    if (size < 4+afdlen) {
+        ods_log_error("[%s] error: print apl: too small", logstr);
+        return;
+    }
+    switch (addressfamily) {
+        case 1:  af = AF_INET;  break;
+        case 2:  af = AF_INET6; break;
+        default: af = 0;        break;
+    }
+    if (!af) {
+        ods_log_error("[%s] error: print apl: unknown address family", logstr);
+        return;
+    }
+    memset(afdpart, 0, sizeof(afdpart));
+    for (i = 0; i < afdlen; i++) {
+        afdpart[i] = data[4+i];
+    }
+    if (inet_ntop(af, afdpart, str, sizeof(str))) {
+        fprintf(fd, "%s%d:%s/%d", n?"!":"", (int)addressfamily, str,
+            (int) prefix);
+    } else {
+        ods_log_error("[%s] error: print apl: inet_ntop failed: %s", logstr,
+            strerror(errno));
+    }
+    return;
+}
+
+
+/**
  * Print base64 format RDATA element.
  *
  */
@@ -533,7 +585,8 @@ rdata_print(FILE* fd, rdata_type* rdata, uint16_t rrtype, uint16_t pos)
     ods_log_assert(rdata);
     rrstruct = dns_rrstruct_by_type(rrtype);
     /* special handling */
-    if (rrstruct->rdata[0] == DNS_RDATA_TEXTS) {
+    if (rrstruct->rdata[0] == DNS_RDATA_TEXTS ||
+        rrstruct->rdata[0] == DNS_RDATA_APLS) {
         p = 0;
     }
     if (pos && rrstruct->rdata[0] == DNS_RDATA_LOC) {
@@ -592,6 +645,9 @@ rdata_print(FILE* fd, rdata_type* rdata, uint16_t rrtype, uint16_t pos)
             break;
         case DNS_RDATA_LOC:
             rdata_print_loc(fd, rdata);
+            break;
+        case DNS_RDATA_APLS:
+            rdata_print_apl(fd, rdata);
             break;
         case DNS_RDATA_UNKNOWN:
         default:

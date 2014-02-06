@@ -79,6 +79,91 @@ zonec_rdata_algorithm(region_type* region, const char* buf)
 
 
 /**
+ * Convert apl format into RDATA element.
+ *
+ */
+static uint16_t*
+zonec_rdata_apl(region_type* region, const char* buf)
+{
+    uint16_t* r = NULL;
+    uint8_t addr[DNS_IPV6_ADDRLEN];
+    uint8_t prefix, max_prefix, l;
+    uint8_t* t;
+    uint16_t size = 0, addressfamily;
+    int af, ret, n = 0;
+    long p;
+    char* colon = strchr(buf, ':');
+    char* slash = strchr(buf, '/');
+    char* end;
+
+    if (!colon) {
+        ods_log_error("[%s] error: bad apl '%s', colon is missing",
+           logstr, buf);
+        return NULL;
+    }
+    if (!slash) {
+        ods_log_error("[%s] error: bad apl '%s', prefix is missing",
+           logstr, buf);
+        return NULL;
+    }
+    *colon = '\0';
+    *slash = '\0';
+    /* n */
+    if (*buf == '!') {
+        n = 1;
+        ++buf;
+    }
+    /* addressfamily */
+    if (strncmp(buf, "1", 1) == 0) {
+        af = AF_INET;
+        l = sizeof(in_addr_t);
+    } else if (strncmp(buf, "2", 1) == 0) {
+        af = AF_INET6;
+        l = DNS_IPV6_ADDRLEN;
+    } else {
+        ods_log_error("[%s] error: bad apl, invalid address family", logstr);
+        return NULL;
+    }
+    max_prefix = l*8;
+    /* afdlength, afdpart */
+    memset(addr, 0, DNS_IPV6_ADDRLEN);
+    ret = inet_pton(af, colon+1, addr);
+    if (ret == 0) {
+        ods_log_error("[%s] error: bad apl, invalid address '%s'",
+           logstr, colon+1);
+        return NULL;
+    } else if (ret == -1) {
+        ods_log_error("[%s] error: inet_pton failed (%s)",
+           logstr, strerror(errno));
+        return NULL;
+    }
+    while (l > 0 && addr[l-1] == 0) l--;
+    /* prefix */
+    p = strtol(slash+1, &end, 10);
+    if (p < 0 || p > max_prefix) {
+        ods_log_error("[%s] error: bad apl, prefix %d out of range [0..%d]",
+            logstr, p, max_prefix);
+        return NULL;
+    } else if (*end != '\0' && !isspace(*end)) {
+        ods_log_error("[%s] error: bad apl, invalid prefix %d", logstr, p);
+        return NULL;
+    }
+    prefix = (uint8_t) p;
+    size  = (sizeof(uint16_t) + sizeof(uint8_t)*2 + l);
+    r = region_alloc(region, sizeof(uint16_t) + size);
+    *r = size;
+    t = (uint8_t*) (r+1);
+    addressfamily = (af==AF_INET?htons(1):htons(2));
+    memmove(t, &addressfamily, sizeof(addressfamily));
+    t += sizeof(addressfamily);
+    *(t++) = prefix;
+    *(t++) = n?(l |= DNS_APL_N_MASK):l;
+    memmove(t, addr, l);
+    return r;
+}
+
+
+/**
  * Convert base64 format into RDATA element.
  *
  */
@@ -733,7 +818,7 @@ zonec_rdata_add(region_type* region, rr_type* rr, dns_rdata_format rdformat,
         return 0;
     }
 
-    ods_log_info("[%s] info: adding %s rdata element '%s'", logstr,
+    ods_log_debug("[%s] info: adding %s rdata element '%s'", logstr,
         dns_rdata_format_str(rdformat), rdbuf);
 
     switch (rdformat) {
@@ -790,6 +875,11 @@ zonec_rdata_add(region_type* region, rr_type* rr, dns_rdata_format rdformat,
             break;
         case DNS_RDATA_ALGORITHM:
             d = zonec_rdata_algorithm(region, rdbuf);
+            break;
+        case DNS_RDATA_APLS:
+               ods_log_info("[%s] info: adding %s rdata element '%s'", logstr,
+            dns_rdata_format_str(rdformat), rdbuf);
+            d = zonec_rdata_apl(region, rdbuf);
             break;
         case DNS_RDATA_UNKNOWN: /* TODO */
             d = NULL;
