@@ -124,3 +124,6 @@ Supported RRtypes
   "CERT"     37     # RFC 4398, Section 2
                     # Certificate
 
+  "A6"       38     # RFC 2874, Section 3.1 (made historic by RFC 6563)
+                    # A6, OBSOLETE - use AAAA. Not supported.
+
