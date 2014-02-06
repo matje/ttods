@@ -649,6 +649,9 @@ rdata_print(FILE* fd, rdata_type* rdata, uint16_t rrtype, uint16_t pos)
         case DNS_RDATA_APLS:
             rdata_print_apl(fd, rdata);
             break;
+        case DNS_RDATA_HEX:
+            rdata_print_hex(fd, rdata);
+            break;
         case DNS_RDATA_UNKNOWN:
         default:
             fprintf(fd, "<unknown>");

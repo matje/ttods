@@ -167,6 +167,9 @@ static rrstruct_type dns_rrstructs[(DNS_NUMRRTYPES+1)] = {
 /*    40 */ { "SINK", DNS_TYPE_SINK, 1, 1, { DNS_RDATA_UNKNOWN } },
 /*    41 */ { "OPT", DNS_TYPE_OPT, 1, 1, { DNS_RDATA_UNKNOWN } },
 /*    42 */ { "APL", DNS_TYPE_APL, 1, 1, { DNS_RDATA_APLS } },
+/*    43 */ { "DS", DNS_TYPE_DS, 4, 4,
+              { DNS_RDATA_INT16, DNS_RDATA_ALGORITHM, DNS_RDATA_INT8,
+                DNS_RDATA_HEX } },
 };
 
 
@@ -318,6 +321,7 @@ dns_rdata_format_str(dns_rdata_format rd)
         case DNS_RDATA_CERT_TYPE: return "certificate-type"; break;
         case DNS_RDATA_ALGORITHM: return "algorithm"; break;
         case DNS_RDATA_APLS: return "apl"; break;
+        case DNS_RDATA_HEX: return "hex"; break;
         case DNS_RDATA_UNKNOWN: return "unknown"; break;
         default:
             break;

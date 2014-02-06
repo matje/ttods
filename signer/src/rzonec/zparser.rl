@@ -318,6 +318,8 @@
                 fcall rdata_dname;
            case DNS_TYPE_APL:
                 fcall rdata_apl;
+           case DNS_TYPE_DS:
+                fcall rdata_ds;
            case DNS_TYPE_NULL:
            default:
                 if (!rs->name) {
@@ -348,6 +350,19 @@
     action zparser_rdata_char_b64 {
         if (parser->rdsize <= DNS_RDLEN_MAX) {
             if (isalnum((int) fc) || fc == '+' || fc == '/' || fc == '=') {
+                parser->rdbuf[parser->rdsize] = fc;
+                parser->rdsize++;
+            }
+        } else {
+            ods_log_error("[zparser] error: line %d: rdata overflow",
+                parser->line);
+            parser->totalerrors++;
+            fhold; fgoto line_error;
+        }
+    }
+    action zparser_rdata_char_hex {
+        if (parser->rdsize <= DNS_RDLEN_MAX) {
+            if (isxdigit((int) fc)) {
                 parser->rdbuf[parser->rdsize] = fc;
                 parser->rdsize++;
             }
@@ -772,6 +787,10 @@
                      >zparser_rdata_start $zparser_rdata_char
                      %zparser_rdata_apl_end $!zerror_rdata_err;
 
+    rd_hex           = (xdigit+ . delim?)+
+                     >zparser_rdata_start $zparser_rdata_char_hex
+                     %zparser_rdata_end   $!zerror_rdata_err;
+
     # RFC4648: Base16, Base32 and Base64 Data Encodings
     rd_b64           = (((alnum | [+/])+ . delim?)+ . '='{0,2} . delim?)
                      >zparser_rdata_start $zparser_rdata_char_b64
@@ -855,6 +874,10 @@
     rdata_apl       := ( rd_apl? . ( delim . rd_apl)* . delim? )
                     %zparser_hold_ret . special_char_end;
 
+    rdata_ds        := ( rd_int . delim . rd_algorithm . delim . rd_int
+                       . delim . rd_hex . delim? )
+                    %zparser_hold_ret . special_char_end;
+
     rdata            = (delim . ^special_char) @zparser_rdata_call;
 
     rrtype           =
@@ -900,6 +923,7 @@
                      # "SINK"       @{parser->current_rr.type = DNS_TYPE_SINK;}
                      # "OPT"        @{parser->current_rr.type = DNS_TYPE_OPT;}
                      | "APL"        @{parser->current_rr.type = DNS_TYPE_APL;}
+                     | "DS"         @{parser->current_rr.type = DNS_TYPE_DS;}
                      )
                      $!zerror_rr_typedata;
 

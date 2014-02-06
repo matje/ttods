@@ -833,9 +833,13 @@ zonec_rdata_add(region_type* region, rr_type* rr, dns_rdata_format rdformat,
             dname = name;
             break;
         case DNS_RDATA_INT8:
+               ods_log_info("[%s] info: adding %s rdata element '%s'", logstr,
+            dns_rdata_format_str(rdformat), rdbuf);
             d = zonec_rdata_int8(region, rdbuf);
             break;
         case DNS_RDATA_INT16:
+               ods_log_info("[%s] info: adding %s rdata element '%s'", logstr,
+            dns_rdata_format_str(rdformat), rdbuf);
             d = zonec_rdata_int16(region, rdbuf);
             break;
         case DNS_RDATA_INT32:
@@ -874,12 +878,17 @@ zonec_rdata_add(region_type* region, rr_type* rr, dns_rdata_format rdformat,
             d = zonec_rdata_cert_type(region, rdbuf);
             break;
         case DNS_RDATA_ALGORITHM:
+               ods_log_info("[%s] info: adding %s rdata element '%s'", logstr,
+            dns_rdata_format_str(rdformat), rdbuf);
             d = zonec_rdata_algorithm(region, rdbuf);
             break;
         case DNS_RDATA_APLS:
+            d = zonec_rdata_apl(region, rdbuf);
+            break;
+        case DNS_RDATA_HEX:
                ods_log_info("[%s] info: adding %s rdata element '%s'", logstr,
             dns_rdata_format_str(rdformat), rdbuf);
-            d = zonec_rdata_apl(region, rdbuf);
+            d = zonec_rdata_hex(region, rdbuf, rdsize);
             break;
         case DNS_RDATA_UNKNOWN: /* TODO */
             d = NULL;

@@ -142,3 +142,6 @@ Supported RRtypes
   "APL"      42     # RFC 3123, Section 4.
                     # List of address prefixes.
                     # WARNING: Empty rdata not supported.
+
+  "DS"        43    # RFC 4034, Section 5.1.
+                    # Delegation signer.
