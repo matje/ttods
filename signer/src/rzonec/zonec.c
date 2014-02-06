@@ -64,8 +64,6 @@ zonec_rdata_algorithm(region_type* region, const char* buf)
     uint16_t* r = NULL;
     uint8_t algo;
     if (isdigit((int)*buf)) {
-        ods_log_error("[%s] info: algorithm '%s' is a number",
-            logstr, buf);
         algo = (uint8_t) atoi(buf);
     } else {
         algo = dns_algorithm_by_name(buf);
@@ -75,8 +73,6 @@ zonec_rdata_algorithm(region_type* region, const char* buf)
             return NULL;
         }
     }
-    ods_log_error("[%s] info: algorithm '%s' = %u",
-        logstr, buf, algo);
     r = rdata_init_data(region, &algo, sizeof(algo));
     return r;
 }

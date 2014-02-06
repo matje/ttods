@@ -794,13 +794,14 @@
     rdata_nsap      := '0x' . rd_nsap
                      %zparser_hold_ret . special_char;
 
-    rdata_sig       := ( rd_rrtype . delim . rd_int . delim . rd_int . delim
-                       . rd_timef . delim . rd_datetime . delim . rd_datetime
-                       . delim . rd_int . delim . rd_dname . delim . rd_b64)
+    rdata_sig       := ( rd_rrtype . delim . rd_algorithm . delim . rd_int 
+                       . delim . rd_timef . delim . rd_datetime . delim
+                       . rd_datetime . delim . rd_int . delim . rd_dname
+                       . delim . rd_b64)
                      %zparser_hold_ret . special_char_end;
 
-    rdata_key       := ( rd_int . delim . rd_int . delim . rd_int . delim
-                       . rd_b64)
+    rdata_key       := ( rd_int . delim . rd_int . delim . rd_algorithm
+                       . delim . rd_b64)
                      %zparser_hold_ret . special_char_end;
 
     rdata_px        := ( rd_int . delim . rd_dname . delim . rd_dname )
