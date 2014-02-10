@@ -251,5 +251,6 @@ b64_ntop(uint8_t const* src, size_t srcsize, char* target,
                 break;
         }
     }
+    *target = '\0';
     return target_bytes;
 }
