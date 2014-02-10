@@ -151,3 +151,6 @@ Supported RRtypes
 
   "IPSECKEY" 45     # RFC 4025, Section 2.
                     # IPsec keying material.
+
+  "RRSIG"    46     # RFC 4034, Section 3.
+                    # Security signature.

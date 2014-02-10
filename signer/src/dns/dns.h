@@ -93,9 +93,10 @@
 #define DNS_TYPE_DS        43   /* RFC 4034: delegation signer */
 #define DNS_TYPE_SSHFP     44   /* RFC 4255: SSH key fingerprint */
 #define DNS_TYPE_IPSECKEY  45   /* RFC 4025: IPsec keying material */
+#define DNS_TYPE_RRSIG     46   /* RFC 4034: security signature */
 
 #define DNS_NUMRRCLASSES DNS_CLASS_HS+1 /* +1 for CLASS0 */
-#define DNS_NUMRRTYPES   DNS_TYPE_IPSECKEY+1  /* +1 for TYPE0 */
+#define DNS_NUMRRTYPES   DNS_TYPE_RRSIG+1  /* +1 for TYPE0 */
 
 /** RDATA */
 

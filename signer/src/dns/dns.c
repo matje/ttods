@@ -175,6 +175,11 @@ static rrstruct_type dns_rrstructs[(DNS_NUMRRTYPES+1)] = {
 /*    45 */ { "IPSECKEY", DNS_TYPE_IPSECKEY, 4, 5,
               { DNS_RDATA_INT8, DNS_RDATA_INT8, DNS_RDATA_INT8,
                 DNS_RDATA_IPSECGATEWAY, DNS_RDATA_BASE64 } },
+/*    46 */ { "RRSIG", DNS_TYPE_RRSIG, 9, 9,
+              { DNS_RDATA_RRTYPE, DNS_RDATA_ALGORITHM, DNS_RDATA_INT8,
+                DNS_RDATA_TIMEF, DNS_RDATA_DATETIME, DNS_RDATA_DATETIME,
+                DNS_RDATA_INT16, DNS_RDATA_UNCOMPRESSED_DNAME,
+                DNS_RDATA_BASE64 } },
 };
 
 

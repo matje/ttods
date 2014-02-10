@@ -295,6 +295,7 @@
            case DNS_TYPE_NSAP:
                 fcall rdata_nsap;
            case DNS_TYPE_SIG:
+           case DNS_TYPE_RRSIG:
                 fcall rdata_sig;
            case DNS_TYPE_KEY:
                 fcall rdata_key;
@@ -975,6 +976,7 @@
                      | "DS"         @{parser->current_rr.type = DNS_TYPE_DS;}
                      | "SSHFP"      @{parser->current_rr.type = DNS_TYPE_SSHFP;}
                      | "IPSECKEY"   @{parser->current_rr.type = DNS_TYPE_IPSECKEY;}
+                     | "RRSIG"      @{parser->current_rr.type = DNS_TYPE_RRSIG;}
                      )
                      $!zerror_rr_typedata;
 
