@@ -308,6 +308,7 @@
            case DNS_TYPE_LOC:
                 fcall rdata_loc;
            case DNS_TYPE_NXT:
+           case DNS_TYPE_NSEC:
                 fcall rdata_nxt;
            case DNS_TYPE_SRV:
                 fcall rdata_srv;
@@ -977,6 +978,7 @@
                      | "SSHFP"      @{parser->current_rr.type = DNS_TYPE_SSHFP;}
                      | "IPSECKEY"   @{parser->current_rr.type = DNS_TYPE_IPSECKEY;}
                      | "RRSIG"      @{parser->current_rr.type = DNS_TYPE_RRSIG;}
+                     | "NSEC"       @{parser->current_rr.type = DNS_TYPE_NSEC;}
                      )
                      $!zerror_rr_typedata;
 

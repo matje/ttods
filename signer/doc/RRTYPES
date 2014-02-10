@@ -154,3 +154,6 @@ Supported RRtypes
 
   "RRSIG"    46     # RFC 4034, Section 3.
                     # Security signature.
+
+  "NSEC"     47     # RFC 4034, Section 4.
+                    # Next domain.

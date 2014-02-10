@@ -186,6 +186,84 @@ zonec_rdata_base64(region_type* region, const char* buf)
 
 
 /**
+ * Convert RRtype bitmap into RDATA element (NSEC).
+ *
+ */
+static uint16_t*
+zonec_rdata_bitmap_nsec(region_type* region, const char* buf)
+{
+    static char rdata[DNS_RDLEN_MAX];
+    char* next = NULL;
+    char* delim;
+    char* rrtype;
+    char sep = ' ';
+    uint16_t* r = NULL;
+    uint8_t* p = NULL;
+    uint8_t bitmap[DNS_NSEC_WINDOW_BLOCKS][DNS_NSEC_BITMAP_SIZE];
+    uint8_t window[DNS_NSEC_WINDOW_BLOCKS];
+    uint8_t length[DNS_NSEC_WINDOW_BLOCKS];
+    size_t offset = 0, i, j;
+    uint16_t last = 0, window_max = 0, window_count = 0, size = 0;
+
+    (void)memset(bitmap, 0, sizeof(bitmap));
+    (void)memset(window, 0, sizeof(window));
+    (void)memset(length, 0, sizeof(length));
+    (void)memset(rdata, 0, sizeof(rdata));
+    (void)memcpy(rdata, buf, strlen(buf));
+    (void)ods_strtriml(rdata);
+    ods_strreplace(rdata, '\t', sep);
+    rrtype = rdata;
+    delim = ods_strchr_and_fwd(rrtype, sep, &offset);
+    if (delim) {
+        next = delim+offset;
+        *delim = '\0';
+    }
+    while (rrtype && *rrtype) {
+        uint16_t t = dns_rrtype_by_name(rrtype);
+        uint8_t window = t / DNS_NSEC_WINDOW_BLOCKS;
+        uint8_t bit = t % DNS_NSEC_WINDOW_BLOCKS;
+        util_setbit(bitmap[window], bit);
+        rrtype = next;
+        if (next) {
+            delim = ods_strchr_and_fwd(next, sep, &offset);
+            if (delim) {
+                next = delim+offset;
+                *delim = '\0';
+            } else {
+                next = NULL;
+            }
+        }
+        last = (t > last)?t:last;
+    }
+    window_max = (1 + (last/DNS_NSEC_WINDOW_BLOCKS));
+    for (i = 0; i < window_max; i++) {
+        for (j = 0; j < DNS_NSEC_BITMAP_SIZE; j++) {
+            if (bitmap[i][j]) {
+                length[i] = j+1;
+            }
+        }
+        if (length[i]) {
+            window[window_count] = i;
+            window_count++;
+        }
+    }
+    for (i = 0; i < window_count; i++) {
+        size += sizeof(uint16_t) + length[window[i]];
+    }
+    r = region_alloc(region, sizeof(uint16_t) + size);
+    *r = size;
+    p = (uint8_t*) (r+1);
+    for (i = 0; i < window_count; i++) {
+        *(p++) = window[i];
+        *(p++) = length[window[i]];
+        memcpy(p, &bitmap[window[i]], length[window[i]]);
+        p += length[window[i]];
+    }
+    return r;
+}
+
+
+/**
  * Convert RRtype bitmap into RDATA element (NXT).
  *
  */
@@ -213,7 +291,6 @@ zonec_rdata_bitmap_nxt(region_type* region, const char* buf)
         next = delim+offset;
         *delim = '\0';
     }
-
     while (rrtype && *rrtype) {
         uint16_t t = dns_rrtype_by_name(rrtype);
         if (t != 0 && t < 128) {
@@ -224,13 +301,16 @@ zonec_rdata_bitmap_nxt(region_type* region, const char* buf)
             return NULL;
         }
         rrtype = next;
-        delim = ods_strchr_and_fwd(next, sep, &offset);
-        if (delim) {
-            next = delim+offset;
-            *delim = '\0';
+        if (next) {
+            delim = ods_strchr_and_fwd(next, sep, &offset);
+            if (delim) {
+                next = delim+offset;
+                *delim = '\0';
+            } else {
+                next = NULL;
+            }
         }
     }
-
     for (i = 0; i < 16; i++) {
         if (bitmap[i] != 0) last = i + 1;
     }
@@ -312,8 +392,6 @@ zonec_rdata_hex(region_type* region, const char* buf, size_t buflen)
             t++;
         }
     }
-
-
     return r;
 }
 
@@ -353,17 +431,6 @@ zonec_rdata_int32(region_type* region, const char* buf)
     return rdata_init_data(region, &number, sizeof(number));
 }
 
-
-/**
- * Convert IPSECKEY gateway into RDATA element.
- *
- */
-static uint16_t*
-zonec_rdata_ipsecgateway(region_type* region, const char* buf)
-{
-    uint32_t number = htonl(atoi(buf));
-    return rdata_init_data(region, &number, sizeof(number));
-}
 
 
 /**
@@ -831,9 +898,6 @@ zonec_rdata_add(region_type* region, rr_type* rr, dns_rdata_format rdformat,
         return 0;
     }
 
-    ods_log_debug("[%s] info: adding %s rdata element '%s'", logstr,
-        dns_rdata_format_str(rdformat), rdbuf);
-
     switch (rdformat) {
         case DNS_RDATA_IPV4:
             d = zonec_rdata_ipv4(region, rdbuf);
@@ -846,8 +910,6 @@ zonec_rdata_add(region_type* region, rr_type* rr, dns_rdata_format rdformat,
             dname = name;
             break;
         case DNS_RDATA_INT8:
-            ods_log_info("[%s] info: adding %s rdata element '%s'", logstr,
-                dns_rdata_format_str(rdformat), rdbuf);
             d = zonec_rdata_int8(region, rdbuf);
             break;
         case DNS_RDATA_INT16:
@@ -877,12 +939,13 @@ zonec_rdata_add(region_type* region, rr_type* rr, dns_rdata_format rdformat,
             d = zonec_rdata_datetime(region, rdbuf);
             break;
         case DNS_RDATA_BASE64:
-            ods_log_info("[%s] info: adding %s rdata element '%s'", logstr,
-                dns_rdata_format_str(rdformat), rdbuf);
             d = zonec_rdata_base64(region, rdbuf);
             break;
-        case DNS_RDATA_BITMAP:
+        case DNS_RDATA_NXTBM:
             d = zonec_rdata_bitmap_nxt(region, rdbuf);
+            break;
+        case DNS_RDATA_NSECBM:
+            d = zonec_rdata_bitmap_nsec(region, rdbuf);
             break;
         case DNS_RDATA_LOC:
             d = zonec_rdata_loc(region, rdbuf);
@@ -901,8 +964,6 @@ zonec_rdata_add(region_type* region, rr_type* rr, dns_rdata_format rdformat,
             break;
         case DNS_RDATA_IPSECGATEWAY:
             rd = rdata_get_data(&(rr->rdata[1]));
-            ods_log_info("[%s] info: adding %s rdata element '%s' [gateway=%u]",
-                logstr, dns_rdata_format_str(rdformat), rdbuf, *rd);
             ods_log_assert(rr->type == DNS_TYPE_IPSECKEY);
             if (*rd == 1)      d = zonec_rdata_ipv4(region, rdbuf);
             else if (*rd == 2) d = zonec_rdata_ipv6(region, rdbuf);
@@ -942,7 +1003,9 @@ zonec_rdata_add(region_type* region, rr_type* rr, dns_rdata_format rdformat,
         rr->rdata[rr->rdlen].data = d;
     }
     rr->rdlen++;
+/*
     ods_log_debug("[%s] debug: added %s rdata element '%s'", logstr,
         dns_rdata_format_str(rdformat), rdbuf);
+*/
     return 1;
 }

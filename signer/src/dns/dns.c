@@ -146,7 +146,7 @@ static rrstruct_type dns_rrstructs[(DNS_NUMRRTYPES+1)] = {
 /*    28 */ { "AAAA", DNS_TYPE_AAAA, 1, 1, { DNS_RDATA_IPV6 } },
 /*    29 */ { "LOC", DNS_TYPE_LOC, 1, 1, { DNS_RDATA_LOC } },
 /*    30 */ { "NXT", DNS_TYPE_NXT, 2, 2,
-              { DNS_RDATA_UNCOMPRESSED_DNAME, DNS_RDATA_BITMAP } },
+              { DNS_RDATA_UNCOMPRESSED_DNAME, DNS_RDATA_NXTBM } },
 /*    31 */ { "EID", DNS_TYPE_EID, 1, 1, { DNS_RDATA_UNKNOWN } },
 /*    32 */ { "NIMLOC", DNS_TYPE_NIMLOC, 1, 1, { DNS_RDATA_UNKNOWN } },
 /*    33 */ { "SRV", DNS_TYPE_SRV, 4, 4,
@@ -180,6 +180,8 @@ static rrstruct_type dns_rrstructs[(DNS_NUMRRTYPES+1)] = {
                 DNS_RDATA_TIMEF, DNS_RDATA_DATETIME, DNS_RDATA_DATETIME,
                 DNS_RDATA_INT16, DNS_RDATA_UNCOMPRESSED_DNAME,
                 DNS_RDATA_BASE64 } },
+/*    48 */ { "NSEC", DNS_TYPE_NSEC, 2, 2,
+              { DNS_RDATA_UNCOMPRESSED_DNAME, DNS_RDATA_NSECBM } },
 };
 
 
@@ -324,7 +326,7 @@ dns_rdata_format_str(dns_rdata_format rd)
         case DNS_RDATA_NSAP: return "nsap"; break;
         case DNS_RDATA_RRTYPE: return "rrtype"; break;
         case DNS_RDATA_BASE64: return "base64"; break;
-        case DNS_RDATA_BITMAP: return "bitmap"; break;
+        case DNS_RDATA_NXTBM: return "bitmap-nxt"; break;
         case DNS_RDATA_FLOAT: return "float"; break;
         case DNS_RDATA_IPV6: return "ipv6addr"; break;
         case DNS_RDATA_LOC: return "loc"; break;
@@ -333,6 +335,7 @@ dns_rdata_format_str(dns_rdata_format rd)
         case DNS_RDATA_APLS: return "apl"; break;
         case DNS_RDATA_HEX: return "hex"; break;
         case DNS_RDATA_IPSECGATEWAY: return "ipsecgateway"; break;
+        case DNS_RDATA_NSECBM: return "bitmap-nsec"; break;
         case DNS_RDATA_UNKNOWN: return "unknown"; break;
         default:
             break;

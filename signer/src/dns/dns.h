@@ -94,9 +94,10 @@
 #define DNS_TYPE_SSHFP     44   /* RFC 4255: SSH key fingerprint */
 #define DNS_TYPE_IPSECKEY  45   /* RFC 4025: IPsec keying material */
 #define DNS_TYPE_RRSIG     46   /* RFC 4034: security signature */
+#define DNS_TYPE_NSEC      47   /* RFC 4034: next domain */
 
 #define DNS_NUMRRCLASSES DNS_CLASS_HS+1 /* +1 for CLASS0 */
-#define DNS_NUMRRTYPES   DNS_TYPE_RRSIG+1  /* +1 for TYPE0 */
+#define DNS_NUMRRTYPES   DNS_TYPE_NSEC+1  /* +1 for TYPE0 */
 
 /** RDATA */
 
@@ -118,7 +119,7 @@ enum dns_rdata_format_enum {
     DNS_RDATA_NSAP,               /* NSAP address. */
     DNS_RDATA_RRTYPE,             /* RRtype. */
     DNS_RDATA_BASE64,             /* Base64 binary data. */
-    DNS_RDATA_BITMAP,             /* RRtype bitmap. */
+    DNS_RDATA_NXTBM,              /* RRtype bitmap (NXT). */
     DNS_RDATA_FLOAT,              /* Floating point number. */
     DNS_RDATA_IPV6,               /* 128-bit IPv6 address. */
     DNS_RDATA_LOC,                /* LOC RDATA. */
@@ -127,6 +128,7 @@ enum dns_rdata_format_enum {
     DNS_RDATA_APLS,               /* One ore more list of address prefixes. */
     DNS_RDATA_HEX,                /* Hexadecimal binary data. */
     DNS_RDATA_IPSECGATEWAY,       /* IPSEC gateway. */
+    DNS_RDATA_NSECBM,             /* RRtype bitmap (NSEC, NSEC3). */
     DNS_RDATA_UNKNOWN             /* Binary data (unknown length). */
 };
 typedef enum dns_rdata_format_enum dns_rdata_format;
@@ -137,6 +139,8 @@ typedef enum dns_rdata_format_enum dns_rdata_format;
 #define DNS_RDLEN_MAX 65535
 #define DNS_APL_N_MASK 0x80U
 #define DNS_APL_AFDLEN_MASK (~DNS_APL_N_MASK)
+#define DNS_NSEC_WINDOW_BLOCKS 256
+#define DNS_NSEC_BITMAP_SIZE 8
 
 /**
  * RR class structure.

@@ -202,6 +202,34 @@ rdata_print_base64(FILE* fd, rdata_type* rdata)
 
 
 /**
+ * Print bitmap format RDATA element (NSEC).
+ *
+ */
+static void
+rdata_print_bitmap_nsec(FILE* fd, rdata_type* rdata)
+{
+    size_t i, done = 0;
+    uint8_t* bm = rdata_get_data(rdata);
+    size_t size = rdata_size(rdata);
+    int sequel = 0;
+    while ((size - done) > 1) {
+        uint8_t window = bm[done];
+        uint8_t bm_size = bm[done+1];
+        uint8_t* bitmap = bm+(done+2);
+        for (i = 0; i < bm_size*8; i++) {
+           if (util_getbit(bitmap, i)) {
+               if (sequel) fprintf(fd, " ");
+               rr_print_rrtype(fd, i);
+               sequel = 1;
+           }
+        }
+        done += (2+bm_size);
+    }
+    return;
+}
+
+
+/**
  * Print bitmap format RDATA element (NXT).
  *
  */
@@ -219,7 +247,7 @@ rdata_print_bitmap_nxt(FILE* fd, rdata_type* rdata)
            sequel = 1;
        }
     }
-   return;
+    return;
 }
 
 
@@ -638,8 +666,11 @@ rdata_print(FILE* fd, rdata_type* rdata, struct rr_struct* rr, uint16_t pos)
         case DNS_RDATA_BASE64:
             rdata_print_base64(fd, rdata);
             break;
-        case DNS_RDATA_BITMAP:
+        case DNS_RDATA_NXTBM:
             rdata_print_bitmap_nxt(fd, rdata);
+            break;
+        case DNS_RDATA_NSECBM:
+            rdata_print_bitmap_nsec(fd, rdata);
             break;
         case DNS_RDATA_FLOAT:
             rdata_print_float(fd, rdata);
