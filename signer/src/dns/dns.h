@@ -95,9 +95,10 @@
 #define DNS_TYPE_IPSECKEY  45   /* RFC 4025: IPsec keying material */
 #define DNS_TYPE_RRSIG     46   /* RFC 4034: security signature */
 #define DNS_TYPE_NSEC      47   /* RFC 4034: next domain */
+#define DNS_TYPE_DNSKEY    48   /* RFC 4034: security key */
 
 #define DNS_NUMRRCLASSES DNS_CLASS_HS+1 /* +1 for CLASS0 */
-#define DNS_NUMRRTYPES   DNS_TYPE_NSEC+1  /* +1 for TYPE0 */
+#define DNS_NUMRRTYPES   DNS_TYPE_DNSKEY+1  /* +1 for TYPE0 */
 
 /** RDATA */
 

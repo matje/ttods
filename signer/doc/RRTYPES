@@ -157,3 +157,6 @@ Supported RRtypes
 
   "NSEC"     47     # RFC 4034, Section 4.
                     # Next domain.
+
+  "DNSKEY"   48     # RFC 4034, Section 2.
+                    # Security key.

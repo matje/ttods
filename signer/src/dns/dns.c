@@ -182,6 +182,9 @@ static rrstruct_type dns_rrstructs[(DNS_NUMRRTYPES+1)] = {
                 DNS_RDATA_BASE64 } },
 /*    48 */ { "NSEC", DNS_TYPE_NSEC, 2, 2,
               { DNS_RDATA_UNCOMPRESSED_DNAME, DNS_RDATA_NSECBM } },
+/*    49 */ { "DNSKEY", DNS_TYPE_DNSKEY, 4, 4,
+              { DNS_RDATA_INT16, DNS_RDATA_INT8, DNS_RDATA_ALGORITHM,
+                DNS_RDATA_BASE64 } },
 };
 
 

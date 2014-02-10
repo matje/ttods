@@ -298,6 +298,7 @@
            case DNS_TYPE_RRSIG:
                 fcall rdata_sig;
            case DNS_TYPE_KEY:
+           case DNS_TYPE_DNSKEY:
                 fcall rdata_key;
            case DNS_TYPE_PX:
                 fcall rdata_px;
@@ -979,6 +980,7 @@
                      | "IPSECKEY"   @{parser->current_rr.type = DNS_TYPE_IPSECKEY;}
                      | "RRSIG"      @{parser->current_rr.type = DNS_TYPE_RRSIG;}
                      | "NSEC"       @{parser->current_rr.type = DNS_TYPE_NSEC;}
+                     | "DNSKEY"     @{parser->current_rr.type = DNS_TYPE_KEY;}
                      )
                      $!zerror_rr_typedata;
 
