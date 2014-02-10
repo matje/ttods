@@ -148,3 +148,6 @@ Supported RRtypes
 
   "SSHFP"    44     # RFC 4255, Section 3.
                     # SSH key fingerprint.
+
+  "IPSECKEY" 45     # RFC 4025, Section 2.
+                    # IPsec keying material.

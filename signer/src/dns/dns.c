@@ -172,6 +172,9 @@ static rrstruct_type dns_rrstructs[(DNS_NUMRRTYPES+1)] = {
                 DNS_RDATA_HEX } },
 /*    44 */ { "SSHFP", DNS_TYPE_SSHFP, 3, 3,
               { DNS_RDATA_INT8, DNS_RDATA_INT8, DNS_RDATA_HEX } },
+/*    45 */ { "IPSECKEY", DNS_TYPE_IPSECKEY, 4, 5,
+              { DNS_RDATA_INT8, DNS_RDATA_INT8, DNS_RDATA_INT8,
+                DNS_RDATA_IPSECGATEWAY, DNS_RDATA_BASE64 } },
 };
 
 
@@ -324,6 +327,7 @@ dns_rdata_format_str(dns_rdata_format rd)
         case DNS_RDATA_ALGORITHM: return "algorithm"; break;
         case DNS_RDATA_APLS: return "apl"; break;
         case DNS_RDATA_HEX: return "hex"; break;
+        case DNS_RDATA_IPSECGATEWAY: return "ipsecgateway"; break;
         case DNS_RDATA_UNKNOWN: return "unknown"; break;
         default:
             break;

@@ -38,6 +38,8 @@
 #include "dns/dns.h"
 #include "util/region.h"
 
+struct rr_struct;
+
 /**
  * RDATA structure.
  *
@@ -84,14 +86,15 @@ uint8_t* rdata_get_data(rdata_type* rdata);
 dname_type* rdata_get_dname(rdata_type* rdata);
 
 /**
- * Print rdta element.
+ * Print rdata element.
  * @param fd:     file descriptor.
  * @param rdata:  rdata.
- * @param rrtype: RRtype.
+ * @param rr:     RR.
  * @param pos:    position of RDATA element in RR.
  *
  */
-void rdata_print(FILE* fd, rdata_type* rdata, uint16_t rrtype, uint16_t pos);
+void rdata_print(FILE* fd, rdata_type* rdata, struct rr_struct* rr,
+    uint16_t pos);
 
 #endif /* DNS_RDATA_H */
 

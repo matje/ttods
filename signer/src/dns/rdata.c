@@ -145,7 +145,7 @@ rdata_print_apl(FILE* fd, rdata_type* rdata)
     afdlen = data[3];
     n = afdlen & DNS_APL_N_MASK;
     afdlen &= DNS_APL_AFDLEN_MASK;
-    if (size < 4+afdlen) {
+    if (size < (size_t) (4+afdlen)) {
         ods_log_error("[%s] error: print apl: too small", logstr);
         return;
     }
@@ -577,10 +577,11 @@ rdata_print_services(FILE* fd, rdata_type* rdata)
  *
  */
 void
-rdata_print(FILE* fd, rdata_type* rdata, uint16_t rrtype, uint16_t pos)
+rdata_print(FILE* fd, rdata_type* rdata, struct rr_struct* rr, uint16_t pos)
 {
     rrstruct_type* rrstruct;
     uint16_t p = pos;
+    uint16_t rrtype = rr->type;
     ods_log_assert(fd);
     ods_log_assert(rdata);
     rrstruct = dns_rrstruct_by_type(rrtype);
@@ -651,6 +652,20 @@ rdata_print(FILE* fd, rdata_type* rdata, uint16_t rrtype, uint16_t pos)
             break;
         case DNS_RDATA_HEX:
             rdata_print_hex(fd, rdata);
+            break;
+        case DNS_RDATA_IPSECGATEWAY:
+            if (rdata_get_data(&rr->rdata[1])[0] == 0) {
+                fprintf(fd, ".");
+            } else if (rdata_get_data(&rr->rdata[1])[0] == 1) {
+                rdata_print_ipv4(fd, rdata);
+            } else if (rdata_get_data(&rr->rdata[1])[0] == 2) {
+                rdata_print_ipv6(fd, rdata);
+            } else if (rdata_get_data(&rr->rdata[1])[0] == 3) {
+                rdata_print_dname(fd, rdata);
+            } else {
+                ods_log_error("[%s] error: print ipsecgateway: unknown "
+                    "gateway type", logstr);
+            }
             break;
         case DNS_RDATA_UNKNOWN:
         default:

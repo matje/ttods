@@ -322,6 +322,8 @@
                 fcall rdata_ds;
            case DNS_TYPE_SSHFP:
                 fcall rdata_sshfp;
+           case DNS_TYPE_IPSECKEY:
+                fcall rdata_ipseckey;
            case DNS_TYPE_NULL:
            default:
                 if (!rs->name) {
@@ -793,6 +795,34 @@
                      >zparser_rdata_start $zparser_rdata_char_hex
                      %zparser_rdata_end   $!zerror_rdata_err;
 
+    rd_ipsecgateway  = ( ipv4_addr | ipv6_addr | abs_dname | rel_dname )
+                     >zparser_rdata_start $zparser_rdata_char
+                     %zparser_rdata_end   $!zerror_rdata_err;
+
+    rd_0             = '0'
+                     >zparser_rdata_start $zparser_rdata_char
+                     %zparser_rdata_end   $!zerror_rdata_err;
+
+    rd_1             = '1'
+                     >zparser_rdata_start $zparser_rdata_char
+                     %zparser_rdata_end   $!zerror_rdata_err;
+
+    rd_2             = '2'
+                     >zparser_rdata_start $zparser_rdata_char
+                     %zparser_rdata_end   $!zerror_rdata_err;
+
+    rd_3             = '3'
+                     >zparser_rdata_start $zparser_rdata_char
+                     %zparser_rdata_end   $!zerror_rdata_err;
+
+    rd_12            = [12]
+                     >zparser_rdata_start $zparser_rdata_char
+                     %zparser_rdata_end   $!zerror_rdata_err;
+
+    rd_dot           = '.'
+                     >zparser_rdata_start $zparser_rdata_char
+                     %zparser_rdata_end   $!zerror_rdata_err;
+
     # RFC4648: Base16, Base32 and Base64 Data Encodings
     rd_b64           = (((alnum | [+/])+ . delim?)+ . '='{0,2} . delim?)
                      >zparser_rdata_start $zparser_rdata_char_b64
@@ -883,6 +913,20 @@
     rdata_sshfp     := ( rd_int . delim . rd_int . delim . rd_hex . delim? )
                     %zparser_hold_ret . special_char_end;
 
+    rdata_ipseckey_trail =
+                         ( (rd_0 . delim . rd_0  . delim . rd_dot)
+                         | (rd_0 . delim . rd_12 . delim . rd_dot   . delim . rd_b64)
+                         | (rd_1 . delim . rd_0  . delim . rd_ipv4)
+                         | (rd_1 . delim . rd_12 . delim . rd_ipv4  . delim . rd_b64)
+                         | (rd_2 . delim . rd_0  . delim . rd_ipv6)
+                         | (rd_2 . delim . rd_12 . delim . rd_ipv6  . delim . rd_b64)
+                         | (rd_3 . delim . rd_0  . delim . rd_dname)
+                         | (rd_3 . delim . rd_12 . delim . rd_dname . delim . rd_b64)
+                         );
+
+    rdata_ipseckey  := ( rd_int . delim . rdata_ipseckey_trail )
+                    %zparser_hold_ret . special_char_end;
+
     rdata            = (delim . ^special_char) @zparser_rdata_call;
 
     rrtype           =
@@ -930,6 +974,7 @@
                      | "APL"        @{parser->current_rr.type = DNS_TYPE_APL;}
                      | "DS"         @{parser->current_rr.type = DNS_TYPE_DS;}
                      | "SSHFP"      @{parser->current_rr.type = DNS_TYPE_SSHFP;}
+                     | "IPSECKEY"   @{parser->current_rr.type = DNS_TYPE_IPSECKEY;}
                      )
                      $!zerror_rr_typedata;
 

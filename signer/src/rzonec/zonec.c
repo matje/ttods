@@ -319,6 +319,54 @@ zonec_rdata_hex(region_type* region, const char* buf, size_t buflen)
 
 
 /**
+ * Convert int8 into RDATA element.
+ *
+ */
+static uint16_t*
+zonec_rdata_int8(region_type* region, const char* buf)
+{
+    uint8_t number = atoi(buf);
+    return rdata_init_data(region, &number, sizeof(number));
+}
+
+
+/**
+ * Convert int16 into RDATA element.
+ *
+ */
+static uint16_t*
+zonec_rdata_int16(region_type* region, const char* buf)
+{
+    uint16_t number = htons(atoi(buf));
+    return rdata_init_data(region, &number, sizeof(number));
+}
+
+
+/**
+ * Convert int32 into RDATA element.
+ *
+ */
+static uint16_t*
+zonec_rdata_int32(region_type* region, const char* buf)
+{
+    uint32_t number = htonl(atoi(buf));
+    return rdata_init_data(region, &number, sizeof(number));
+}
+
+
+/**
+ * Convert IPSECKEY gateway into RDATA element.
+ *
+ */
+static uint16_t*
+zonec_rdata_ipsecgateway(region_type* region, const char* buf)
+{
+    uint32_t number = htonl(atoi(buf));
+    return rdata_init_data(region, &number, sizeof(number));
+}
+
+
+/**
  * Convert IPv4 address into RDATA element.
  *
  */
@@ -354,42 +402,6 @@ zonec_rdata_ipv6(region_type* region, const char* buf)
         r = rdata_init_data(region, address, sizeof(address));
     }
     return r;
-}
-
-
-/**
- * Convert int8 into RDATA element.
- *
- */
-static uint16_t*
-zonec_rdata_int8(region_type* region, const char* buf)
-{
-    uint8_t number = atoi(buf);
-    return rdata_init_data(region, &number, sizeof(number));
-}
-
-
-/**
- * Convert int16 into RDATA element.
- *
- */
-static uint16_t*
-zonec_rdata_int16(region_type* region, const char* buf)
-{
-    uint16_t number = htons(atoi(buf));
-    return rdata_init_data(region, &number, sizeof(number));
-}
-
-
-/**
- * Convert int32 into RDATA element.
- *
- */
-static uint16_t*
-zonec_rdata_int32(region_type* region, const char* buf)
-{
-    uint32_t number = htonl(atoi(buf));
-    return rdata_init_data(region, &number, sizeof(number));
 }
 
 
@@ -812,6 +824,7 @@ zonec_rdata_add(region_type* region, rr_type* rr, dns_rdata_format rdformat,
     dname_type* name, const char* rdbuf, size_t rdsize)
 {
     uint16_t* d = NULL;
+    uint8_t* rd = NULL;
     dname_type* dname = NULL;
     if (rr->rdlen > DNS_RDATA_MAX) {
         ods_log_error("[%s] error: too many rdata elements", logstr);
@@ -833,13 +846,11 @@ zonec_rdata_add(region_type* region, rr_type* rr, dns_rdata_format rdformat,
             dname = name;
             break;
         case DNS_RDATA_INT8:
-               ods_log_info("[%s] info: adding %s rdata element '%s'", logstr,
-            dns_rdata_format_str(rdformat), rdbuf);
+            ods_log_info("[%s] info: adding %s rdata element '%s'", logstr,
+                dns_rdata_format_str(rdformat), rdbuf);
             d = zonec_rdata_int8(region, rdbuf);
             break;
         case DNS_RDATA_INT16:
-               ods_log_info("[%s] info: adding %s rdata element '%s'", logstr,
-            dns_rdata_format_str(rdformat), rdbuf);
             d = zonec_rdata_int16(region, rdbuf);
             break;
         case DNS_RDATA_INT32:
@@ -866,6 +877,8 @@ zonec_rdata_add(region_type* region, rr_type* rr, dns_rdata_format rdformat,
             d = zonec_rdata_datetime(region, rdbuf);
             break;
         case DNS_RDATA_BASE64:
+            ods_log_info("[%s] info: adding %s rdata element '%s'", logstr,
+                dns_rdata_format_str(rdformat), rdbuf);
             d = zonec_rdata_base64(region, rdbuf);
             break;
         case DNS_RDATA_BITMAP:
@@ -878,17 +891,23 @@ zonec_rdata_add(region_type* region, rr_type* rr, dns_rdata_format rdformat,
             d = zonec_rdata_cert_type(region, rdbuf);
             break;
         case DNS_RDATA_ALGORITHM:
-               ods_log_info("[%s] info: adding %s rdata element '%s'", logstr,
-            dns_rdata_format_str(rdformat), rdbuf);
             d = zonec_rdata_algorithm(region, rdbuf);
             break;
         case DNS_RDATA_APLS:
             d = zonec_rdata_apl(region, rdbuf);
             break;
         case DNS_RDATA_HEX:
-               ods_log_info("[%s] info: adding %s rdata element '%s'", logstr,
-            dns_rdata_format_str(rdformat), rdbuf);
             d = zonec_rdata_hex(region, rdbuf, rdsize);
+            break;
+        case DNS_RDATA_IPSECGATEWAY:
+            rd = rdata_get_data(&(rr->rdata[1]));
+            ods_log_info("[%s] info: adding %s rdata element '%s' [gateway=%u]",
+                logstr, dns_rdata_format_str(rdformat), rdbuf, *rd);
+            ods_log_assert(rr->type == DNS_TYPE_IPSECKEY);
+            if (*rd == 1)      d = zonec_rdata_ipv4(region, rdbuf);
+            else if (*rd == 2) d = zonec_rdata_ipv6(region, rdbuf);
+            else if (*rd == 3) dname = name;
+            else if (*rd == 0) dname = dname_create(region, ".");
             break;
         case DNS_RDATA_UNKNOWN: /* TODO */
             d = NULL;
@@ -904,6 +923,16 @@ zonec_rdata_add(region_type* region, rr_type* rr, dns_rdata_format rdformat,
             return 0;
         }
         rr->rdata[rr->rdlen].dname = dname;
+    } else if (rdformat == DNS_RDATA_IPSECGATEWAY) {
+        if (dname) {
+            rr->rdata[rr->rdlen].dname = dname;
+        } else if (d) {
+            rr->rdata[rr->rdlen].data = d;
+        } else {
+            ods_log_error("[%s] error: bad rdata %s '%s'", logstr,
+                dns_rdata_format_str(rdformat), rdbuf);
+            return 0;
+        }
     } else {
         if (!d) {
             ods_log_error("[%s] error: bad rdata %s '%s'", logstr,
