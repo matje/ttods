@@ -1,165 +1,172 @@
 Supported RRtypes
 -----------------
 
-  "A"        1      # RFC 1035, Section 3.4.1.
-                    # IPv4 host address.
+  "A"        1        # RFC 1035, Section 3.4.1.
+                      # IPv4 host address.
 
-  "NS"       2      # RFC 1035, Section 3.3.11.
-                    # Authoritative name server.
+  "NS"       2        # RFC 1035, Section 3.3.11.
+                      # Authoritative name server.
 
-  "MD"       3      # RFC 1035, Section 3.3.4.
-                    # Mail destination, OBSOLETE - use MX.
+  "MD"       3        # RFC 1035, Section 3.3.4.
+                      # Mail destination, OBSOLETE - use MX.
 
-  "MF"       4      # RFC 1035, Section 3.3.5.
-                    # Mail forwarder, OBSOLETE - use MX.
+  "MF"       4        # RFC 1035, Section 3.3.5.
+                      # Mail forwarder, OBSOLETE - use MX.
 
-  "CNAME"    5      # RFC 1035, Section 3.3.1.
-                    # Canonical name for an alias.
+  "CNAME"    5        # RFC 1035, Section 3.3.1.
+                      # Canonical name for an alias.
 
-  "SOA"      6      # RFC 1035, Section 3.3.13.
-                    # Start of a zone of authority.
-                    # SOA TTL semantics updated by RFC 2308.
-                    # TODO: Domain name compression in RDATA.
+  "SOA"      6        # RFC 1035, Section 3.3.13.
+                      # Start of a zone of authority.
+                      # SOA TTL semantics updated by RFC 2308.
+                      # TODO: Domain name compression in RDATA.
 
-  "MB"       7      # RFC 1035, Section 3.3.3.
-                    # Mail box domain name, EXPERIMENTAL.
+  "MB"       7        # RFC 1035, Section 3.3.3.
+                      # Mail box domain name, EXPERIMENTAL.
 
-  "MG"       8      # RFC 1035, Section 3.3.6.
-                    # Mail group member, EXPERIMENTAL.
+  "MG"       8        # RFC 1035, Section 3.3.6.
+                      # Mail group member, EXPERIMENTAL.
 
-  "MR"       9      # RFC 1035, Section 3.3.8.
-                    # Mail rename domain name, EXPERIMENTAL.
+  "MR"       9        # RFC 1035, Section 3.3.8.
+                      # Mail rename domain name, EXPERIMENTAL.
 
-  "NULL"     10     # RFC 1035, Section 3.3.10.
-                    # Null RR, EXPERIMENTAL. Not allowed in zone file. Not supported.
+  "NULL"     10       # RFC 1035, Section 3.3.10.
+                      # Null RR, EXPERIMENTAL. Not supported.
+                      # Not allowed in zone file.
 
-  "WKS"      11     # RFC 1035, Section 3.4.2.
-                    # Well known service description.
-                    # WARNING: The order of services and ports may change in
-                    # input and output zone. Also, numbers may be converted to
-                    # mnemonics.
+  "WKS"      11       # RFC 1035, Section 3.4.2.
+                      # Well known service description.
+                      # WARNING: The order of services and ports may change in
+                      # input and output zone. Also, numbers may be converted
+                      # to mnemonics.
 
-  "PTR"      12     # RFC 1035, Section 3.3.12.
-                    # Domain name pointer.
+  "PTR"      12       # RFC 1035, Section 3.3.12.
+                      # Domain name pointer.
 
-  "HINFO"    13     # RFC 1035, Section 3.3.2.
-                    # Host information.
-                    # WARNING: Unqouted character-strings become quoted
-                    # character-strings in output zone
+  "HINFO"    13       # RFC 1035, Section 3.3.2.
+                      # Host information.
+                      # WARNING: Unqouted character-strings become quoted
+                      # character-strings in output zone
 
-  "MINFO"    14     # RFC 1035, Section 3.3.7.
-                    # Mail box or mail list information, EXPERIMENTAL.
+  "MINFO"    14       # RFC 1035, Section 3.3.7.
+                      # Mail box or mail list information, EXPERIMENTAL.
 
-  "MX"       15     # RFC 1035, Section 3.3.9.
-                    # Mail exchange.
+  "MX"       15       # RFC 1035, Section 3.3.9.
+                      # Mail exchange.
 
-  "TXT"      16     # RFC 1035, Section 3.3.14.
-                    # Text strings.
-                    # WARNING: Unqouted character-strings become quoted
-                    # character-strings in output zone.
+  "TXT"      16       # RFC 1035, Section 3.3.14.
+                      # Text strings.
+                      # WARNING: Unqouted character-strings become quoted
+                      # character-strings in output zone.
 
-  "RP"       17     # RFC 1183, Section 2.2.
-                    # Responsible person.
+  "RP"       17       # RFC 1183, Section 2.2.
+                      # Responsible person.
 
-  "AFSDB"    18     # RFC 1183, Section 1.
-                    # AFS database location, DEPRECATED - use SRV.
+  "AFSDB"    18       # RFC 1183, Section 1.
+                      # AFS database location, DEPRECATED - use SRV.
 
-  "X25"      19     # RFC 1183, Section 3.1.
-                    # X.25 PSDN address.
-                    # WARNING: Unqouted character-strings become quoted
-                    # character-strings in output zone.
+  "X25"      19       # RFC 1183, Section 3.1.
+                      # X.25 PSDN address.
+                      # WARNING: Unqouted character-strings become quoted
+                      # character-strings in output zone.
 
-  "ISDN"     20     # RFC 1183, Section 3.2.
-                    # ISDN address.
-                    # WARNING: Unqouted character-strings become quoted
-                    # character-strings in output zone.
+  "ISDN"     20       # RFC 1183, Section 3.2.
+                      # ISDN address.
+                      # WARNING: Unqouted character-strings become quoted
+                      # character-strings in output zone.
 
-  "RT"       21     # RFC 1183, Section 3.3.
-                    # Route through.
+  "RT"       21       # RFC 1183, Section 3.3.
+                      # Route through.
 
-  "NSAP"     22     # RFC 1706, Section 5.
-                    # NSAP address.
+  "NSAP"     22       # RFC 1706, Section 5.
+                      # NSAP address.
 
-  "NSAP-PTR" 23     # RFC 1348 (obsoleted by RFC 1706).
-                    # NSAP domain name pointer, OBSOLETE - use PTR.
+  "NSAP-PTR" 23       # RFC 1348 (obsoleted by RFC 1706).
+                      # NSAP domain name pointer, OBSOLETE - use PTR.
 
-  "SIG"      24     # RFC 2535, Section 4.
-                    # Security signature.
+  "SIG"      24       # RFC 2535, Section 4.
+                      # Security signature.
 
-  "KEY"      25     # RFC 2535, Section 3.
-                    # Security key.
+  "KEY"      25       # RFC 2535, Section 3.
+                      # Security key.
 
-  "PX"       26     # RFC 2136, Section 4.
-                    # X.400 mail mapping information.
+  "PX"       26       # RFC 2136, Section 4.
+                      # X.400 mail mapping information.
 
-  "GPOS"     27     # RFC 1712, Section 3.
-                    # Geographical position.
+  "GPOS"     27       # RFC 1712, Section 3.
+                      # Geographical position.
 
-  "AAAA"     28     # RFC 3596, Section 2.
-                    # IP6 address.
-                    # WARNING: Addresses may be compressed in output zone.
+  "AAAA"     28       # RFC 3596, Section 2.
+                      # IP6 address.
+                      # WARNING: Addresses may be compressed in output zone.
 
-  "LOC"      29     # RFC 1876, Section 2.
-                    # Local information.
-                    # WARNING: Latitude and longitude will be implicit in
-                    # output zone, for example "34.0 0 0 N" becomes "34 N".
-                    # WARNING: altitude, size, horizontal and vertical
-                    # precision will be explicit in output zone, for example
-                    # "-32" becomes "-32.00m".
+  "LOC"      29       # RFC 1876, Section 2.
+                      # Local information.
+                      # WARNING: Latitude and longitude will be implicit in
+                      # output zone, for example "34.0 0 0 N" becomes "34 N".
+                      # WARNING: altitude, size, horizontal and vertical
+                      # precision will be explicit in output zone, for example
+                      # "-32" becomes "-32.00m".
 
-  "NXT"      30     # RFC 2535, Section 5 (obsoleted by RFC 4033, 4034, 4035).
-                    # Next domain, OBSOLETE - use NSEC.
+  "NXT"      30       # RFC 2535, Section 5 (obsoleted by RFC 4033, 4034, 4035).
+                      # Next domain, OBSOLETE - use NSEC.
 
-  "EID"      31     # Endpoint identifier. Not supported.
+  "EID"      31       # Endpoint identifier. Not supported.
 
-  "NIMLOC"   31     # Nimrod locator. Not supported.
+  "NIMLOC"   31       # Nimrod locator. Not supported.
 
-  "SRV"      33     # RFC 2782.
-                    # Server selection.
+  "SRV"      33       # RFC 2782.
+                      # Server selection.
 
-  "ATMA"     34     # ATM address. Not supported.
+  "ATMA"     34       # ATM address. Not supported.
 
-  "NAPTR"    35     # RFC 3403, Section 4.1.
-                    # Naming authority pointer.
+  "NAPTR"    35       # RFC 3403, Section 4.1.
+                      # Naming authority pointer.
 
-  "KX"       36     # RFC 2230, Section 3.
-                    # Key exchanger.
+  "KX"       36       # RFC 2230, Section 3.
+                      # Key exchanger.
 
-  "CERT"     37     # RFC 4398, Section 2.
-                    # Certificate.
+  "CERT"     37       # RFC 4398, Section 2.
+                      # Certificate.
 
-  "A6"       38     # RFC 2874, Section 3.1 (made historic by RFC 6563).
-                    # A6, OBSOLETE - use AAAA. Not supported.
+  "A6"       38       # RFC 2874, Section 3.1 (made historic by RFC 6563).
+                      # A6, OBSOLETE - use AAAA. Not supported.
 
-  "DNAME"    39     # RFC 6672, Section 2.1.
-                    # DNAME redirection.
+  "DNAME"    39       # RFC 6672, Section 2.1.
+                      # DNAME redirection.
 
-  "SINK"     40     # Kitchen sink. Not supported.
+  "SINK"     40       # Kitchen sink. Not supported.
 
-  "OPT"      41     # RFC 6891, Section 6.1.
-                    # Opt. Not allowed in zone file. Not supported.
+  "OPT"      41       # RFC 6891, Section 6.1.
+                      # Opt. Not allowed in zone file. Not supported.
 
-  "APL"      42     # RFC 3123, Section 4.
-                    # List of address prefixes.
-                    # WARNING: Empty rdata not supported.
+  "APL"      42       # RFC 3123, Section 4.
+                      # List of address prefixes.
+                      # WARNING: Empty rdata not supported.
 
-  "DS"       43     # RFC 4034, Section 5.1.
-                    # Delegation signer.
+  "DS"       43       # RFC 4034, Section 5.1.
+                      # Delegation signer.
 
-  "SSHFP"    44     # RFC 4255, Section 3.
-                    # SSH key fingerprint.
+  "SSHFP"    44       # RFC 4255, Section 3.
+                      # SSH key fingerprint.
 
-  "IPSECKEY" 45     # RFC 4025, Section 2.
-                    # IPsec keying material.
+  "IPSECKEY"   45     # RFC 4025, Section 2.
+                      # IPsec keying material.
 
-  "RRSIG"    46     # RFC 4034, Section 3.
-                    # Security signature.
+  "RRSIG"      46     # RFC 4034, Section 3.
+                      # Security signature.
 
-  "NSEC"     47     # RFC 4034, Section 4.
-                    # Next domain.
+  "NSEC"       47     # RFC 4034, Section 4.
+                      # Next domain.
 
-  "DNSKEY"   48     # RFC 4034, Section 2.
-                    # Security key.
+  "DNSKEY"     48     # RFC 4034, Section 2.
+                      # Security key.
 
-  "DHCID"    49     # RFC 4701, Section 3.
-                    # DHCP information.
+  "DHCID"      49     # RFC 4701, Section 3.
+                      # DHCP information.
+
+  "NSEC3"      50     # RFC 5155, Section 3.
+                      # Next hashed domain.
+
+  "NSEC3PARAM" 51     # RFC 5155, Section 3.
+                      # Next hashed domain.
