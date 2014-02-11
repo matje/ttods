@@ -160,3 +160,6 @@ Supported RRtypes
 
   "DNSKEY"   48     # RFC 4034, Section 2.
                     # Security key.
+
+  "DHCID"    49     # RFC 4701, Section 3.
+                    # DHCP information.

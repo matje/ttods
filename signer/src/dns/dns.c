@@ -185,6 +185,8 @@ static rrstruct_type dns_rrstructs[(DNS_NUMRRTYPES+1)] = {
 /*    49 */ { "DNSKEY", DNS_TYPE_DNSKEY, 4, 4,
               { DNS_RDATA_INT16, DNS_RDATA_INT8, DNS_RDATA_ALGORITHM,
                 DNS_RDATA_BASE64 } },
+/*    50 */ { "DHCID", DNS_TYPE_DHCID, 1, 1, { DNS_RDATA_BASE64 } },
+
 };
 
 

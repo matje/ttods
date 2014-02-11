@@ -327,6 +327,8 @@
                 fcall rdata_sshfp;
            case DNS_TYPE_IPSECKEY:
                 fcall rdata_ipseckey;
+           case DNS_TYPE_DHCID:
+                fcall rdata_dhcid;
            case DNS_TYPE_NULL:
            default:
                 if (!rs->name) {
@@ -930,6 +932,9 @@
     rdata_ipseckey  := ( rd_int . delim . rdata_ipseckey_trail )
                     %zparser_hold_ret . special_char_end;
 
+    rdata_dhcid     := rd_b64
+                     %zparser_hold_ret . special_char_end;
+
     rdata            = (delim . ^special_char) @zparser_rdata_call;
 
     rrtype           =
@@ -980,7 +985,8 @@
                      | "IPSECKEY"   @{parser->current_rr.type = DNS_TYPE_IPSECKEY;}
                      | "RRSIG"      @{parser->current_rr.type = DNS_TYPE_RRSIG;}
                      | "NSEC"       @{parser->current_rr.type = DNS_TYPE_NSEC;}
-                     | "DNSKEY"     @{parser->current_rr.type = DNS_TYPE_KEY;}
+                     | "DNSKEY"     @{parser->current_rr.type = DNS_TYPE_DNSKEY;}
+                     | "DHCID"      @{parser->current_rr.type = DNS_TYPE_DHCID;}
                      )
                      $!zerror_rr_typedata;
 
