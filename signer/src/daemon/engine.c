@@ -347,7 +347,7 @@ engine_start_drudgers(engine_type* engine)
     ods_log_assert(engine->cfg);
     ods_log_debug("[%s] start drudgers", logstr);
     for (i=0; i < (size_t) engine->cfg->num_signer_threads; i++) {
-        engine->workers[i]->need_to_exit = 0;
+        engine->drudgers[i]->need_to_exit = 0;
         ods_thread_create(&engine->drudgers[i]->thread_id, worker_thread_start,
             engine->drudgers[i]);
     }
