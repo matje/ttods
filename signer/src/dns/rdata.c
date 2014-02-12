@@ -56,7 +56,7 @@ rdata_init_data(region_type *region, const void *data, size_t size)
 {
     uint16_t *result = region_alloc(region, sizeof(uint16_t) + size);
     *result = size;
-    memcpy(result + 1, data, size);
+    memmove(result + 1, data, size);
     return result;
 }
 
@@ -248,7 +248,7 @@ rdata_print_bitmap_nsec(FILE* fd, rdata_type* rdata)
         for (i = 0; i < bm_size*8; i++) {
            if (util_getbit(bitmap, i)) {
                if (sequel) fprintf(fd, " ");
-               rr_print_rrtype(fd, i);
+               rr_print_rrtype(fd, window * DNS_NSEC_WINDOW_BLOCKS + 1);
                sequel = 1;
            }
         }
