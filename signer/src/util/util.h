@@ -133,5 +133,27 @@ int util_getbit(uint8_t bitmap[], size_t index);
  */
 void util_setbit(uint8_t bitmap[], size_t index);
 
+/**
+ * Encode to base32.
+ * @param src:        source string.
+ * @param target:     Base32 encoded target.
+ * @param targetsize: maximum target size.
+ * @return:           (int) number of target bytes.
+ *
+ */
+int util_base32hex_pton(char const* src, uint8_t* target, size_t targetsize);
+
+/**
+ * Decode from base32.
+ * @param src:        Base32 encoded source.
+ * @param srcsize:    number of source bytes.
+ * @param target:     target string.
+ * @param targetsize: maximum target size.
+ * @return:           (int) number of target bytes.
+ *
+ */
+int util_base32hex_ntop(uint8_t const* src, size_t srcsize, char* target,
+    size_t targetsize);
+
 #endif /* UTIL_UTIL_H */
 

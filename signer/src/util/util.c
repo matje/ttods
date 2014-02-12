@@ -38,6 +38,7 @@
 #include "util/str.h"
 #include "util/util.h"
 
+#include <ctype.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <signal.h>
@@ -417,4 +418,96 @@ util_setbit(uint8_t bitmap[], size_t index)
      */
     bitmap[index/8] |= (1 << (7 - index % 8));
     return;
+}
+
+
+/**
+ * Encode to base32.
+ *
+ */
+int
+util_base32hex_pton(char const* src, uint8_t* target, size_t targetsize)
+{
+    char c;
+    size_t p = 0;
+    memset(target,'\0',targetsize);
+    while (c = *src++) {
+        uint8_t d;
+        size_t b, n;
+        if (p+5 >= targetsize*8)       return -1;
+        if (c >= '0' && c <= '9')      d = c-'0';
+        else if (c >= 'A' && c <= 'V') d = c-'A'+10;
+        else if (c >= 'a' && c <= 'v') d = c-'a'+10;
+        else                           return -2;
+        b = 7-p % 8;
+        n = p/8;
+        if (b >= 4) {
+            target[n]   |= d << (b-4);
+        } else {
+            target[n]   |= d >> (4-b);
+            target[n+1] |= d << (b+4);
+        }
+        p += 5;
+    }
+    return (p+7)/8;
+}
+
+
+/**
+ * Decode from base32.
+ *
+ */
+int
+util_base32hex_ntop(uint8_t const* src, size_t srcsize, char* target,
+    size_t targetsize)
+{
+    static char b32[] = "0123456789abcdefghijklmnopqrstuv";
+    char buf[9]; /* 8 char + '/0' */
+    ssize_t len = 0;
+
+    while (srcsize > 0) {
+        int t;
+        memset(buf,'\0',sizeof(buf));
+        buf[0] = b32[src[0] >> 3];
+
+        t = ((src[0] & 7) << 2)   + (srcsize > 1 ? (src[1] >> 6) : 0);
+        buf[1] = b32[t];
+
+        if (srcsize == 1) break;
+        buf[2] = b32[(src[1] >> 1) & 0x1f];
+
+        t = ((src[1] & 1) << 4)   + (srcsize > 2 ? (src[2] >> 4) : 0);
+        buf[3] = b32[t];
+
+        if (srcsize == 2) break;
+        t = ((src[2] & 0xf) << 1) + (srcsize > 3 ? (src[3] >> 7) : 0);
+        buf[4] = b32[t];
+
+        if (srcsize == 3) break;
+        buf[5] = b32[(src[3] >> 2) & 0x1f];
+
+        t = ((src[3] & 3) << 3)   + (srcsize > 4 ? (src[4] >> 5) : 0);
+        buf[6] = b32[t];
+
+        if (srcsize == 4) break;
+        buf[7] = b32[src[4] & 0x1f];
+
+        if (targetsize < 8) return -1;
+        memcpy(target, buf, 8);
+        src += 5;
+        srcsize -= 5;
+        target += 8;
+        targetsize -= 8;
+        len += 8;
+    }
+    if (srcsize) {
+        if (targetsize < strlen(buf)+1) return -2;
+        strncpy(target, buf, targetsize);
+        len += strlen(buf);
+    } else if (targetsize < 1) {
+        return -3;
+    } else {
+        *target='\0';
+    }
+    return (int) len;
 }
