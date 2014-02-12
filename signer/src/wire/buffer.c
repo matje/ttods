@@ -580,7 +580,7 @@ buffer_write(buffer_type* buffer, const void* data, size_t count)
 {
     ods_log_assert(buffer);
     ods_log_assert(buffer_available(buffer, count));
-    memcpy(buffer->data + buffer->position, data, count);
+    memmove(buffer->data + buffer->position, data, count);
     buffer->position += count;
     return;
 }
@@ -675,7 +675,7 @@ buffer_read(buffer_type* buffer, void* data, size_t count)
 {
     ods_log_assert(buffer);
     ods_log_assert(buffer_available(buffer, count));
-    memcpy(data, buffer->data + buffer->position, count);
+    memmove(data, buffer->data + buffer->position, count);
     buffer->position += count;
     return;
 }

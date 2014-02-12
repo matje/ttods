@@ -231,7 +231,7 @@ zonec_rdata_bitmap_nsec(region_type* region, const char* buf)
     (void)memset(window, 0, sizeof(window));
     (void)memset(length, 0, sizeof(length));
     (void)memset(rdata, 0, sizeof(rdata));
-    (void)memcpy(rdata, buf, strlen(buf));
+    (void)memmove(rdata, buf, strlen(buf));
     (void)ods_strtriml(rdata);
     ods_strreplace(rdata, '\t', sep);
     rrtype = rdata;
@@ -278,7 +278,7 @@ zonec_rdata_bitmap_nsec(region_type* region, const char* buf)
     for (i = 0; i < window_count; i++) {
         *(p++) = window[i];
         *(p++) = length[window[i]];
-        memcpy(p, &bitmap[window[i]], length[window[i]]);
+        memmove(p, &bitmap[window[i]], length[window[i]]);
         p += length[window[i]];
     }
     return r;
@@ -304,7 +304,7 @@ zonec_rdata_bitmap_nxt(region_type* region, const char* buf)
 
     (void)memset(bitmap, 0, sizeof(bitmap));
     (void)memset(rdata, 0, sizeof(rdata));
-    (void)memcpy(rdata, buf, strlen(buf));
+    (void)memmove(rdata, buf, strlen(buf));
     (void)ods_strtriml(rdata);
     ods_strreplace(rdata, '\t', sep);
     rrtype = rdata;
@@ -844,7 +844,7 @@ zonec_rdata_services(region_type* region, const char* buf)
 
     (void)memset(bitmap, 0, sizeof(bitmap));
     (void)memset(rdata, 0, sizeof(rdata));
-    (void)memcpy(rdata, buf, strlen(buf));
+    (void)memmove(rdata, buf, strlen(buf));
     (void)ods_strtriml(rdata);
     ods_strreplace(rdata, '\t', sep);
     service = rdata;
@@ -903,7 +903,7 @@ zonec_rdata_services(region_type* region, const char* buf)
         *r = size;
         protocol = (uint8_t*) (r+1);
         *protocol = proto->p_proto;
-        memcpy(protocol+1, bitmap, *r);
+        memmove(protocol+1, bitmap, *r);
     }
     return r;
 }
@@ -922,7 +922,7 @@ zonec_rdata_text(region_type* region, const char* buf, size_t buflen)
     *r = size;
     p = (uint8_t*) (r+1);
     *p = buflen;
-    memcpy(p+1, buf, buflen);
+    memmove(p+1, buf, buflen);
     return r;
 }
 
@@ -1021,8 +1021,6 @@ zonec_rdata_add(region_type* region, rr_type* rr, dns_rdata_format rdformat,
             break;
         case DNS_RDATA_HEXLEN:
             d = zonec_rdata_hexlen(region, rdbuf, rdsize);
-            ods_log_info("[%s] debug: added %s rdata element '%s'", logstr,
-                dns_rdata_format_str(rdformat), rdbuf);
             break;
         case DNS_RDATA_LOC:
             d = zonec_rdata_loc(region, rdbuf);

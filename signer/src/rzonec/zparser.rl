@@ -240,9 +240,9 @@
         }
         parser->dname->size = parser->dname_size;
         parser->dname->label_count = parser->label_count;
-        memcpy((uint8_t *) dname_label_offsets(parser->dname),
+        memmove((uint8_t *) dname_label_offsets(parser->dname),
             parser->label_offsets, parser->label_count * sizeof(uint8_t));
-        memcpy((uint8_t *) dname_name(parser->dname), parser->dname_wire,
+        memmove((uint8_t *) dname_name(parser->dname), parser->dname_wire,
             parser->dname_size * sizeof(uint8_t));
     }
     action zparser_dollar_origin {

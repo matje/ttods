@@ -493,7 +493,7 @@ util_base32hex_ntop(uint8_t const* src, size_t srcsize, char* target,
         buf[7] = b32[src[4] & 0x1f];
 
         if (targetsize < 8) return -1;
-        memcpy(target, buf, 8);
+        memmove(target, buf, 8);
         src += 5;
         srcsize -= 5;
         target += 8;

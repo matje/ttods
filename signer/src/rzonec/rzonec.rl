@@ -125,7 +125,7 @@ zparser_read_zone(zparser_type* parser, const char* file)
         int stack[RZONEC_STACK_MAX];
         int cs = parser->cs;
         int top = parser->top;
-        memcpy(stack, parser->stack, sizeof(stack));
+        memmove(stack, parser->stack, sizeof(stack));
 
         int space = MAX_BUFSIZE - have;
         if (space <= 0) {
@@ -147,7 +147,7 @@ zparser_read_zone(zparser_type* parser, const char* file)
 
         parser->cs = cs;
         parser->top = top;
-        memcpy(parser->stack, stack, sizeof(stack));
+        memmove(parser->stack, stack, sizeof(stack));
         have = data + r1 - pe;
         if (have > 0) {
             (void)memmove(buf, pe, have);

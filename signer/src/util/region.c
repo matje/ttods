@@ -126,7 +126,7 @@ region_add_cleanup(region_type* r, void* data)
             ods_log_crit("[%s] calloc failed: insufficient memory", logstr);
             return 0;
         }
-        memcpy(cleanups, r->cleanups, r->cleanup_count * sizeof(cleanup_type));
+        memmove(cleanups, r->cleanups, r->cleanup_count * sizeof(cleanup_type));
         free(r->cleanups);
         r->cleanups = cleanups;
         r->cleanup_max *= 2;
@@ -206,7 +206,7 @@ region_alloc_init(region_type* r, const void* init, size_t size)
     if (!s) {
         return NULL;
     }
-    memcpy(s, init, size);
+    memmove(s, init, size);
     return s;
 }
 
