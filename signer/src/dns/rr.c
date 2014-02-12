@@ -99,11 +99,13 @@ rr_compare_rdata(rr_type* rr1, rr_type* rr2)
                 res = dname_compare(rdata_get_dname(&rr1->rdata[i]),
                     rdata_get_dname(&rr2->rdata[i]));
                 break;
-            case DNS_RDATA_NXTBM:
             case DNS_RDATA_IPV4:
+            case DNS_RDATA_IPV6:
             case DNS_RDATA_INT8:
             case DNS_RDATA_INT16:
             case DNS_RDATA_INT32:
+            case DNS_RDATA_CERT_TYPE:
+            case DNS_RDATA_ALGORITHM:
             case DNS_RDATA_TIMEF:
             case DNS_RDATA_DATETIME:
             case DNS_RDATA_SERVICES:
@@ -111,7 +113,16 @@ rr_compare_rdata(rr_type* rr1, rr_type* rr2)
             case DNS_RDATA_TEXTS:
             case DNS_RDATA_NSAP:
             case DNS_RDATA_RRTYPE:
+            case DNS_RDATA_BASE32HEX:
             case DNS_RDATA_BASE64:
+            case DNS_RDATA_HEX:
+            case DNS_RDATA_HEXLEN:
+            case DNS_RDATA_FLOAT:
+            case DNS_RDATA_LOC:
+            case DNS_RDATA_APLS:
+            case DNS_RDATA_IPSECGATEWAY:
+            case DNS_RDATA_NXTBM:
+            case DNS_RDATA_NSECBM:
             case DNS_RDATA_UNKNOWN:
             default:
                 if (rdata_size(&rr1->rdata[i]) < rdata_size(&rr2->rdata[i])) {

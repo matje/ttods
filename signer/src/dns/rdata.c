@@ -178,6 +178,35 @@ rdata_print_apl(FILE* fd, rdata_type* rdata)
  *
  */
 static void
+rdata_print_base32hex(FILE* fd, rdata_type* rdata)
+{
+    region_type* tmp;
+    char* buf;
+    uint8_t* data = rdata_get_data(rdata);
+    size_t size = rdata_size(rdata);
+    if (size == 0) {
+        ods_log_error("[%s] error: print base32hex: empty rdata", logstr);
+        return;
+    }
+    tmp = region_create_custom(sizeof(region_type) + size*2 + 1);
+    if (!tmp) {
+        ods_log_error("[%s] error: print base32hex: allocation failure",
+            logstr);
+        return;
+    }
+    buf = region_alloc(tmp, size*2 + 1);
+    (void) util_base32hex_ntop(data, size, buf, size*2+1);
+    fprintf(fd, "%s", buf);
+    region_cleanup(tmp);
+    return;
+}
+
+
+/**
+ * Print base64 format RDATA element.
+ *
+ */
+static void
 rdata_print_base64(FILE* fd, rdata_type* rdata)
 {
     region_type* tmp;
@@ -297,24 +326,51 @@ rdata_print_float(FILE* fd, rdata_type* rdata)
 
 
 /**
- * Print int16 RDATA element.
+ * Print hex RDATA element.
  *
  */
 static void
-rdata_print_hex(FILE* fd, rdata_type* rdata)
+rdata_print_hex_internal(FILE* fd, uint8_t* data, size_t size)
 {
     static const char hexdigit[] = {
         '0', '1', '2', '3', '4', '5', '6', '7',
         '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'
     };
-    uint8_t* data = rdata_get_data(rdata);
-    size_t size = rdata_size(rdata);
     size_t i;
     for (i=0; i < size; i++) {
         uint8_t octet = *data;
         fprintf(fd, "%c", (unsigned) hexdigit[octet >> 4]);
         fprintf(fd, "%c", (unsigned) hexdigit[octet & 0x0f]);
         data++;
+    }
+    return;
+}
+
+
+/**
+ * Print hex RDATA element.
+ *
+ */
+static void
+rdata_print_hex(FILE* fd, rdata_type* rdata)
+{
+    rdata_print_hex_internal(fd, rdata_get_data(rdata), rdata_size(rdata));
+    return;
+}
+
+
+/**
+ * Print hexlen RDATA element.
+ *
+ */
+static void
+rdata_print_hexlen(FILE* fd, rdata_type* rdata)
+{
+    size_t size = rdata_size(rdata);
+    if (size <= 1) {
+        fprintf(fd, "-");
+    } else {
+        rdata_print_hex_internal(fd, rdata_get_data(rdata)+1, size-1);
     }
     return;
 }
@@ -663,14 +719,17 @@ rdata_print(FILE* fd, rdata_type* rdata, struct rr_struct* rr, uint16_t pos)
         case DNS_RDATA_RRTYPE:
             rdata_print_rrtype(fd, rdata);
             break;
+        case DNS_RDATA_BASE32HEX:
+            rdata_print_base32hex(fd, rdata);
+            break;
         case DNS_RDATA_BASE64:
             rdata_print_base64(fd, rdata);
             break;
-        case DNS_RDATA_NXTBM:
-            rdata_print_bitmap_nxt(fd, rdata);
+        case DNS_RDATA_HEX:
+            rdata_print_hex(fd, rdata);
             break;
-        case DNS_RDATA_NSECBM:
-            rdata_print_bitmap_nsec(fd, rdata);
+        case DNS_RDATA_HEXLEN:
+            rdata_print_hexlen(fd, rdata);
             break;
         case DNS_RDATA_FLOAT:
             rdata_print_float(fd, rdata);
@@ -680,9 +739,6 @@ rdata_print(FILE* fd, rdata_type* rdata, struct rr_struct* rr, uint16_t pos)
             break;
         case DNS_RDATA_APLS:
             rdata_print_apl(fd, rdata);
-            break;
-        case DNS_RDATA_HEX:
-            rdata_print_hex(fd, rdata);
             break;
         case DNS_RDATA_IPSECGATEWAY:
             if (rdata_get_data(&rr->rdata[1])[0] == 0) {
@@ -697,6 +753,12 @@ rdata_print(FILE* fd, rdata_type* rdata, struct rr_struct* rr, uint16_t pos)
                 ods_log_error("[%s] error: print ipsecgateway: unknown "
                     "gateway type", logstr);
             }
+            break;
+        case DNS_RDATA_NXTBM:
+            rdata_print_bitmap_nxt(fd, rdata);
+            break;
+        case DNS_RDATA_NSECBM:
+            rdata_print_bitmap_nsec(fd, rdata);
             break;
         case DNS_RDATA_UNKNOWN:
         default:

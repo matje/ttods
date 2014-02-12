@@ -164,6 +164,28 @@ zonec_rdata_apl(region_type* region, const char* buf)
 
 
 /**
+ * Convert base32 format into RDATA element.
+ *
+ */
+static uint16_t*
+zonec_rdata_base32hex(region_type* region, const char* buf)
+{
+    uint8_t rdata[DNS_RDLEN_MAX];
+    uint16_t* r = NULL;
+    int i;
+    bzero(rdata, sizeof(rdata));
+    i = util_base32hex_pton(buf, rdata, DNS_RDLEN_MAX);
+    if (i < 0) {
+        ods_log_error("[%s] error: invalid base32hex '%s' (ret %d)",
+            logstr, buf, i);
+    } else {
+        r = rdata_init_data(region, rdata, i);
+    }
+    return r;
+}
+
+
+/**
  * Convert base64 format into RDATA element.
  *
  */
@@ -390,6 +412,50 @@ zonec_rdata_hex(region_type* region, const char* buf, size_t buflen)
                 buf++;
             }
             t++;
+        }
+    }
+    return r;
+}
+
+
+/**
+ * Convert hexlen format into RDATA element.
+ *
+ */
+static uint16_t*
+zonec_rdata_hexlen(region_type* region, const char* buf, size_t buflen)
+{
+    uint16_t* r = NULL;
+    uint8_t* t;
+    uint8_t* l;
+    int i;
+
+    if (ods_strcmp(buf, "-") == 0) {
+        return rdata_init_data(region, "", 1);
+    }
+    if (buflen % 2 != 0) {
+        ods_log_error("[%s] error: invalid hex length %u (must be a multiple "
+            "of 2)", logstr, (unsigned) buflen);
+    } else if (buflen > 255*2) {
+        ods_log_error("[%s] error: invalid hex length %u (exceeds 255 bytes)",
+            logstr, (unsigned) buflen);
+    } else {
+        r = region_alloc(region, sizeof(uint16_t) + (buflen/2+1));
+        *r = (buflen/2+1);
+        t = (uint8_t*) (r+1);
+        l = t++;
+        *l = '\0';
+        while (*buf) {
+            i = 16;
+            *t = 0;
+            while (i >= 1) {
+                ods_log_assert(isxdigit((int)*buf));
+                *t += util_hexdigit2int(*buf) * i;
+                i -= 15;
+                buf++;
+            }
+            t++;
+            ++*l;
         }
     }
     return r;
@@ -918,8 +984,17 @@ zonec_rdata_add(region_type* region, rr_type* rr, dns_rdata_format rdformat,
         case DNS_RDATA_INT32:
             d = zonec_rdata_int32(region, rdbuf);
             break;
+        case DNS_RDATA_CERT_TYPE:
+            d = zonec_rdata_cert_type(region, rdbuf);
+            break;
+        case DNS_RDATA_ALGORITHM:
+            d = zonec_rdata_algorithm(region, rdbuf);
+            break;
         case DNS_RDATA_TIMEF:
             d = zonec_rdata_timef(region, rdbuf);
+            break;
+        case DNS_RDATA_DATETIME:
+            d = zonec_rdata_datetime(region, rdbuf);
             break;
         case DNS_RDATA_SERVICES:
             d = zonec_rdata_services(region, rdbuf);
@@ -935,32 +1010,25 @@ zonec_rdata_add(region_type* region, rr_type* rr, dns_rdata_format rdformat,
         case DNS_RDATA_RRTYPE:
             d = zonec_rdata_rrtype(region, rdbuf);
             break;
-        case DNS_RDATA_DATETIME:
-            d = zonec_rdata_datetime(region, rdbuf);
+        case DNS_RDATA_BASE32HEX:
+            d = zonec_rdata_base32hex(region, rdbuf);
             break;
         case DNS_RDATA_BASE64:
             d = zonec_rdata_base64(region, rdbuf);
             break;
-        case DNS_RDATA_NXTBM:
-            d = zonec_rdata_bitmap_nxt(region, rdbuf);
+        case DNS_RDATA_HEX:
+            d = zonec_rdata_hex(region, rdbuf, rdsize);
             break;
-        case DNS_RDATA_NSECBM:
-            d = zonec_rdata_bitmap_nsec(region, rdbuf);
+        case DNS_RDATA_HEXLEN:
+            d = zonec_rdata_hexlen(region, rdbuf, rdsize);
+            ods_log_info("[%s] debug: added %s rdata element '%s'", logstr,
+                dns_rdata_format_str(rdformat), rdbuf);
             break;
         case DNS_RDATA_LOC:
             d = zonec_rdata_loc(region, rdbuf);
             break;
-        case DNS_RDATA_CERT_TYPE:
-            d = zonec_rdata_cert_type(region, rdbuf);
-            break;
-        case DNS_RDATA_ALGORITHM:
-            d = zonec_rdata_algorithm(region, rdbuf);
-            break;
         case DNS_RDATA_APLS:
             d = zonec_rdata_apl(region, rdbuf);
-            break;
-        case DNS_RDATA_HEX:
-            d = zonec_rdata_hex(region, rdbuf, rdsize);
             break;
         case DNS_RDATA_IPSECGATEWAY:
             rd = rdata_get_data(&(rr->rdata[1]));
@@ -969,6 +1037,12 @@ zonec_rdata_add(region_type* region, rr_type* rr, dns_rdata_format rdformat,
             else if (*rd == 2) d = zonec_rdata_ipv6(region, rdbuf);
             else if (*rd == 3) dname = name;
             else if (*rd == 0) dname = dname_create(region, ".");
+            break;
+        case DNS_RDATA_NXTBM:
+            d = zonec_rdata_bitmap_nxt(region, rdbuf);
+            break;
+        case DNS_RDATA_NSECBM:
+            d = zonec_rdata_bitmap_nsec(region, rdbuf);
             break;
         case DNS_RDATA_UNKNOWN: /* TODO */
             d = NULL;

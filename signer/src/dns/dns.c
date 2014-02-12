@@ -180,13 +180,18 @@ static rrstruct_type dns_rrstructs[(DNS_NUMRRTYPES+1)] = {
                 DNS_RDATA_TIMEF, DNS_RDATA_DATETIME, DNS_RDATA_DATETIME,
                 DNS_RDATA_INT16, DNS_RDATA_UNCOMPRESSED_DNAME,
                 DNS_RDATA_BASE64 } },
-/*    48 */ { "NSEC", DNS_TYPE_NSEC, 2, 2,
+/*    47 */ { "NSEC", DNS_TYPE_NSEC, 2, 2,
               { DNS_RDATA_UNCOMPRESSED_DNAME, DNS_RDATA_NSECBM } },
-/*    49 */ { "DNSKEY", DNS_TYPE_DNSKEY, 4, 4,
+/*    48 */ { "DNSKEY", DNS_TYPE_DNSKEY, 4, 4,
               { DNS_RDATA_INT16, DNS_RDATA_INT8, DNS_RDATA_ALGORITHM,
                 DNS_RDATA_BASE64 } },
-/*    50 */ { "DHCID", DNS_TYPE_DHCID, 1, 1, { DNS_RDATA_BASE64 } },
-
+/*    49 */ { "DHCID", DNS_TYPE_DHCID, 1, 1, { DNS_RDATA_BASE64 } },
+/*    50 */ { "NSEC3", DNS_TYPE_NSEC3, 6, 6,
+              { DNS_RDATA_INT8, DNS_RDATA_INT8, DNS_RDATA_INT16,
+                DNS_RDATA_HEXLEN, DNS_RDATA_BASE32HEX, DNS_RDATA_NSECBM } },
+/*    51 */ { "NSEC3PARAM", DNS_TYPE_NSEC3PARAM, 4, 4,
+              { DNS_RDATA_INT8, DNS_RDATA_INT8, DNS_RDATA_INT16,
+                DNS_RDATA_HEXLEN } },
 };
 
 
@@ -318,11 +323,14 @@ dns_rdata_format_str(dns_rdata_format rd)
 {
     switch (rd) {
         case DNS_RDATA_IPV4: return "ipv4addr"; break;
+        case DNS_RDATA_IPV6: return "ipv6addr"; break;
         case DNS_RDATA_COMPRESSED_DNAME: return "dname"; break;
         case DNS_RDATA_UNCOMPRESSED_DNAME: return "dname"; break;
         case DNS_RDATA_INT8: return "int8"; break;
         case DNS_RDATA_INT16: return "int16"; break;
         case DNS_RDATA_INT32: return "int32"; break;
+        case DNS_RDATA_CERT_TYPE: return "certificate-type"; break;
+        case DNS_RDATA_ALGORITHM: return "algorithm"; break;
         case DNS_RDATA_TIMEF: return "period"; break;
         case DNS_RDATA_DATETIME: return "datetime"; break;
         case DNS_RDATA_SERVICES: return "services"; break;
@@ -330,16 +338,15 @@ dns_rdata_format_str(dns_rdata_format rd)
         case DNS_RDATA_TEXTS: return "character-strings"; break;
         case DNS_RDATA_NSAP: return "nsap"; break;
         case DNS_RDATA_RRTYPE: return "rrtype"; break;
+        case DNS_RDATA_BASE32HEX: return "base32hex"; break;
         case DNS_RDATA_BASE64: return "base64"; break;
-        case DNS_RDATA_NXTBM: return "bitmap-nxt"; break;
-        case DNS_RDATA_FLOAT: return "float"; break;
-        case DNS_RDATA_IPV6: return "ipv6addr"; break;
-        case DNS_RDATA_LOC: return "loc"; break;
-        case DNS_RDATA_CERT_TYPE: return "certificate-type"; break;
-        case DNS_RDATA_ALGORITHM: return "algorithm"; break;
-        case DNS_RDATA_APLS: return "apl"; break;
         case DNS_RDATA_HEX: return "hex"; break;
+        case DNS_RDATA_HEXLEN: return "hexlen"; break;
+        case DNS_RDATA_FLOAT: return "float"; break;
+        case DNS_RDATA_LOC: return "loc"; break;
+        case DNS_RDATA_APLS: return "apl"; break;
         case DNS_RDATA_IPSECGATEWAY: return "ipsecgateway"; break;
+        case DNS_RDATA_NXTBM: return "bitmap-nxt"; break;
         case DNS_RDATA_NSECBM: return "bitmap-nsec"; break;
         case DNS_RDATA_UNKNOWN: return "unknown"; break;
         default:

@@ -329,6 +329,10 @@
                 fcall rdata_ipseckey;
            case DNS_TYPE_DHCID:
                 fcall rdata_dhcid;
+           case DNS_TYPE_NSEC3:
+                fcall rdata_nsec3;
+           case DNS_TYPE_NSEC3PARAM:
+                fcall rdata_nsec3param;
            case DNS_TYPE_NULL:
            default:
                 if (!rs->name) {
@@ -800,6 +804,10 @@
                      >zparser_rdata_start $zparser_rdata_char_hex
                      %zparser_rdata_end   $!zerror_rdata_err;
 
+    rd_hexlen        = (xdigit+ | '-')
+                     >zparser_rdata_start $zparser_rdata_char
+                     %zparser_rdata_end   $!zerror_rdata_err;
+
     rd_ipsecgateway  = ( ipv4_addr | ipv6_addr | abs_dname | rel_dname )
                      >zparser_rdata_start $zparser_rdata_char
                      %zparser_rdata_end   $!zerror_rdata_err;
@@ -829,6 +837,10 @@
                      %zparser_rdata_end   $!zerror_rdata_err;
 
     # RFC4648: Base16, Base32 and Base64 Data Encodings
+    rd_b32hex        = ([0-9A-Va-v]+)
+                     >zparser_rdata_start $zparser_rdata_char
+                     %zparser_rdata_end   $!zerror_rdata_err;
+
     rd_b64           = (((alnum | [+/])+ . delim?)+ . '='{0,2} . delim?)
                      >zparser_rdata_start $zparser_rdata_char_b64
                      %zparser_rdata_end   $!zerror_rdata_err;
@@ -935,6 +947,13 @@
     rdata_dhcid     := rd_b64
                      %zparser_hold_ret . special_char_end;
 
+    rdata_nsec3     := ( (rd_int . delim){3} . rd_hexlen . delim . rd_b32hex
+                       . rd_bitmap )
+                     %zparser_hold_ret . special_char_end;
+
+    rdata_nsec3param := ( (rd_int . delim){3} . rd_hexlen )
+                     %zparser_hold_ret . special_char;
+
     rdata            = (delim . ^special_char) @zparser_rdata_call;
 
     rrtype           =
@@ -987,6 +1006,8 @@
                      | "NSEC"       @{parser->current_rr.type = DNS_TYPE_NSEC;}
                      | "DNSKEY"     @{parser->current_rr.type = DNS_TYPE_DNSKEY;}
                      | "DHCID"      @{parser->current_rr.type = DNS_TYPE_DHCID;}
+                     | "NSEC3"      @{parser->current_rr.type = DNS_TYPE_NSEC3;}
+                     | "NSEC3PARAM" @{parser->current_rr.type = DNS_TYPE_NSEC3PARAM;}
                      )
                      $!zerror_rr_typedata;
 
