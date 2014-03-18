@@ -86,6 +86,8 @@ tools_read(zone_type* zone)
             ods_status2str(status));
         /* rollback */
     }
+    ods_log_info("[%s] zone %s read: %s", logstr, zone->name,
+        ods_status2str(status));
     return status;
 }
 
@@ -108,6 +110,8 @@ tools_write(zone_type* zone)
         ods_log_error("[%s] write zone %s failed: %s", logstr, zone->name,
             ods_status2str(status));
     }
+    ods_log_info("[%s] zone %s write: %s", logstr, zone->name,
+        ods_status2str(status));
     return status;
 }
 

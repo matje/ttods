@@ -56,5 +56,13 @@ struct zone_struct;
  */
 ods_status adfile_read(struct zone_struct* zone);
 
+/**
+ * Write zone to output file adapter.
+ * @param zone: zone.
+ * @return:     (ods_status) status.
+ *
+ */
+ods_status adfile_write(struct zone_struct* zone);
+
 #endif /* ADAPTER_ADFILE_H */
 
