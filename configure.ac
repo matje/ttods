@@ -32,7 +32,8 @@ AC_DEFINE_UNQUOTED(CP_COMMAND, "$CP", [System cp(3) command])
 # building
 ACX_ARG_RPATH
 ACX_RUNTIME_PATH_ADD
-# ACX_PEDANTIC [produces lot of out of line warnings]
+ACX_PEDANTIC [produces lot of out of line warnings]
+ACX_GPROF
 ACX_STRICT
 
 # compiler flags
